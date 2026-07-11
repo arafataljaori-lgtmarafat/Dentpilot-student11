@@ -1,0 +1,996 @@
+/* ============================================================
+   DentPilot Student — دينت بايلوت للطلاب
+   متابِع الحالات السريرية لطلاب كلية الأسنان
+   التخزين محلي بمفاتيح مستقلة عن نسخة Pro.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var CASES_KEY = 'dentpilot_student_cases_v1';
+  var SETTINGS_KEY = 'dentpilot_student_settings_v1';
+  var REQS_KEY = 'dentpilot_student_requirements_v1';
+  var ATT_KEY = 'dentpilot_student_attachments_v1';
+  var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
+  var APP_VERSION = '1.3.11';
+
+  var DEPTS = ['حشوات', 'عصب', 'تنظيف', 'تقويم', 'جراحة', 'مراجعة', 'أخرى'];
+  var MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var WEEKDAYS_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']; // getDay(): 0..6
+  var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
+  var STATUSES = ['قيد الانتظار', 'قيد العمل', 'مكتملة', 'تحتاج مراجعة', 'ملغاة'];
+  var VIEWS = ['dashboard', 'all', 'days', 'day', 'reqs', 'completed', 'bysubject', 'backup', 'settings', 'support', 'file'];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {};
+  ['backBtn','installBtn','dcAll','dcCompleted','allSearch','allList','allEmpty','daysList','dayTitle','dayList','dayEmpty',
+   'reqsList','completedList','completedEmpty','bySubjectList','bySubjectEmpty','exportBtn','importBtn','importFile','setName','scheduleEditor','saveSettingsBtn','setDeviceId',
+   'attViewOverlay','attViewImg','attViewTitle','attViewClose','attViewCloseBtn','attViewTab',
+   'caseOverlay','caseForm','caseTitle','caseClose','caseCancel','caseId','cName','cPhone','cDept','cType','cTooth','cDay','cDate','cWeekday','cTime','cStatus','cNotes',
+   'sessionOverlay','sessionForm','sessionTitle','sessionClose','sessionCancel','sCaseId','sId','sNum','sDate','sTime','sProc','sNext','sNotes','sStatus',
+   'confirmOverlay','confirmTitle','confirmText','confirmOk','confirmCancel','toast','splash','fileBody',
+   'trialBanner','trialText','accessStatus','supportBody','dcSupportSub',
+   'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus'
+  ].forEach(function (k) { els[k] = $(k); });
+
+  var cases = [], settings = { studentName: '', schedule: {} }, requirements = {}, attachments = {};
+  var adminConfig = {};
+  var currentView = 'dashboard', currentParam = '', fileOrigin = 'all', pendingConfirm = null, deferredPrompt = null, toastTimer = null;
+
+  /* ---------- storage ---------- */
+  function jget(k, d) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch (e) { return d; } }
+  function loadAll() {
+    cases = jget(CASES_KEY, []); if (!Array.isArray(cases)) cases = [];
+    settings = Object.assign({ studentName: '', schedule: {} }, jget(SETTINGS_KEY, {}));
+    if (!settings.schedule) settings.schedule = {};
+    requirements = jget(REQS_KEY, {}) || {};
+    attachments = jget(ATT_KEY, {}) || {};
+    loadAdminConfig();
+    normalizeCases();
+  }
+  function normalizeCases() {
+    cases.forEach(function (c) {
+      if (!Array.isArray(c.sessions)) c.sessions = [];
+      if (typeof c.apptDate !== 'string') c.apptDate = '';   // ترحيل: حقل تاريخ الموعد الجديد
+      if (typeof c.day !== 'string') c.day = c.day || '';
+      // ترحيل: تعيين تاريخ الأرشفة للحالات المكتملة القديمة دون حذف أو تغيير أي بيانات أخرى
+      if (c.status === 'مكتملة' && !c.completedAt) c.completedAt = c.createdAt || '';
+    });
+  }
+  function saveCases() { try { localStorage.setItem(CASES_KEY, JSON.stringify(cases)); } catch (e) { alert('تعذّر الحفظ — قد تكون المساحة ممتلئة.'); } }
+  function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {} }
+  function saveReqs() { try { localStorage.setItem(REQS_KEY, JSON.stringify(requirements)); } catch (e) {} }
+  function saveAtt() { localStorage.setItem(ATT_KEY, JSON.stringify(attachments)); }
+
+  /* ---------- helpers ---------- */
+  function uid() { return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function sid(p) { return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function toNum(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function phoneDigits(p) { return String(p || '').replace(/\D/g, ''); }
+  function initial(n) { n = (n || '').trim(); return n ? n[0] : 'ح'; }
+  function fmtDate(s) { if (!s) return '—'; var d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+  function fmtDT(s) { if (!s) return '—'; var d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' • ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); }
+  function parseDateLocal(s) { if (!s) return null; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s)); var d = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(s); return isNaN(d.getTime()) ? null : d; }
+  function weekday(s) { var d = parseDateLocal(s); return d ? WEEKDAYS_AR[d.getDay()] : ''; }
+  function longDateAr(s) { var d = parseDateLocal(s); return d ? (d.getDate() + ' ' + MONTHS_AR[d.getMonth()] + ' ' + d.getFullYear()) : ''; }
+  // اليوم الفعّال للتجميع: من تاريخ الموعد إن وُجد، وإلا من اليوم المخصّص يدوياً
+  function effWeekday(c) { return c.apptDate ? weekday(c.apptDate) : (c.day || ''); }
+  // مفتاح فرز زمني حقيقي (التاريخ + الوقت)
+  function apptDT(c) { return c.apptDate ? (c.apptDate + 'T' + (c.apptTime || '00:00')) : ''; }
+  function caseSort(a, b) {
+    var ad = a.status === 'مكتملة' ? 1 : 0, bd = b.status === 'مكتملة' ? 1 : 0;
+    if (ad !== bd) return ad - bd;                          // المكتملة أسفل
+    var at = apptDT(a), bt = apptDT(b);
+    if (at && bt) return at < bt ? -1 : (at > bt ? 1 : 0);  // بالتاريخ والوقت الفعليين
+    if (at && !bt) return -1; if (!at && bt) return 1;
+    var au = a.apptTime || '', bu = b.apptTime || '';       // بلا تاريخ: بالوقت فقط
+    if (au && bu) return au < bu ? -1 : 1;
+    if (au && !bu) return -1; if (!au && bu) return 1;
+    return 0;
+  }
+  function timeLabel(t) { if (!t) return ''; var p = String(t).split(':'); var h = +p[0], m = p[1] || '00'; var ap = h < 12 ? 'صباحاً' : 'مساءً'; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ':' + m + ' ' + ap; }
+  function debounce(fn, ms) { var t; return function () { var a = arguments, c = this; clearTimeout(t); t = setTimeout(function () { fn.apply(c, a); }, ms); }; }
+  function statusMeta(s) {
+    return { 'قيد الانتظار': { cls: 'st-wait' }, 'قيد العمل': { cls: 'st-work' }, 'مكتملة': { cls: 'st-done' }, 'تحتاج مراجعة': { cls: 'st-review' }, 'ملغاة': { cls: 'st-cancel' } }[s] || { cls: 'st-wait' };
+  }
+  function sessStMeta(s) { return { 'منجزة': 'st-done', 'مجدولة': 'st-work', 'ملغاة': 'st-cancel' }[s] || 'st-work'; }
+  function fillSelect(sel, arr, extra) { sel.innerHTML = (extra ? '<option value="">' + extra + '</option>' : '') + arr.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join(''); }
+  function toast(m) { els.toast.textContent = m; els.toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { els.toast.hidden = true; }, 2500); }
+
+  /* ---------- completed archive helpers ---------- */
+  function isCompleted(c) { return !!c && c.status === 'مكتملة'; }
+  function activeCases() { return cases.filter(function (c) { return !isCompleted(c); }); }
+  function completedCases() { return cases.filter(isCompleted); }
+
+  /* ---------- attachment helpers ---------- */
+  function attTypeLabel(a) {
+    var t = String((a && a.type) || '').toLowerCase();
+    var nm = String((a && a.name) || '');
+    if (t.indexOf('image/') === 0) return 'صورة';
+    if (t.indexOf('pdf') >= 0 || /\.pdf$/i.test(nm)) return 'PDF';
+    if (t.indexOf('word') >= 0 || /\.docx?$/i.test(nm)) return 'مستند';
+    var ext = nm.indexOf('.') >= 0 ? nm.split('.').pop() : '';
+    return (ext && ext.length <= 5) ? ext.toUpperCase() : 'ملف';
+  }
+  function fmtSize(n) { n = +n; if (!n || isNaN(n)) return ''; if (n < 1024) return n + ' ب'; if (n < 1048576) return Math.round(n / 1024) + ' ك.ب'; return (n / 1048576).toFixed(1) + ' م.ب'; }
+  // تحويل data URL إلى Blob لفتحه بأمان عبر رابط Blob (بدل فتح data: التي تحجبها المتصفحات)
+  function dataURLtoBlob(dataUrl) {
+    var parts = String(dataUrl).split(',');
+    var meta = parts[0] || '';
+    var isB64 = /;base64/i.test(meta);
+    var mime = (meta.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+    var raw = parts.slice(1).join(',');
+    var bin = isB64 ? atob(raw) : decodeURIComponent(raw);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  /* ---------- links ---------- */
+  function callLink(phone, cls, label) { var p = (phone || '').trim(); return p ? '<a class="card-btn call ' + cls + '" href="tel:' + encodeURIComponent(p) + '">📞' + label + '</a>' : '<span class="card-btn call disabled ' + cls + '">📞' + label + '</span>'; }
+  function waLink(phone, cls, label) { var d = phoneDigits(phone); return d ? '<a class="card-btn wa ' + cls + '" href="https://wa.me/' + d + '" target="_blank" rel="noopener">💬' + label + '</a>' : '<span class="card-btn wa disabled ' + cls + '">💬' + label + '</span>'; }
+
+  /* ---------- counts ---------- */
+  function updateCounts() {
+    els.dcAll.textContent = activeCases().length;
+    if (els.dcCompleted) els.dcCompleted.textContent = completedCases().length;
+    if (els.dcSupportSub) {
+      var activated = !!(window.DPLicense && window.DPLicense.isActivated && window.DPLicense.isActivated());
+      els.dcSupportSub.textContent = activated
+        ? 'التطبيق مفعل — تواصل مع الدعم عند الحاجة'
+        : 'ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم';
+    }
+  }
+
+  /* ---------- compact row ---------- */
+  function caseRow(c, index, dayMode) {
+    var st = statusMeta(c.status);
+    var line2 = [c.department, c.caseType].filter(Boolean).join(' — ') || '—';
+    var appt;
+    if (dayMode) {
+      appt = c.apptDate
+        ? (longDateAr(c.apptDate) + (c.apptTime ? ' — ' + timeLabel(c.apptTime) : ''))
+        : (c.apptTime ? ('الموعد: ' + timeLabel(c.apptTime)) : 'بدون وقت محدد');
+    } else {
+      appt = c.apptDate
+        ? (weekday(c.apptDate) + ' ' + longDateAr(c.apptDate) + (c.apptTime ? ' — ' + timeLabel(c.apptTime) : ''))
+        : (c.day ? (c.day + (c.apptTime ? ' ' + timeLabel(c.apptTime) : '')) : (c.apptTime ? timeLabel(c.apptTime) : 'بدون موعد محدد'));
+    }
+    return '<div class="row ' + (c.status === 'مكتملة' ? 'is-done' : '') + '">' +
+      '<span class="row-no">' + pad(index) + '</span>' +
+      '<div class="row-main">' +
+        '<div class="row-name">' + esc(c.name) + '</div>' +
+        '<div class="row-line">' + esc(line2) + '</div>' +
+        '<div class="row-appt">' + esc(appt) + '</div>' +
+        '<span class="row-status ' + st.cls + '">' + esc(c.status || '—') + '</span>' +
+      '</div>' +
+      '<button type="button" class="row-open" data-act="open" data-id="' + c.id + '" title="فتح ملف الحالة">📂</button>' +
+    '</div>';
+  }
+
+  /* ---------- All patients ---------- */
+  function renderAll() {
+    var q = els.allSearch.value.trim().toLowerCase();
+    var base = activeCases();
+    var list = q ? base.filter(function (c) {
+      return (c.name || '').toLowerCase().indexOf(q) >= 0 || (c.phone || '').toLowerCase().indexOf(q) >= 0 ||
+             (c.department || '').toLowerCase().indexOf(q) >= 0 || (c.caseType || '').toLowerCase().indexOf(q) >= 0;
+    }) : base;
+    if (base.length === 0) { els.allList.innerHTML = ''; els.allEmpty.hidden = false; els.allEmpty.querySelector('p').textContent = 'لا توجد حالات حالية.'; els.allEmpty.querySelector('span').textContent = 'اضغط «إضافة حالة» لتسجيل أول حالة.'; return; }
+    if (list.length === 0) { els.allList.innerHTML = ''; els.allEmpty.hidden = false; els.allEmpty.querySelector('p').textContent = 'لا توجد نتائج.'; els.allEmpty.querySelector('span').textContent = 'جرّب بحثاً آخر.'; return; }
+    els.allEmpty.hidden = true;
+    els.allList.innerHTML = list.slice().sort(caseSort).map(function (c, i) { return caseRow(c, i + 1, false); }).join('');
+  }
+
+  /* ---------- Days ---------- */
+  function renderDays() {
+    var act = activeCases();
+    var html = DAYS.map(function (day) {
+      var dept = settings.schedule[day] || '';
+      var count = act.filter(function (c) { return effWeekday(c) === day; }).length;
+      return '<button type="button" class="day-card" data-day="' + esc(day) + '"><span class="day-name">' + esc(day) + '</span><span class="day-dept">' + (dept ? esc(dept) : 'بدون قسم محدّد') + '</span><span class="day-count">' + count + ' حالات</span></button>';
+    }).join('');
+    var noneCount = act.filter(function (c) { var w = effWeekday(c); return !w || DAYS.indexOf(w) < 0; }).length;
+    html += '<button type="button" class="day-card" data-day="__none__"><span class="day-name">بدون يوم</span><span class="day-dept">حالات غير مخصّصة ليوم</span><span class="day-count">' + noneCount + ' حالات</span></button>';
+    els.daysList.innerHTML = html;
+  }
+
+  function renderDay(dayKey) {
+    var isNone = dayKey === '__none__';
+    var dayName = isNone ? 'بدون يوم محدد' : dayKey;
+    var dept = isNone ? '' : (settings.schedule[dayKey] || '');
+    els.dayTitle.textContent = '📅 ' + dayName + (dept ? ' — ' + dept : '');
+    var list = activeCases().filter(function (c) { var w = effWeekday(c); return isNone ? (!w || DAYS.indexOf(w) < 0) : (w === dayKey); });
+    list.sort(caseSort);
+    if (list.length === 0) { els.dayList.innerHTML = ''; els.dayEmpty.hidden = false; return; }
+    els.dayEmpty.hidden = true;
+    els.dayList.innerHTML = list.map(function (c, i) { return caseRow(c, i + 1, true); }).join('');
+  }
+
+  /* ---------- Requirements ---------- */
+  function renderReqs() {
+    els.reqsList.innerHTML = DEPTS.map(function (d) {
+      var req = toNum(requirements[d]);
+      var done = cases.filter(function (c) { return c.department === d && c.status === 'مكتملة'; }).length;
+      var remaining = Math.max(0, req - done);
+      var pct = req > 0 ? Math.min(100, Math.round(done / req * 100)) : (done > 0 ? 100 : 0);
+      var full = req > 0 && done >= req;
+      return '<div class="req">' +
+        '<div class="req-top"><span class="req-name">' + esc(d) + (full ? ' ✅' : '') + '</span>' +
+          '<input class="req-input" type="number" min="0" inputmode="numeric" data-dept="' + esc(d) + '" value="' + (req || 0) + '" /></div>' +
+        '<div class="req-bar"><div class="req-fill ' + (full ? 'full' : '') + '" style="width:' + pct + '%"></div></div>' +
+        '<div class="req-meta"><span class="req-done">المكتمل: <b>' + done + ' / ' + (req || 0) + '</b></span><span>المتبقي: <b>' + remaining + '</b></span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ---------- Completed archive ---------- */
+  function completedRow(c, index) {
+    var line2 = [c.department, c.caseType].filter(Boolean).join(' — ') || '—';
+    var when = c.completedAt || c.createdAt || '';
+    return '<div class="row is-done">' +
+      '<span class="row-no">' + pad(index) + '</span>' +
+      '<div class="row-main">' +
+        '<div class="row-name">' + esc(c.name) + '</div>' +
+        '<div class="row-line">' + esc(line2) + '</div>' +
+        '<div class="row-appt">اكتملت: ' + esc(when ? fmtDT(when) : '—') + '</div>' +
+        '<span class="row-status st-done">مكتملة</span>' +
+      '</div>' +
+      '<div class="row-actions">' +
+        '<button type="button" class="row-open" data-act="open" data-id="' + c.id + '" title="فتح ملف الحالة">📂</button>' +
+        '<button type="button" class="btn-restore" data-act="restore" data-id="' + c.id + '" title="إرجاع إلى الحالات الحالية">↩︎ إرجاع إلى الحالات الحالية</button>' +
+      '</div>' +
+    '</div>';
+  }
+  function renderCompleted() {
+    var list = completedCases().slice().sort(function (a, b) {
+      var at = a.completedAt || a.createdAt || '', bt = b.completedAt || b.createdAt || '';
+      return at < bt ? 1 : (at > bt ? -1 : 0); // الأحدث أولاً
+    });
+    if (list.length === 0) { els.completedList.innerHTML = ''; els.completedEmpty.hidden = false; return; }
+    els.completedEmpty.hidden = true;
+    els.completedList.innerHTML = list.map(function (c, i) { return completedRow(c, i + 1); }).join('');
+  }
+  function restoreCase(id) {
+    var c = cases.find(function (x) { return x.id === id; }); if (!c) return;
+    confirmAsk({ title: 'إرجاع الحالة', text: 'إرجاع الحالة «' + esc(c.name) + '» إلى الحالات الحالية؟', okLabel: 'إرجاع', danger: false,
+      onOk: function () {
+        c.status = 'قيد العمل';           // إرجاعها لحالة نشطة/قيد العمل
+        if ('completedAt' in c) delete c.completedAt;
+        saveCases(); refresh(); toast('تم إرجاع الحالة إلى الحالات الحالية');
+      } });
+  }
+
+  function saveNotes(id) {
+    var c = cases.find(function (x) { return x.id === id; }); if (!c) return;
+    var ta = $('caseNotes'); if (!ta) return;
+    c.notes = ta.value; saveCases(); toast('تم حفظ الملاحظات');
+  }
+
+  /* ---------- Attachments helper (per-case) ---------- */
+  function attListFor(caseId) { return attachments[caseId] || []; }
+
+  /* ---------- Cases by subject/material ---------- */
+  var NO_SUBJECT = 'بدون مادة محددة';
+  function renderBySubject() {
+    var act = activeCases();
+    if (act.length === 0) { els.bySubjectList.innerHTML = ''; els.bySubjectEmpty.hidden = false; return; }
+    els.bySubjectEmpty.hidden = true;
+    var groups = {}, order = [];
+    act.forEach(function (c) {
+      var k = (c.department && String(c.department).trim()) ? String(c.department).trim() : NO_SUBJECT;
+      if (!groups[k]) { groups[k] = []; order.push(k); }
+      groups[k].push(c);
+    });
+    order.sort(function (a, b) {
+      if (a === NO_SUBJECT) return 1; if (b === NO_SUBJECT) return -1;
+      var ia = DEPTS.indexOf(a), ib = DEPTS.indexOf(b);
+      ia = ia < 0 ? 999 : ia; ib = ib < 0 ? 999 : ib;
+      return ia - ib || (a < b ? -1 : (a > b ? 1 : 0));
+    });
+    els.bySubjectList.innerHTML = order.map(function (k) {
+      var rows = groups[k].slice().sort(caseSort).map(function (c, i) { return caseRow(c, i + 1, false); }).join('');
+      return '<div class="subj-group">' +
+        '<div class="subj-head"><span class="subj-name">' + esc(k) + '</span><span class="subj-count">' + groups[k].length + ' حالة</span></div>' +
+        '<div class="rows">' + rows + '</div></div>';
+    }).join('');
+  }
+  function attCard(a, c, showCase) {
+    var isImg = (a.type || '').indexOf('image/') === 0;
+    var thumb = (isImg && a.dataUrl)
+      ? '<button type="button" class="att-thumb clickable" data-act="att-open" data-id="' + c.id + '" data-att="' + a.id + '"><img src="' + a.dataUrl + '" alt="' + esc(a.name) + '" loading="lazy"/></button>'
+      : '<button type="button" class="att-thumb file clickable" data-act="att-open" data-id="' + c.id + '" data-att="' + a.id + '"><span>📄</span></button>';
+    var when = a.addedAt || a.createdAt || '';
+    var meta = [attTypeLabel(a), fmtSize(a.size), when ? fmtDate(when) : ''].filter(Boolean).join(' • ');
+    return '<div class="att-card">' + thumb +
+      '<div class="att-name" title="' + esc(a.name) + '">' + esc(a.name) + '</div>' +
+      '<div class="att-meta">' + esc(meta) + '</div>' +
+      (showCase ? '<div class="att-case">' + esc(c.name) + '</div>' : '') +
+      '<div class="att-actions">' +
+        '<button type="button" class="att-open-btn" data-act="att-open" data-id="' + c.id + '" data-att="' + a.id + '">📂 فتح المرفق</button>' +
+        '<button type="button" class="att-del-btn" data-act="att-del" data-id="' + c.id + '" data-att="' + a.id + '" title="حذف المرفق">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ---------- الدعم والتفعيل ---------- */
+  /* مصدر مركزي واحد لكل بيانات الدعم والتفعيل (أرقام/نصوص/أسعار/الوكيل) لتسهيل ربطها لاحقاً
+     بلوحة تحكم إدارية. ملاحظة: هذا تنظيم للبيانات فقط ولا يغيّر أي وظيفة أو منطق تفعيل حالي. */
+  var SUPPORT = {
+    dev: 'د. عرفات الجعوري',
+    price: '3000 ريال',
+    wa: [{ num: '967775101518', label: '775101518' }, { num: '967779449744', label: '779449744' }],
+    kuraimi: { name: 'عرفات الجعوري', acct: '3015367236' },
+    jeeb: { name: 'عرفات الجعوري', pay: '25910' },
+    agent: { title: 'وكيل طلاب محافظة إب', subtitle: 'خاص بطلاب محافظة إب', name: 'فراس المجمر', num: '967771697735', label: '771697735' }
+  };
+  function defaultAdminPin() { return String((17 * 70) + 44); }
+  function defaultAdminConfig() {
+    return {
+      pin: defaultAdminPin(),
+      dev: SUPPORT.dev,
+      price: SUPPORT.price,
+      wa1: SUPPORT.wa[0].num,
+      wa1Label: SUPPORT.wa[0].label,
+      wa2: SUPPORT.wa[1].num,
+      wa2Label: SUPPORT.wa[1].label,
+      kuraimiName: SUPPORT.kuraimi.name,
+      kuraimiAcct: SUPPORT.kuraimi.acct,
+      jeebName: SUPPORT.jeeb.name,
+      jeebPay: SUPPORT.jeeb.pay,
+      customerNote: 'التطبيق لا يحتاج اشتراكاً شهرياً. بعد التفعيل يمكنك استخدامه على هذا الهاتف بشكل دائم.'
+    };
+  }
+  function normalizeAdminConfig(raw) {
+    var d = defaultAdminConfig(), c = Object.assign({}, d, raw || {});
+    Object.keys(d).forEach(function (k) { if (c[k] == null || c[k] === '') c[k] = d[k]; });
+    if (!raw || !Object.prototype.hasOwnProperty.call(raw, 'price') || c.price === '4000 ريال') c.price = '3000 ريال';
+    return c;
+  }
+  function applyAdminConfig() {
+    adminConfig = normalizeAdminConfig(adminConfig);
+    SUPPORT.dev = adminConfig.dev;
+    SUPPORT.price = adminConfig.price;
+    SUPPORT.wa = [
+      { num: phoneDigits(adminConfig.wa1), label: adminConfig.wa1Label || adminConfig.wa1 },
+      { num: phoneDigits(adminConfig.wa2), label: adminConfig.wa2Label || adminConfig.wa2 }
+    ].filter(function (w) { return w.num; });
+    if (!SUPPORT.wa.length) SUPPORT.wa = [{ num: '967775101518', label: '775101518' }, { num: '967779449744', label: '779449744' }];
+    SUPPORT.kuraimi = { name: adminConfig.kuraimiName, acct: adminConfig.kuraimiAcct };
+    SUPPORT.jeeb = { name: adminConfig.jeebName, pay: adminConfig.jeebPay };
+    applyAdminConfigToStaticLinks();
+  }
+  function loadAdminConfig() {
+    adminConfig = normalizeAdminConfig(jget(ADMIN_KEY, {}));
+    applyAdminConfig();
+  }
+  function saveAdminConfig() {
+    try { localStorage.setItem(ADMIN_KEY, JSON.stringify(adminConfig)); } catch (e) {}
+    applyAdminConfig();
+  }
+  function applyAdminConfigToStaticLinks() {
+    // أزرار الدعم الرسمية فقط — نستثني أزرار الوكيل الطلابي (تحتفظ برقمها الخاص ولا يُعاد كتابته)
+    var links = Array.prototype.slice.call(document.querySelectorAll('a.wa-btn:not(.act-agent-wa):not(.agent-wa)'));
+    if (!SUPPORT.wa.length) return;
+    links.forEach(function (a, i) {
+      if (!/wa\.me\//.test(a.href || '')) return;
+      var w = SUPPORT.wa[i % SUPPORT.wa.length];
+      a.href = 'https://wa.me/' + w.num;
+      a.textContent = 'واتساب ' + (w.label || w.num);
+    });
+  }
+  function accessStateSafe() { return (window.DPLicense && window.DPLicense.getAccessState) ? window.DPLicense.getAccessState() : 'trial'; }
+  function appCode() { return (window.DPLicense && window.DPLicense.getDeviceId) ? window.DPLicense.getDeviceId() : '—'; }
+  function waMessage() {
+    var st = accessStateSafe();
+    var stAr = st === 'activated' ? 'مفعل' : (st === 'expired' ? 'انتهت الفترة التجريبية' : 'فترة تجريبية');
+    // ملاحظة: لا تتضمّن الرسالة أي بيانات مرضى/حالات/مرفقات/ملاحظات — رمز التطبيق وحالة التفعيل فقط.
+    return 'السلام عليكم\nأريد تفعيل DentPilot Student\n\nرمز التطبيق الخاص بهذا الهاتف: ' + appCode() + '\nحالة التفعيل: ' + stAr + '\nطريقة الدفع:\nرقم العملية:';
+  }
+  function waSupportLink(num) { return 'https://wa.me/' + num + '?text=' + encodeURIComponent(waMessage()); }
+  function openActivation() {
+    var ov = document.getElementById('activationOverlay'); if (!ov) return;
+    var later = document.getElementById('actLaterBtn');
+    if (later) later.hidden = (accessStateSafe() === 'expired');   // أثناء التجربة: يمكن الإغلاق — بعد الانتهاء: التفعيل إلزامي
+    showOverlay(ov);
+    try { var inp = document.getElementById('actCode'); if (inp) inp.focus(); } catch (e) {}
+  }
+  function waButtons() {
+    return '<div class="wa-row">' + SUPPORT.wa.map(function (w) {
+      return '<a class="wa-btn" href="' + waSupportLink(w.num) + '" target="_blank" rel="noopener">واتساب ' + w.label + '</a>';
+    }).join('') + '</div>';
+  }
+  function fallbackCopy(text) {
+    try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.left = '-9999px'; document.body.appendChild(ta); ta.focus(); ta.select(); var ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; }
+  }
+  function copyNumber(text) {
+    if (!text) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { toast('تم نسخ الرقم بنجاح'); }, function () { toast(fallbackCopy(text) ? 'تم نسخ الرقم بنجاح' : 'انسخ الرقم يدوياً'); });
+        return;
+      }
+    } catch (e) {}
+    toast(fallbackCopy(text) ? 'تم نسخ الرقم بنجاح' : 'انسخ الرقم يدوياً');
+  }
+  function renderSupport() {
+    if (!els.supportBody) return;
+    var st = accessStateSafe(), code = esc(appCode());
+    if (st === 'activated') {
+      els.supportBody.innerHTML =
+        '<div class="sup-activated"><div class="sup-ok">✅ التطبيق مفعل بنجاح</div>' +
+          '<div class="dev-name">تم تطوير التطبيق بواسطة: <b>' + esc(SUPPORT.dev) + '</b></div>' +
+          '<div class="dev-name" style="margin-top:8px">للدعم أو الاستفسار:</div>' + waButtons() + '</div>';
+      return;
+    }
+    var trialBlock;
+    if (st === 'expired') {
+      trialBlock = '<div class="sup-card warn"><div class="sup-h">انتهت الفترة التجريبية</div><p>للاستمرار في استخدام التطبيق، يرجى التفعيل عبر التواصل مع الدعم.</p></div>';
+    } else {
+      var h = (window.DPLicense && window.DPLicense.trialRemainingHours) ? window.DPLicense.trialRemainingHours() : 0;
+      trialBlock = '<div class="sup-card"><div class="sup-h">الفترة التجريبية المجانية</div>' +
+        '<p>يمكنك تجربة التطبيق مجاناً، ويمكنك تفعيله في أي وقت دون انتظار انتهاء الفترة.</p>' +
+        (h ? '<div class="sup-remain">المتبقي من التجربة: ' + h + ' ساعة</div>' : '') + '</div>';
+    }
+    els.supportBody.innerHTML =
+      trialBlock +
+      '<div class="sup-card activate-cta"><button type="button" class="btn btn-primary" data-act="activate-now" style="width:100%">تفعيل التطبيق الآن</button></div>' +
+      '<div class="sup-card"><div class="sup-h">شراء مرة واحدة</div><p>التطبيق لا يحتاج اشتراكاً شهرياً. بعد التفعيل يمكنك استخدامه على هذا الهاتف بشكل دائم.</p></div>' +
+      '<div class="sup-card price-card"><div class="sup-h">سعر تفعيل نسخة الطلاب</div><div class="sup-price">' + esc(SUPPORT.price) + '</div></div>' +
+      '<div class="sup-card"><div class="sup-h">تعليمات الدفع</div><ol class="sup-steps"><li>ادفع عبر إحدى طرق الدفع التالية.</li><li>انسخ رقم الحساب أو رقم الدفع.</li><li>بعد الدفع أرسل صورة الإيصال أو رقم العملية عبر واتساب مع رمز التطبيق الخاص بهذا الهاتف.</li><li>سيتم إرسال كود التفعيل لك.</li></ol></div>' +
+      '<div class="sup-card"><div class="sup-h">طرق الدفع</div>' +
+        '<div class="pay-card"><div class="pay-title">🏦 بنك الكريمي</div>' +
+          '<div class="pay-kv"><span>صاحب الحساب</span><b>' + esc(SUPPORT.kuraimi.name) + '</b></div>' +
+          '<div class="pay-kv"><span>رقم الحساب</span><b class="mono">' + esc(SUPPORT.kuraimi.acct) + '</b></div>' +
+          '<button type="button" class="btn btn-ghost copy-btn" data-act="copy" data-copy="' + esc(SUPPORT.kuraimi.acct) + '">نسخ الرقم</button></div>' +
+        '<div class="pay-card"><div class="pay-title">👛 محفظة جيب</div>' +
+          '<div class="pay-kv"><span>صاحب الحساب</span><b>' + esc(SUPPORT.jeeb.name) + '</b></div>' +
+          '<div class="pay-kv"><span>رقم الدفع</span><b class="mono">' + esc(SUPPORT.jeeb.pay) + '</b></div>' +
+          '<div class="pay-note">هذا رقم الدفع البديل لمحفظة جيب</div>' +
+          '<button type="button" class="btn btn-ghost copy-btn" data-act="copy" data-copy="' + esc(SUPPORT.jeeb.pay) + '">نسخ الرقم</button></div>' +
+      '</div>' +
+      '<div class="sup-card"><div class="sup-h">بعد الدفع:</div><p>أرسل صورة الإيصال أو رقم العملية عبر واتساب مع رمز التطبيق الخاص بهذا الهاتف.</p></div>' +
+      '<div class="sup-card"><div class="sup-h">تواصل مع الدعم عبر واتساب</div>' + waButtons() +
+        '</div>' +
+      '<div class="sup-card agents-card"><div class="sup-h">الوكلاء الطلابيون</div>' +
+        '<div class="agent-mini"><div><b>وكيل طلابي لطلاب محافظة إب</b>' +
+          '<span>الاسم: فراس المجمر</span><span>واتساب: 771697735</span>' +
+          '<p>يمكنكم الحصول على كود التفعيل من الوكيل لطلاب محافظة إب.</p></div>' +
+          '<a class="wa-btn agent-wa" href="https://wa.me/967771697735" target="_blank" rel="noopener">واتساب 771697735</a></div></div>';
+  }
+
+  /* ---------- Settings ---------- */
+  function renderSettings() {
+    els.setName.value = settings.studentName || '';
+    els.scheduleEditor.innerHTML = DAYS.map(function (day) {
+      var cur = settings.schedule[day] || '';
+      return '<div class="sched-row"><span class="sched-day">' + esc(day) + '</span>' +
+        '<select data-day="' + esc(day) + '"><option value="">—</option>' +
+        DEPTS.map(function (d) { return '<option value="' + esc(d) + '"' + (d === cur ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('') +
+        '</select></div>';
+    }).join('');
+    els.setDeviceId.textContent = (window.DPLicense && window.DPLicense.getDeviceId) ? window.DPLicense.getDeviceId() : '—';
+    if (els.appVersion) els.appVersion.textContent = APP_VERSION;
+    if (els.accessStatus && window.DPLicense) {
+      var stt = window.DPLicense.getAccessState();
+      var info = window.DPLicense.getActivationInfo ? window.DPLicense.getActivationInfo() : null;
+      if (stt === 'activated' && info) {
+        els.accessStatus.textContent = 'مفعل — ' + (info.planLabel || 'مدى الحياة') + (info.expiresAt ? (' — ينتهي في ' + fmtDate(new Date(info.expiresAt).toISOString().slice(0, 10))) : '');
+      } else {
+        els.accessStatus.textContent = stt === 'activated' ? 'مفعل'
+          : stt === 'trial' ? ('فترة تجريبية — المتبقي: ' + window.DPLicense.trialRemainingHours() + ' ساعة')
+          : 'انتهت الفترة التجريبية';
+      }
+    }
+  }
+
+  /* ---------- Case file ---------- */
+  function renderFile(id) {
+    var c = cases.find(function (x) { return x.id === id; });
+    if (!c) { go(fileOrigin || 'all'); return; }
+    var st = statusMeta(c.status);
+    var info = function (l, v) { return '<div class="info-card"><span class="info-label">' + l + '</span><span class="info-value">' + v + '</span></div>'; };
+    els.fileBody.innerHTML =
+      '<div class="file-hero"><span class="file-avatar">' + esc(initial(c.name)) + '</span>' +
+        '<div class="file-hero-main"><h2>' + esc(c.name) + '</h2><div class="file-hero-sub">' + (esc(c.department) || '—') + (c.caseType ? ' • ' + esc(c.caseType) : '') + '</div></div>' +
+        '<span class="file-status">' + esc(c.status || '—') + '</span></div>' +
+      '<div class="file-actions">' +
+        callLink(c.phone, '', ' اتصال') + waLink(c.phone, '', ' واتساب') +
+        '<button type="button" class="card-btn" data-act="edit" data-id="' + c.id + '">✏️ تعديل</button>' +
+        '<button type="button" class="card-btn" data-act="print" data-id="' + c.id + '">🖨 طباعة</button>' +
+        '<button type="button" class="card-btn del" data-act="del" data-id="' + c.id + '">🗑️ حذف</button>' +
+      '</div>' +
+      '<div class="file-block"><div class="fs-head"><span class="fs-ico">🧾</span><h3>بيانات الحالة</h3></div>' +
+        '<div class="info-grid">' +
+          info('الاسم', esc(c.name)) + info('الهاتف', esc(c.phone) || '—') +
+          info('القسم', esc(c.department) || '—') + info('نوع الحالة', esc(c.caseType) || '—') +
+          info('السن المعالَج', esc(c.tooth) || '—') + info('اليوم المخصّص', c.day ? esc(c.day) : 'بدون يوم محدد') +
+          info('تاريخ الموعد', c.apptDate ? esc(longDateAr(c.apptDate)) : '—') +
+          info('اليوم', effWeekday(c) ? esc(effWeekday(c)) : '—') +
+          info('وقت الموعد', c.apptTime ? esc(timeLabel(c.apptTime)) : '—') +
+          info('حالة الإنجاز', '<span class="row-status ' + st.cls + '">' + esc(c.status || '—') + '</span>') +
+        '</div></div>' +
+      sessionsSection(c) + notesSection(c) + attachSection(c);
+  }
+
+  function sessionsSection(c) {
+    var list = (c.sessions || []).slice().sort(function (a, b) { return (toNum(a.number) - toNum(b.number)); });
+    var body = list.length ? list.map(function (s) {
+      return '<div class="sess-card ' + (s.status === 'منجزة' ? 'done' : '') + '">' +
+        '<div class="sess-head"><span class="sess-no">جلسة ' + (esc(s.number) || '—') + '</span>' +
+          '<span class="sess-when">' + esc(fmtDate(s.date)) + (s.date ? ' • ' + esc(weekday(s.date)) : '') + (s.time ? ' • ' + esc(s.time) : '') + '</span>' +
+          '<span class="sess-st ' + sessStMeta(s.status) + '">' + esc(s.status || '') + '</span>' +
+          '<span><button type="button" class="mini-btn" data-act="sess-edit" data-id="' + c.id + '" data-sid="' + s.id + '">✏️</button>' +
+          '<button type="button" class="mini-btn del" data-act="sess-del" data-id="' + c.id + '" data-sid="' + s.id + '">🗑️</button></span></div>' +
+        (s.proc ? '<div class="sess-body">🦷 ' + esc(s.proc) + '</div>' : '') +
+        (s.notes ? '<div class="sess-note">📝 ' + esc(s.notes) + '</div>' : '') +
+        (s.next ? '<div class="sess-next">🗓️ القادم: ' + esc(fmtDT(s.next)) + ' • ' + esc(weekday(s.next)) + '</div>' : '') +
+      '</div>';
+    }).join('') : '<div class="sub-empty">لا توجد جلسات بعد.</div>';
+    return '<div class="file-block"><div class="fs-head"><span class="fs-ico">🦷</span><h3>الجلسات</h3>' +
+      '<button type="button" class="card-btn" data-act="sess-add" data-id="' + c.id + '">➕ إضافة جلسة</button></div>' +
+      '<div>' + body + '</div></div>';
+  }
+
+  function notesSection(c) {
+    return '<div class="file-block"><div class="fs-head"><span class="fs-ico">📝</span><h3>ملاحظات الحالة</h3></div>' +
+      '<textarea id="caseNotes" class="notes-area" placeholder="اكتب ملاحظات عامة عن الحالة…">' + esc(c.notes || '') + '</textarea>' +
+      '<div class="form-actions" style="margin-top:10px"><button type="button" id="saveNotesBtn" class="btn btn-primary" data-act="save-notes" data-id="' + c.id + '">حفظ الملاحظات</button></div></div>';
+  }
+
+  function attachSection(c) {
+    var list = attListFor(c.id);
+    var body = list.length ? '<div class="att-grid">' + list.map(function (a) { return attCard(a, c, false); }).join('') + '</div>' : '<div class="sub-empty">لا توجد مرفقات. أضف صوراً/أشعة/مستندات للحالة.</div>';
+    return '<div class="file-block"><div class="fs-head"><span class="fs-ico">📎</span><h3>المرفقات</h3>' +
+      '<button type="button" class="card-btn" data-act="att-add" data-id="' + c.id + '">➕ إضافة مرفق</button></div>' + body +
+      '<input type="file" id="attInput" accept="image/*,.pdf,.doc,.docx" multiple hidden /></div>';
+  }
+
+  /* ---------- Router ---------- */
+  function parseHash() { var raw = location.hash.replace(/^#/, ''); var p = raw.split('/'); return { name: VIEWS.indexOf(p[0]) >= 0 ? p[0] : 'dashboard', param: decodeURIComponent(p[1] || '') }; }
+  function go(name) { if (name === 'add') { openCase(null); return; } location.hash = name; applyRoute(); }
+  function openFile(id) { fileOrigin = (currentView === 'day') ? ('day/' + currentParam) : (currentView === 'bysubject' ? 'bysubject' : (currentView === 'completed' ? 'completed' : (currentView === 'all' ? 'all' : fileOrigin))); location.hash = 'file/' + id; applyRoute(); }
+  function goBack() {
+    if (currentView === 'file') { var o = fileOrigin || 'all'; location.hash = o; applyRoute(); }
+    else if (currentView === 'day') go('days');
+    else go('dashboard');
+  }
+  function applyRoute() {
+    var r = parseHash(); currentView = r.name; currentParam = r.param;
+    document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== r.name; });
+    els.backBtn.hidden = (r.name === 'dashboard');
+    renderActiveView();
+    try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
+  }
+  function renderActiveView() {
+    updateCounts();
+    if (currentView === 'dashboard') { /* static */ }
+    else if (currentView === 'all') renderAll();
+    else if (currentView === 'days') renderDays();
+    else if (currentView === 'day') renderDay(currentParam);
+    else if (currentView === 'reqs') renderReqs();
+    else if (currentView === 'completed') renderCompleted();
+    else if (currentView === 'bysubject') renderBySubject();
+    else if (currentView === 'settings') renderSettings();
+    else if (currentView === 'support') renderSupport();
+    else if (currentView === 'file') renderFile(currentParam);
+  }
+  function refresh() { renderActiveView(); }
+
+  /* ---------- Case modal ---------- */
+  function openCase(id) {
+    els.caseForm.reset(); els.cName.classList.remove('invalid');
+    fillSelect(els.cDept, DEPTS); fillSelect(els.cStatus, STATUSES); fillSelect(els.cDay, DAYS, 'بدون يوم محدد');
+    if (id) {
+      var c = cases.find(function (x) { return x.id === id; });
+      if (c) {
+        els.caseTitle.textContent = 'تعديل الحالة'; els.caseId.value = c.id;
+        els.cName.value = c.name || ''; els.cPhone.value = c.phone || ''; els.cDept.value = c.department || DEPTS[0];
+        els.cType.value = c.caseType || ''; els.cTooth.value = c.tooth || ''; els.cDay.value = c.day || '';
+        els.cDate.value = c.apptDate || ''; els.cTime.value = c.apptTime || ''; els.cStatus.value = c.status || STATUSES[0]; els.cNotes.value = c.notes || '';
+      }
+    } else { els.caseTitle.textContent = 'إضافة حالة'; els.caseId.value = ''; els.cStatus.value = 'قيد الانتظار'; }
+    updateCaseWeekday();
+    showOverlay(els.caseOverlay); setTimeout(function () { els.cName.focus(); }, 50);
+  }
+  function updateCaseWeekday() { if (els.cWeekday) els.cWeekday.value = els.cDate.value ? weekday(els.cDate.value) : ''; }
+  function closeCase() { els.caseOverlay.hidden = true; }
+  function handleCaseSubmit(e) {
+    e.preventDefault();
+    var name = els.cName.value.trim();
+    if (!name) { els.cName.classList.add('invalid'); els.cName.focus(); return; }
+    var data = { name: name, phone: els.cPhone.value.trim(), department: els.cDept.value, caseType: els.cType.value.trim(),
+      tooth: els.cTooth.value.trim(), day: els.cDay.value, apptDate: els.cDate.value, apptTime: els.cTime.value, status: els.cStatus.value, notes: els.cNotes.value.trim() };
+    var id = els.caseId.value;
+    if (id) {
+      var i = cases.findIndex(function (x) { return x.id === id; });
+      if (i >= 0) {
+        var merged = Object.assign({}, cases[i], data);
+        if (merged.status === 'مكتملة') { if (!merged.completedAt) merged.completedAt = new Date().toISOString(); } // أرشفة عند الاكتمال
+        else if ('completedAt' in merged) delete merged.completedAt;                                                  // إزالة عند العودة لحالة نشطة
+        cases[i] = merged;
+      }
+    } else {
+      data.id = uid(); data.sessions = []; data.createdAt = new Date().toISOString();
+      if (data.status === 'مكتملة') data.completedAt = data.createdAt;
+      cases.unshift(data);
+    }
+    saveCases(); refresh(); closeCase(); toast(id ? 'تم تحديث الحالة' : 'تمت إضافة الحالة');
+  }
+
+  /* ---------- Session modal ---------- */
+  function openSession(caseId, sId) {
+    var c = cases.find(function (x) { return x.id === caseId; }); if (!c) return;
+    els.sessionForm.reset(); els.sCaseId.value = caseId; els.sId.value = sId || '';
+    if (sId) {
+      var s = (c.sessions || []).find(function (x) { return x.id === sId; });
+      if (s) { els.sessionTitle.textContent = 'تعديل الجلسة'; els.sNum.value = s.number || ''; els.sDate.value = s.date || ''; els.sTime.value = s.time || ''; els.sProc.value = s.proc || ''; els.sNotes.value = s.notes || ''; els.sNext.value = s.next || ''; els.sStatus.value = s.status || 'مجدولة'; }
+    } else { els.sessionTitle.textContent = 'إضافة جلسة'; els.sNum.value = String((c.sessions || []).length + 1); els.sDate.value = new Date().toISOString().slice(0, 10); els.sStatus.value = 'مجدولة'; }
+    showOverlay(els.sessionOverlay); setTimeout(function () { els.sDate.focus(); }, 50);
+  }
+  function closeSession() { els.sessionOverlay.hidden = true; }
+  function handleSessionSubmit(e) {
+    e.preventDefault();
+    var c = cases.find(function (x) { return x.id === els.sCaseId.value; }); if (!c) { closeSession(); return; }
+    if (!Array.isArray(c.sessions)) c.sessions = [];
+    var data = { number: els.sNum.value.trim(), date: els.sDate.value || '', time: els.sTime.value || '', proc: els.sProc.value.trim(), notes: els.sNotes.value.trim(), next: els.sNext.value || '', status: els.sStatus.value };
+    var sId = els.sId.value;
+    if (sId) { var i = c.sessions.findIndex(function (s) { return s.id === sId; }); if (i >= 0) c.sessions[i] = Object.assign({}, c.sessions[i], data); }
+    else { data.id = sid('s'); c.sessions.push(data); }
+    saveCases(); renderActiveView(); closeSession(); toast(sId ? 'تم تحديث الجلسة' : 'تمت إضافة الجلسة');
+  }
+  function deleteSession(caseId, sId) {
+    var c = cases.find(function (x) { return x.id === caseId; }); if (!c) return;
+    confirmAsk({ title: 'حذف الجلسة', text: 'هل تريد حذف هذه الجلسة؟', okLabel: 'حذف', onOk: function () { c.sessions = (c.sessions || []).filter(function (s) { return s.id !== sId; }); saveCases(); renderActiveView(); toast('تم حذف الجلسة'); } });
+  }
+
+  /* ---------- Delete case ---------- */
+  function deleteCase(id) {
+    confirmAsk({ title: 'حذف الحالة', text: 'هل تريد حذف هذه الحالة؟', okLabel: 'حذف',
+      onOk: function () { cases = cases.filter(function (x) { return x.id !== id; }); if (attachments[id]) { delete attachments[id]; try { saveAtt(); } catch (e) {} } saveCases(); if (currentView === 'file') go('all'); else refresh(); toast('تم حذف الحالة'); } });
+  }
+
+  /* ---------- Attachments add/del ---------- */
+  function triggerAttach(id) { var inp = $('attInput'); if (inp) { inp.dataset.id = id; inp.click(); } }
+  function readDataURL(f) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(f); }); }
+  function downscale(dataUrl, max, q) {
+    return new Promise(function (res) {
+      var img = new Image();
+      img.onload = function () { var w = img.width, h = img.height; if (w > max || h > max) { var sc = Math.min(max / w, max / h); w = Math.round(w * sc); h = Math.round(h * sc); } try { var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(img, 0, 0, w, h); res(cv.toDataURL('image/jpeg', q)); } catch (e) { res(dataUrl); } };
+      img.onerror = function () { res(dataUrl); }; img.src = dataUrl;
+    });
+  }
+  function addAttachments(id, files) {
+    if (!files || !files.length) return;
+    if (!attachments[id]) attachments[id] = [];
+    var chain = Promise.resolve(), added = 0;
+    Array.prototype.slice.call(files).forEach(function (file) {
+      chain = chain.then(function () {
+        return readDataURL(file).then(function (du) {
+          var type = file.type || '';
+          var next = type.indexOf('image/') === 0 ? downscale(du, 1400, 0.7) : Promise.resolve(du);
+          return next.then(function (fin) { var iso = new Date().toISOString(); attachments[id].push({ id: sid('a'), name: file.name || 'مرفق', type: type.indexOf('image/') === 0 ? 'image/jpeg' : type, size: file.size || 0, dataUrl: fin, addedAt: iso, createdAt: iso }); added++; });
+        });
+      });
+    });
+    chain.then(function () {
+      try { saveAtt(); } catch (err) { attachments[id] = attachments[id].slice(0, attachments[id].length - added); try { saveAtt(); } catch (e) {} toast('المساحة المحلية ممتلئة — تعذّر حفظ المرفق.'); renderActiveView(); return; }
+      renderActiveView(); toast(added > 1 ? 'تم إضافة المرفقات' : 'تمت إضافة المرفق');
+    });
+  }
+  function deleteAttachment(id, attId) {
+    confirmAsk({ title: 'حذف المرفق', text: 'هل تريد حذف هذا المرفق؟', okLabel: 'حذف', onOk: function () { attachments[id] = (attachments[id] || []).filter(function (a) { return a.id !== attId; }); try { saveAtt(); } catch (e) {} renderActiveView(); toast('تم حذف المرفق'); } });
+  }
+
+  /* ---------- Open attachment (Blob-based, reliable across browsers) ---------- */
+  function findAtt(caseId, attId) { var l = attachments[caseId] || []; for (var i = 0; i < l.length; i++) if (l[i].id === attId) return l[i]; return null; }
+  var attViewUrl = null;
+  function openImagePreview(url, name) {
+    if (!els.attViewOverlay) { try { window.open(url, '_blank'); } catch (e) {} return; }
+    if (attViewUrl) { try { URL.revokeObjectURL(attViewUrl); } catch (e) {} }
+    attViewUrl = url;
+    els.attViewImg.src = url;
+    els.attViewTitle.textContent = name || 'معاينة المرفق';
+    showOverlay(els.attViewOverlay);
+  }
+  function closeImagePreview() {
+    if (els.attViewOverlay) els.attViewOverlay.hidden = true;
+    if (els.attViewImg) els.attViewImg.removeAttribute('src');
+    if (attViewUrl) { try { URL.revokeObjectURL(attViewUrl); } catch (e) {} attViewUrl = null; }
+  }
+  function openAttachment(caseId, attId) {
+    var a = findAtt(caseId, attId);
+    if (!a) { toast('تعذر فتح هذا المرفق. حاول إعادة إضافته مرة أخرى.'); return; }
+    if (!a.dataUrl) { toast('هذا المرفق قديم ولا يحتوي على بيانات كافية للفتح.'); return; }
+    var blob, url;
+    try { blob = dataURLtoBlob(a.dataUrl); url = URL.createObjectURL(blob); }
+    catch (e) { toast('تعذر فتح هذا المرفق. حاول إعادة إضافته مرة أخرى.'); return; }
+    var type = String(a.type || blob.type || '').toLowerCase();
+    if (type.indexOf('image/') === 0) { openImagePreview(url, a.name); return; }   // معاينة الصور داخل نافذة
+    // PDF وباقي الملفات: الفتح عبر رابط Blob داخل نفس نقرة المستخدم (أكثر موثوقية على الجوال من window.open)
+    var opened = false;
+    try {
+      var link = document.createElement('a');
+      link.href = url; link.target = '_blank'; link.rel = 'noopener';
+      if (type.indexOf('pdf') < 0) link.download = a.name || 'attachment'; // الملفات غير القابلة للعرض تُنزَّل، وPDF يُفتح في تبويب
+      document.body.appendChild(link); link.click(); link.remove(); opened = true;
+    } catch (e) {}
+    if (!opened) { try { if (window.open(url, '_blank')) opened = true; } catch (e2) {} }
+    if (!opened) toast('تعذر فتح هذا المرفق. حاول إعادة إضافته مرة أخرى.');
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 60000);
+  }
+
+  /* ---------- Print ---------- */
+  function buildPrintDoc(c) {
+    var sessions = (c.sessions || []).slice().sort(function (a, b) { return toNum(a.number) - toNum(b.number); });
+    var sRows = sessions.length ? sessions.map(function (s) {
+      return '<tr><td>' + (esc(s.number) || '—') + '</td><td>' + esc(fmtDate(s.date)) + (s.date ? '<br><small>' + esc(weekday(s.date)) + (s.time ? ' • ' + esc(s.time) : '') + '</small>' : '') + '</td><td>' + (esc(s.proc) || '—') + '</td><td>' + (esc(s.notes) || '—') + '</td><td>' + (esc(s.status) || '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="5" style="text-align:center">لا توجد جلسات</td></tr>';
+    var atts = attListFor(c.id);
+    var attList = atts.length ? '<ul class="p-att">' + atts.map(function (a) { return '<li>' + esc(a.name || 'مرفق') + '</li>'; }).join('') + '</ul>' : '<div class="p-empty">لا توجد مرفقات</div>';
+    var appt = c.apptDate ? (esc(longDateAr(c.apptDate)) + ' (' + esc(weekday(c.apptDate)) + ')') : '—';
+    var apptTime = c.apptTime ? esc(timeLabel(c.apptTime)) : '—';
+    return '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"/>' +
+      '<title>تقرير الحالة — ' + esc(c.name || '') + '</title><style>' +
+      '*{box-sizing:border-box}body{font-family:"Tajawal","Segoe UI",Arial,sans-serif;color:#12233a;direction:rtl;margin:0;padding:22px;}' +
+      '.p-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid #16A8A6;padding-bottom:12px;margin-bottom:14px;}' +
+      '.p-logo{width:46px;height:46px;border-radius:10px}.p-brand h1{font-size:18px;margin:0 0 3px;color:#0A2C52}.p-brand div{font-size:12px;color:#5b6b7b}' +
+      '.p-sec{font-size:14px;color:#16A8A6;border-bottom:1px solid #dbe6ee;padding-bottom:5px;margin:18px 0 9px}' +
+      'table{width:100%;border-collapse:collapse;font-size:12.5px}.p-info td{border:1px solid #dbe6ee;padding:7px 9px}.p-info td:nth-child(odd){background:#f2f7fb;font-weight:700;width:20%;color:#0A2C52}' +
+      '.p-table th,.p-table td{border:1px solid #dbe6ee;padding:7px 9px;text-align:start}.p-table th{background:#eaf5f5;color:#0A2C52}' +
+      '.p-note{border:1px solid #dbe6ee;border-radius:8px;padding:10px;font-size:12.5px;white-space:pre-wrap}' +
+      '.p-att{margin:0;padding-inline-start:20px;font-size:12.5px}.p-att li{margin:2px 0}.p-empty{font-size:12.5px;color:#5b6b7b}' +
+      '.p-foot{margin-top:26px;padding-top:10px;border-top:1px solid #dbe6ee;text-align:center;font-size:11.5px;color:#5b6b7b}' +
+      '@page{size:A4;margin:14mm}</style></head><body>' +
+      '<div class="p-head"><img class="p-logo" src="icon-192.png" alt="DP"/><div class="p-brand">' +
+        '<h1>DentPilot Student — دينت بايلوت للطلاب</h1>' +
+        '<div>' + (settings.studentName ? 'الطالب: ' + esc(settings.studentName) : 'متابِع الحالات السريرية') + '</div>' +
+        '<div>تاريخ التقرير: ' + esc(fmtDate(new Date().toISOString())) + '</div></div></div>' +
+      '<h2 class="p-sec">بيانات الحالة</h2><table class="p-info">' +
+        '<tr><td>الاسم</td><td>' + (esc(c.name) || '—') + '</td><td>الهاتف</td><td>' + (esc(c.phone) || '—') + '</td></tr>' +
+        '<tr><td>المادة/القسم</td><td>' + (esc(c.department) || '—') + '</td><td>نوع الحالة</td><td>' + (esc(c.caseType) || '—') + '</td></tr>' +
+        '<tr><td>السن المعالَج</td><td>' + (esc(c.tooth) || '—') + '</td><td>اليوم المخصّص</td><td>' + (c.day ? esc(c.day) : 'بدون يوم') + '</td></tr>' +
+        '<tr><td>تاريخ الموعد</td><td>' + appt + '</td><td>وقت الموعد</td><td>' + apptTime + '</td></tr>' +
+        '<tr><td>اليوم</td><td>' + (effWeekday(c) ? esc(effWeekday(c)) : '—') + '</td><td>الحالة</td><td>' + (esc(c.status) || '—') + '</td></tr>' +
+      '</table>' +
+      '<h2 class="p-sec">الجلسات</h2><table class="p-table"><thead><tr><th>#</th><th>التاريخ</th><th>الإجراء</th><th>ملاحظات</th><th>الحالة</th></tr></thead><tbody>' + sRows + '</tbody></table>' +
+      '<h2 class="p-sec">ملاحظات الحالة</h2><div class="p-note">' + (c.notes ? esc(c.notes) : '—') + '</div>' +
+      '<h2 class="p-sec">المرفقات</h2>' + attList +
+      '<div class="p-foot">تم إنشاء التقرير بواسطة DentPilot Student</div>' +
+      '</body></html>';
+  }
+  function printCase(id) {
+    var c = cases.find(function (x) { return x.id === id; }); if (!c) return;
+    try {
+      var html = buildPrintDoc(c);
+      var frame = document.createElement('iframe');
+      frame.setAttribute('aria-hidden', 'true');
+      frame.style.cssText = 'position:fixed;left:-9999px;bottom:0;width:420px;height:600px;border:0;opacity:0;';
+      document.body.appendChild(frame);
+      var win = frame.contentWindow;
+      if (!win) { frame.remove(); toast('تعذر تجهيز ملف الطباعة. حاول مرة أخرى.'); return; }
+      var doc = win.document; doc.open(); doc.write(html); doc.close();
+      var printed = false;
+      var fire = function () {
+        if (printed) return; printed = true;
+        try { win.focus(); win.print(); }
+        catch (e) { toast('تعذر تجهيز ملف الطباعة. حاول مرة أخرى.'); }
+        setTimeout(function () { try { frame.remove(); } catch (e) {} }, 2000);
+      };
+      frame.onload = function () { setTimeout(fire, 150); };
+      setTimeout(fire, 800); // احتياطي إن لم يُطلَق onload على بعض المتصفحات
+    } catch (e) {
+      toast('تعذر تجهيز ملف الطباعة. حاول مرة أخرى.');
+    }
+  }
+
+  /* ---------- Confirm ---------- */
+  /* ---------- Overlay show/hide (forces immediate paint on mobile WebViews) ---------- */
+  function showOverlay(el) {
+    if (!el) return;
+    el.hidden = false;
+    // Force a synchronous reflow so the just-shown overlay is painted on THIS frame.
+    // Without this, some mobile WebViews defer the paint until the next input event,
+    // making the action look like it "did nothing" until the user taps again.
+    void el.offsetHeight;
+  }
+  function hideOverlay(el) { if (el) el.hidden = true; }
+
+  function confirmAsk(o) { els.confirmTitle.textContent = o.title || 'تأكيد'; els.confirmText.textContent = o.text || ''; els.confirmOk.textContent = o.okLabel || 'تأكيد'; els.confirmOk.className = 'btn ' + (o.danger === false ? 'btn-primary' : 'btn-danger'); pendingConfirm = o.onOk || null; showOverlay(els.confirmOverlay); }
+  function confirmYes() { var fn = pendingConfirm; pendingConfirm = null; hideOverlay(els.confirmOverlay); if (fn) fn(); }
+  function confirmNo() { pendingConfirm = null; hideOverlay(els.confirmOverlay); }
+
+  /* ---------- Backup ---------- */
+  function exportBackup() {
+    var data = { app: 'DentPilot Student', version: '1.3.3', exportedAt: new Date().toISOString(), cases: cases, settings: settings, requirements: requirements, attachments: attachments, adminConfig: adminConfig };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'dentpilot-student-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast('تم تصدير النسخة الاحتياطية');
+  }
+  function importBackup(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var o = JSON.parse(reader.result);
+        if (!o || !Array.isArray(o.cases)) throw new Error('صيغة غير صالحة');
+        cases = o.cases; normalizeCases();
+        if (o.settings) settings = Object.assign({ studentName: '', schedule: {} }, o.settings);
+        if (o.requirements) requirements = o.requirements;
+        if (o.attachments) attachments = o.attachments;
+        if (o.adminConfig) { adminConfig = normalizeAdminConfig(o.adminConfig); saveAdminConfig(); }
+        saveCases(); saveSettings(); saveReqs(); try { saveAtt(); } catch (e) {}
+        refresh(); toast('تم استيراد النسخة الاحتياطية');
+      } catch (e) { toast('تعذّر الاستيراد — تأكد أنه ملف DentPilot Student صحيح'); }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ---------- Events ---------- */
+  function bindEvents() {
+    document.querySelectorAll('.dash-card').forEach(function (card) { card.addEventListener('click', function () { go(card.dataset.go); }); });
+    els.backBtn.addEventListener('click', goBack);
+    els.allSearch.addEventListener('input', debounce(renderAll, 120));
+
+    els.caseForm.addEventListener('submit', handleCaseSubmit);
+    els.caseClose.addEventListener('click', closeCase); els.caseCancel.addEventListener('click', closeCase);
+    els.cDate.addEventListener('input', updateCaseWeekday); els.cDate.addEventListener('change', updateCaseWeekday);
+    els.sessionForm.addEventListener('submit', handleSessionSubmit);
+    els.sessionClose.addEventListener('click', closeSession); els.sessionCancel.addEventListener('click', closeSession);
+
+    els.saveSettingsBtn.addEventListener('click', function () {
+      settings.studentName = els.setName.value.trim();
+      settings.schedule = {};
+      els.scheduleEditor.querySelectorAll('select').forEach(function (sel) { if (sel.value) settings.schedule[sel.dataset.day] = sel.value; });
+      saveSettings(); toast('تم حفظ الإعدادات');
+    });
+
+    els.exportBtn.addEventListener('click', exportBackup);
+    els.importBtn.addEventListener('click', function () { els.importFile.click(); });
+    els.importFile.addEventListener('change', function (e) { var f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; });
+
+    els.confirmOk.addEventListener('click', confirmYes); els.confirmCancel.addEventListener('click', confirmNo);
+    var actLater = document.getElementById('actLaterBtn');
+    if (actLater) actLater.addEventListener('click', function () { var ov = document.getElementById('activationOverlay'); if (ov) ov.hidden = true; });
+    if (els.updateNowBtn) els.updateNowBtn.addEventListener('click', applyUpdate);
+    if (els.updateLaterBtn) els.updateLaterBtn.addEventListener('click', function () { els.updateOverlay.hidden = true; });
+    if (els.checkUpdateBtn) els.checkUpdateBtn.addEventListener('click', checkForUpdates);
+
+    // ---- Action delegation: single click listener on the stable #app root ----
+    // One event per tap (no pointerup ghost-click that could re-close a just-opened overlay).
+    // Overlays are shown via showOverlay() which forces an immediate repaint so the result is
+    // visible on the FIRST tap — no action is ever deferred until another button is pressed.
+    var appRoot = $('app');
+    function findAction(e) {
+      var t = e.target; if (!t || !t.closest) return null;
+      var dayBtn = t.closest('[data-day]'); if (dayBtn) return { kind: 'day', el: dayBtn };
+      var actBtn = t.closest('[data-act]'); if (actBtn) return { kind: 'act', el: actBtn };
+      return null;
+    }
+    function runAction(a, e) {
+      if (!a) return;
+      if (a.kind === 'day') {
+        if (e) e.preventDefault();
+        go('day'); location.hash = 'day/' + encodeURIComponent(a.el.dataset.day); applyRoute(); return;
+      }
+      var btn = a.el, id = btn.dataset.id, act = btn.dataset.act;
+      if (e && btn.tagName === 'BUTTON') e.preventDefault();   // buttons only — never anchors (tel:/wa.me keep default)
+      if (act === 'open') openFile(id);
+      else if (act === 'edit') openCase(id);
+      else if (act === 'del') deleteCase(id);
+      else if (act === 'print') printCase(id);
+      else if (act === 'sess-add') openSession(id, '');
+      else if (act === 'sess-edit') openSession(id, btn.dataset.sid);
+      else if (act === 'sess-del') deleteSession(id, btn.dataset.sid);
+      else if (act === 'att-add') triggerAttach(id);
+      else if (act === 'att-open') openAttachment(id, btn.dataset.att);
+      else if (act === 'att-del') deleteAttachment(id, btn.dataset.att);
+      else if (act === 'restore') restoreCase(id);
+      else if (act === 'copy') copyNumber(btn.dataset.copy);
+      else if (act === 'nav') go(btn.dataset.go);
+      else if (act === 'activate-now') openActivation();
+      else if (act === 'save-notes') saveNotes(id);
+    }
+    appRoot.addEventListener('click', function (e) { runAction(findAction(e), e); });
+    // delegation (change): requirements inputs + attachment input
+    $('app').addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'attInput') { addAttachments(e.target.dataset.id, e.target.files); e.target.value = ''; }
+      else if (e.target && e.target.classList.contains('req-input')) { requirements[e.target.dataset.dept] = Math.max(0, toNum(e.target.value)); saveReqs(); renderReqs(); }
+    });
+
+    var overlays = [els.caseOverlay, els.sessionOverlay, els.confirmOverlay];
+    overlays.forEach(function (ov) { ov.addEventListener('click', function (e) { if (e.target === ov) hideOverlay(ov); }); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { overlays.forEach(function (ov) { hideOverlay(ov); }); closeImagePreview(); } });
+
+    // نافذة معاينة المرفق (صورة)
+    if (els.attViewClose) els.attViewClose.addEventListener('click', closeImagePreview);
+    if (els.attViewCloseBtn) els.attViewCloseBtn.addEventListener('click', closeImagePreview);
+    if (els.attViewOverlay) els.attViewOverlay.addEventListener('click', function (e) { if (e.target === els.attViewOverlay) closeImagePreview(); });
+    if (els.attViewTab) els.attViewTab.addEventListener('click', function () { if (attViewUrl) { try { window.open(attViewUrl, '_blank'); } catch (e) {} } });
+
+    window.addEventListener('hashchange', applyRoute);
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; if (els.installBtn) els.installBtn.hidden = false; });
+    if (els.installBtn) els.installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null; els.installBtn.hidden = true;
+      }, function () {
+        deferredPrompt = null; els.installBtn.hidden = true;
+      });
+    });
+    window.addEventListener('appinstalled', function () { if (els.installBtn) els.installBtn.hidden = true; });
+  }
+
+  /* ---------- نظام تحديث PWA الآمن ---------- */
+  var swReg = null, _refreshing = false;
+  function showUpdate() { if (els.updateOverlay) showOverlay(els.updateOverlay); }
+  function applyUpdate() {
+    if (els.updateOverlay) els.updateOverlay.hidden = true;
+    if (swReg && swReg.waiting) swReg.waiting.postMessage({ type: 'SKIP_WAITING' }); // ← يُفعّل التحديث ثم controllerchange يعيد التحميل
+    else window.location.reload();
+  }
+  function checkForUpdates() {
+    if (!('serviceWorker' in navigator) || !swReg) { if (els.updateStatus) els.updateStatus.textContent = 'التحديث غير متاح في هذا السياق.'; return; }
+    if (els.updateStatus) els.updateStatus.textContent = 'جارٍ التحقق…';
+    var handled = false;
+    swReg.update().then(function () {
+      setTimeout(function () {
+        if (swReg.waiting && navigator.serviceWorker.controller) { handled = true; if (els.updateStatus) els.updateStatus.textContent = 'يتوفّر تحديث جديد.'; showUpdate(); }
+      }, 700);
+    }, function () {});
+    fetch('version.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+      if (handled) return;
+      if (j && j.version && j.version !== APP_VERSION) { if (els.updateStatus) els.updateStatus.textContent = 'يتوفّر تحديث (' + j.version + '). سيُطبَّق عند إعادة فتح التطبيق.'; }
+      else if (!swReg.waiting) { if (els.updateStatus) els.updateStatus.textContent = 'أنت على أحدث إصدار (' + APP_VERSION + ').'; }
+    }, function () { if (!handled && els.updateStatus) els.updateStatus.textContent = 'تعذّر التحقق (لا يوجد اتصال؟).'; });
+  }
+
+  function setupPWA() {
+    if (els.appVersion) els.appVersion.textContent = APP_VERSION;
+    window.addEventListener('load', function () {
+      var s = els.splash; if (s) setTimeout(function () { s.remove(); }, 1600);
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.register('service-worker.js').then(function (reg) {
+        swReg = reg;
+        if (reg.waiting && navigator.serviceWorker.controller) showUpdate();   // تحديث جاهز من جلسة سابقة
+        reg.addEventListener('updatefound', function () {
+          var nw = reg.installing; if (!nw) return;
+          nw.addEventListener('statechange', function () {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdate(); // نسخة جديدة بانتظار الموافقة
+          });
+        });
+      }, function () {});
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (_refreshing) return; _refreshing = true; window.location.reload();  // بعد الموافقة: إعادة تحميل مرة واحدة
+      });
+    });
+  }
+
+  function updateTrialBanner() {
+    if (!window.DPLicense || !els.trialBanner) return;
+    var st = window.DPLicense.getAccessState();
+    if (st === 'trial') {
+      var h = window.DPLicense.trialRemainingHours();
+      els.trialText.textContent = 'الفترة التجريبية المجانية — متبقٍ من التجربة: ' + h + ' ساعة.';
+      els.trialBanner.hidden = false;
+    } else {
+      els.trialBanner.hidden = true;   // مُفعّل (لا شريط) أو منتهية (شاشة تفعيل)
+    }
+  }
+
+  function init() {
+    loadAll(); bindEvents(); applyRoute(); setupPWA();
+    updateTrialBanner();
+    setInterval(updateTrialBanner, 60000);   // تحديث الوقت المتبقّي دورياً
+    if (window.DPLicense) window.DPLicense.onActivated = function () {
+      if (els.trialBanner) els.trialBanner.hidden = true;   // إخفاء الشريط نهائياً بعد التفعيل
+      updateCounts();
+      if (currentView === 'settings') renderSettings();
+      else if (currentView === 'support') renderSupport();
+    };
+  }
+  document.addEventListener('DOMContentLoaded', init);
+})();

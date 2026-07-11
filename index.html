@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5" />
+  <title>دينت بايلوت للطلاب — DentPilot Student</title>
+  <meta name="description" content="متابِع الحالات السريرية لطلاب كلية الأسنان" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0B3B6F" />
+  <meta name="application-name" content="DentPilot Student" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DP Student" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="splash" class="splash" aria-hidden="true">
+    <div class="splash-logo">
+      <img src="icon-192.png" alt="DentPilot Student" width="92" height="92" />
+      <h1>دينت بايلوت للطلاب</h1>
+      <p>متابِع الحالات السريرية</p>
+    </div>
+  </div>
+
+  <!-- شاشة التفعيل -->
+  <div id="activationOverlay" class="modal-overlay act-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2>تفعيل دينت بايلوت للطلاب 🎓</h2></div>
+      <div class="form">
+        <p class="form-hint" id="actHint">انتهت الفترة التجريبية. للاستمرار في استخدام DentPilot Student، انسخ رمز التطبيق وأرسله عبر واتساب للحصول على كود التفعيل.</p>
+        <p class="act-note">هذا الرمز خاص بالتطبيق فقط، ولا يحتوي على صورك أو بيانات مرضاك أو معلوماتك الشخصية.</p>
+        <label class="act-label">1. انسخ رمز التطبيق الخاص بهذا الهاتف</label>
+        <div class="act-idrow">
+          <span id="actDeviceId" class="act-id">—</span>
+          <button type="button" id="actCopyBtn" class="btn btn-ghost act-copy">نسخ رمز التطبيق</button>
+        </div>
+        <div class="act-contact">
+          <div class="act-section-title">2. احصل على كود التفعيل</div>
+          <p class="act-contact-text">أرسل رمز التطبيق إلى الدعم عبر واتساب للحصول على كود التفعيل.</p>
+          <div class="wa-row act-wa-row">
+            <a class="wa-btn" href="https://wa.me/967775101518" target="_blank" rel="noopener">واتساب 775101518</a>
+            <a class="wa-btn" href="https://wa.me/967779449744" target="_blank" rel="noopener">واتساب 779449744</a>
+          </div>
+        </div>
+        <div class="field act-code-field">
+          <label for="actCode">3. أدخل كود التفعيل</label>
+          <input type="text" id="actCode" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" />
+        </div>
+        <p id="actError" class="act-error" hidden>⚠️ كود التفعيل غير صحيح لهذا الهاتف.</p>
+        <div class="form-actions"><button type="button" id="actActivateBtn" class="btn btn-primary act-activate">تفعيل التطبيق</button></div>
+        <button type="button" id="actLaterBtn" class="btn btn-ghost" style="width:100%;margin-top:8px" hidden>لاحقاً</button>
+        <p class="act-help">بعد استلام كود التفعيل، انسخه والصقه هنا ثم اضغط تفعيل التطبيق.</p>
+        <div class="act-agent-box">
+          <div class="act-agent-title">وكيل طلاب محافظة إب</div>
+          <div class="act-agent-subtitle">خاص بطلاب محافظة إب</div>
+          <div class="act-agent-name">فراس المجمر</div>
+          <div class="act-agent-phone">واتساب: 771697735</div>
+          <p>يمكنكم أيضًا الحصول على كود التفعيل من الوكيل لطلاب محافظة إب.</p>
+          <a class="wa-btn act-agent-wa" href="https://wa.me/967771697735" target="_blank" rel="noopener">واتساب</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <button type="button" id="backBtn" class="icon-btn back-btn" title="رجوع" aria-label="رجوع" hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <span class="brand-mark">🎓</span>
+      <div class="brand-text"><h1>دينت بايلوت للطلاب</h1><p>متابِع الحالات السريرية</p></div>
+    </div>
+    <div class="topbar-actions">
+      <button type="button" id="installBtn" class="icon-btn" title="تثبيت التطبيق" aria-label="تثبيت" hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="trialBanner" class="trial-banner" hidden>
+    <span class="tb-ico">⏳</span>
+    <span id="trialText">الفترة التجريبية المجانية متاحة لمدة 24 ساعة.</span>
+  </div>
+
+  <main class="wrap" id="app">
+
+    <!-- لوحة الطالب -->
+    <section class="view" id="view-dashboard" data-view="dashboard">
+      <div class="dash-grid">
+        <button type="button" class="dash-card" data-go="all"><span class="dash-emoji">👥</span><span class="dash-title">جميع المرضى</span><span class="dash-count" id="dcAll">0</span></button>
+        <button type="button" class="dash-card" data-go="days"><span class="dash-emoji">📅</span><span class="dash-title">المرضى حسب الأيام</span><span class="dash-sub">تنظيم أسبوعي</span></button>
+        <button type="button" class="dash-card" data-go="reqs"><span class="dash-emoji">📋</span><span class="dash-title">متطلبات الكلية</span><span class="dash-sub">التقدّم</span></button>
+        <button type="button" class="dash-card" data-go="completed"><span class="dash-emoji">✅</span><span class="dash-title">الحالات المكتملة</span><span class="dash-count" id="dcCompleted">0</span></button>
+        <button type="button" class="dash-card accent" data-go="add"><span class="dash-emoji">➕</span><span class="dash-title">إضافة حالة</span><span class="dash-sub">جديدة</span></button>
+        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji">📚</span><span class="dash-title">الحالات حسب المادة</span><span class="dash-sub">تجميع حسب القسم/المادة</span></button>
+        <button type="button" class="dash-card" data-go="backup"><span class="dash-emoji">💾</span><span class="dash-title">نسخة احتياطية</span><span class="dash-sub">حفظ/استعادة</span></button>
+        <button type="button" class="dash-card" data-go="settings"><span class="dash-emoji">⚙️</span><span class="dash-title">الإعدادات</span><span class="dash-sub">الجدول والاسم</span></button>
+        <button type="button" class="dash-card support" data-go="support"><span class="dash-emoji">🛟</span><span class="dash-title">الدعم والتفعيل</span><span class="dash-sub" id="dcSupportSub">ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم</span></button>
+      </div>
+    </section>
+
+    <!-- جميع المرضى -->
+    <section class="view" id="view-all" data-view="all" hidden>
+      <div class="page-head"><h2>👥 جميع المرضى</h2></div>
+      <div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="allSearch" placeholder="بحث بالاسم أو الهاتف أو القسم أو نوع الحالة…" autocomplete="off" /></div>
+      <div id="allList" class="rows"></div>
+      <div id="allEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+    </section>
+
+    <!-- المرضى حسب الأيام -->
+    <section class="view" id="view-days" data-view="days" hidden>
+      <div class="page-head"><h2>📅 المرضى حسب الأيام</h2></div>
+      <div id="daysList" class="day-groups"></div>
+    </section>
+
+    <!-- يوم واحد -->
+    <section class="view" id="view-day" data-view="day" hidden>
+      <div class="page-head"><h2 id="dayTitle">اليوم</h2></div>
+      <div id="dayList" class="rows"></div>
+      <div id="dayEmpty" class="empty-state" hidden><p>لا توجد حالات في هذا اليوم.</p><span>يمكنك تخصيص يوم للحالة من نموذج التعديل.</span></div>
+    </section>
+
+    <!-- متطلبات الكلية -->
+    <section class="view" id="view-reqs" data-view="reqs" hidden>
+      <div class="page-head"><h2>📋 متطلبات الكلية</h2></div>
+      <p class="hint">أدخل العدد المطلوب لكل قسم، ويُحسب المكتمل تلقائياً من الحالات ذات الحالة «مكتملة».</p>
+      <div id="reqsList" class="reqs"></div>
+    </section>
+
+    <!-- الحالات المكتملة -->
+    <section class="view" id="view-completed" data-view="completed" hidden>
+      <div class="page-head"><h2>✅ الحالات المكتملة</h2></div>
+      <p class="hint">الحالات ذات الحالة «مكتملة» تُؤرشَف هنا ولا تظهر في القوائم الحالية. بياناتها محفوظة كاملة، وتظل محسوبة ضمن متطلبات الكلية.</p>
+      <div id="completedList" class="rows"></div>
+      <div id="completedEmpty" class="empty-state" hidden><p>لا توجد حالات مكتملة بعد.</p><span>عند تعيين حالة كـ «مكتملة» ستظهر هنا.</span></div>
+    </section>
+
+    <!-- الحالات حسب المادة -->
+    <section class="view" id="view-bysubject" data-view="bysubject" hidden>
+      <div class="page-head"><h2>📚 الحالات حسب المادة</h2></div>
+      <p class="hint">تُجمَّع الحالات الحالية حسب المادة/القسم. الحالات بلا مادة تظهر تحت «بدون مادة محددة».</p>
+      <div id="bySubjectList" class="subj-groups"></div>
+      <div id="bySubjectEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+    </section>
+
+    <!-- نسخة احتياطية -->
+    <section class="view" id="view-backup" data-view="backup" hidden>
+      <div class="page-head"><h2>💾 نسخة احتياطية</h2></div>
+      <div class="panel">
+        <p>احفظ نسخة من حالاتك وإعداداتك ومتطلباتك ومرفقاتك في ملف، أو استعدها لاحقاً. تبقى البيانات محلية على جهازك، ومنفصلة تماماً عن أي نسخة أخرى.</p>
+        <div class="panel-actions">
+          <button type="button" id="exportBtn" class="btn btn-primary">⬇ تصدير نسخة احتياطية</button>
+          <button type="button" id="importBtn" class="btn btn-ghost">⬆ استعادة نسخة احتياطية</button>
+          <input type="file" id="importFile" accept="application/json" hidden />
+        </div>
+      </div>
+    </section>
+
+    <!-- الإعدادات -->
+    <section class="view" id="view-settings" data-view="settings" hidden>
+      <div class="page-head"><h2>⚙️ الإعدادات</h2></div>
+      <div class="panel">
+        <div class="field"><label for="setName">اسم الطالب (اختياري)</label><input type="text" id="setName" placeholder="اسمك" /></div>
+        <h3 class="sub-h">📅 جدول الأسبوع السريري</h3>
+        <p class="hint">اختر القسم المخصّص لكل يوم (اختياري) — يُستخدم لتنظيم صفحة «المرضى حسب الأيام» فقط.</p>
+        <div id="scheduleEditor" class="sched"></div>
+        <div class="panel-actions"><button type="button" id="saveSettingsBtn" class="btn btn-primary">حفظ الإعدادات</button></div>
+        <h3 class="sub-h">🔄 التحديثات</h3>
+        <p class="hint">الإصدار الحالي: <b id="appVersion">—</b></p>
+        <div class="panel-actions"><button type="button" id="checkUpdateBtn" class="btn btn-ghost">التحقق من التحديثات</button></div>
+        <p id="updateStatus" class="hint" style="margin-top:8px"></p>
+        <p class="hint">الحالة: <b id="accessStatus">—</b></p>
+        <p class="hint" style="margin-top:6px">رمز التطبيق الخاص بهذا الهاتف: <b id="setDeviceId">—</b></p>
+        <h3 class="sub-h">🛟 الدعم والتفعيل</h3>
+        <div class="panel-actions"><button type="button" class="btn btn-primary" data-act="nav" data-go="support">فتح صفحة الدعم والتفعيل</button></div>
+        <div class="dev-card">
+          <div class="dev-title">👨‍⚕️ المطور والدعم</div>
+          <div class="dev-name">تم تطوير التطبيق بواسطة:<br><b>د. عرفات الجعوري</b></div>
+          <div class="wa-row">
+            <a class="wa-btn" href="https://wa.me/967775101518" target="_blank" rel="noopener">واتساب 775101518</a>
+            <a class="wa-btn" href="https://wa.me/967779449744" target="_blank" rel="noopener">واتساب 779449744</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- الدعم والتفعيل -->
+    <section class="view" id="view-support" data-view="support" hidden>
+      <div class="page-head"><h2>🛟 الدعم والتفعيل</h2></div>
+      <div id="supportBody"></div>
+    </section>
+
+    <!-- ملف الحالة -->
+    <section class="view" id="view-file" data-view="file" hidden>
+      <div id="fileBody"></div>
+    </section>
+
+  </main>
+
+  <!-- نافذة إضافة/تعديل حالة -->
+  <div id="caseOverlay" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2 id="caseTitle">إضافة حالة</h2><button type="button" id="caseClose" class="modal-close" aria-label="إغلاق">✕</button></div>
+      <form id="caseForm" class="form" novalidate>
+        <input type="hidden" id="caseId" />
+        <div class="grid-2">
+          <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
+          <div class="field"><label for="cPhone">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." /></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="cDept">القسم</label><select id="cDept"></select></div>
+          <div class="field"><label for="cType">نوع الحالة</label><input type="text" id="cType" placeholder="مثال: Class II" /></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="cTooth">السن / السن المعالَج</label><input type="text" id="cTooth" placeholder="مثال: سن 36" /></div>
+          <div class="field"><label for="cStatus">حالة الحالة</label><select id="cStatus"></select></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="cDate">تاريخ الموعد</label><input type="date" id="cDate" /></div>
+          <div class="field"><label for="cTime">وقت الموعد</label><input type="time" id="cTime" /></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="cDay">اليوم المخصّص (اختياري)</label><select id="cDay"></select></div>
+          <div class="field"><label for="cWeekday">اليوم (تلقائي من التاريخ)</label><input type="text" id="cWeekday" readonly placeholder="—" /></div>
+        </div>
+        <div class="field"><label for="cNotes">ملاحظات</label><textarea id="cNotes" rows="2" placeholder="ملاحظات عامة عن الحالة"></textarea></div>
+        <div class="form-actions"><button type="button" id="caseCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة الجلسة -->
+  <div id="sessionOverlay" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2 id="sessionTitle">إضافة جلسة</h2><button type="button" id="sessionClose" class="modal-close" aria-label="إغلاق">✕</button></div>
+      <form id="sessionForm" class="form" novalidate>
+        <input type="hidden" id="sCaseId" /><input type="hidden" id="sId" />
+        <div class="grid-2">
+          <div class="field"><label for="sNum">رقم الجلسة</label><input type="text" id="sNum" /></div>
+          <div class="field"><label for="sStatus">حالة الجلسة</label><select id="sStatus"><option value="مجدولة">مجدولة</option><option value="منجزة">منجزة</option><option value="ملغاة">ملغاة</option></select></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="sDate">التاريخ</label><input type="date" id="sDate" /></div>
+          <div class="field"><label for="sTime">الوقت</label><input type="time" id="sTime" /></div>
+        </div>
+        <div class="field"><label for="sProc">الإجراء المنجَز</label><input type="text" id="sProc" placeholder="ما تم في الجلسة" /></div>
+        <div class="field"><label for="sNext">الموعد القادم</label><input type="datetime-local" id="sNext" /></div>
+        <div class="field"><label for="sNotes">ملاحظات الجلسة</label><textarea id="sNotes" rows="2"></textarea></div>
+        <div class="form-actions"><button type="button" id="sessionCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ الجلسة</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- تأكيد عام -->
+  <div id="confirmOverlay" class="modal-overlay" hidden>
+    <div class="modal modal-sm" role="alertdialog" aria-modal="true">
+      <div class="modal-head"><h2 id="confirmTitle">تأكيد</h2></div>
+      <p class="confirm-text" id="confirmText">هل أنت متأكد؟</p>
+      <div class="form-actions"><button type="button" id="confirmCancel" class="btn btn-ghost">إلغاء</button><button type="button" id="confirmOk" class="btn btn-danger">تأكيد</button></div>
+    </div>
+  </div>
+
+  <div id="updateOverlay" class="modal-overlay" hidden>
+    <div class="modal modal-sm" role="alertdialog" aria-modal="true">
+      <div class="modal-head"><h2>🔄 يتوفّر تحديث</h2></div>
+      <p class="confirm-text">صدر إصدار جديد من «دينت بايلوت للطلاب». حدّث الآن للحصول على آخر التحسينات — لن تُفقد أي من بياناتك.</p>
+      <div class="form-actions"><button type="button" id="updateLaterBtn" class="btn btn-ghost">لاحقاً</button><button type="button" id="updateNowBtn" class="btn btn-primary">تحديث الآن</button></div>
+    </div>
+  </div>
+
+  <!-- معاينة مرفق (صورة) -->
+  <div id="attViewOverlay" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2 id="attViewTitle">معاينة المرفق</h2><button type="button" id="attViewClose" class="modal-close" aria-label="إغلاق">✕</button></div>
+      <div class="att-view-body"><img id="attViewImg" alt="معاينة المرفق" /></div>
+      <div class="form-actions" style="padding:0 20px 16px">
+        <button type="button" id="attViewTab" class="btn btn-ghost">فتح في تبويب جديد</button>
+        <button type="button" id="attViewCloseBtn" class="btn btn-primary">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <footer class="footer"><span>دينت بايلوت للطلاب — كل البيانات محفوظة محلياً على هذا الجهاز.</span></footer>
+
+  <script src="activation.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
