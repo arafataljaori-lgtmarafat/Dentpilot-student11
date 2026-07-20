@@ -90,20 +90,27 @@
     <span id="trialText">الفترة التجريبية المجانية متاحة لمدة 24 ساعة.</span>
   </div>
 
+  <button type="button" id="installBanner" class="install-banner" hidden>
+    <span class="install-banner-ico">⬇️</span>
+    <span class="install-banner-text">ثبّت DentPilot على الشاشة الرئيسية</span>
+    <span class="install-banner-arrow">‹</span>
+  </button>
+
   <main class="wrap" id="app">
 
     <!-- لوحة الطالب -->
     <section class="view" id="view-dashboard" data-view="dashboard">
       <div class="dash-grid">
-        <button type="button" class="dash-card" data-go="all"><span class="dash-emoji">👥</span><span class="dash-title">جميع المرضى</span><span class="dash-count" id="dcAll">0</span></button>
-        <button type="button" class="dash-card" data-go="days"><span class="dash-emoji">📅</span><span class="dash-title">المرضى حسب الأيام</span><span class="dash-sub">تنظيم أسبوعي</span></button>
-        <button type="button" class="dash-card" data-go="reqs"><span class="dash-emoji">📋</span><span class="dash-title">متطلبات الكلية</span><span class="dash-sub">التقدّم</span></button>
-        <button type="button" class="dash-card" data-go="completed"><span class="dash-emoji">✅</span><span class="dash-title">الحالات المكتملة</span><span class="dash-count" id="dcCompleted">0</span></button>
-        <button type="button" class="dash-card accent" data-go="add"><span class="dash-emoji">➕</span><span class="dash-title">إضافة حالة</span><span class="dash-sub">جديدة</span></button>
-        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji">📚</span><span class="dash-title">الحالات حسب المادة</span><span class="dash-sub">تجميع حسب القسم/المادة</span></button>
-        <button type="button" class="dash-card" data-go="backup"><span class="dash-emoji">💾</span><span class="dash-title">نسخة احتياطية</span><span class="dash-sub">حفظ/استعادة</span></button>
-        <button type="button" class="dash-card" data-go="settings"><span class="dash-emoji">⚙️</span><span class="dash-title">الإعدادات</span><span class="dash-sub">الجدول والاسم</span></button>
-        <button type="button" class="dash-card support" data-go="support"><span class="dash-emoji">🛟</span><span class="dash-title">الدعم والتفعيل</span><span class="dash-sub" id="dcSupportSub">ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم</span></button>
+        <button type="button" class="dash-card" data-go="all"><span class="dash-emoji">👥</span><span class="dash-text"><span class="dash-title">جميع المرضى</span><span class="dash-count" id="dcAll">0</span></span></button>
+        <button type="button" class="dash-card" data-go="days"><span class="dash-emoji">📅</span><span class="dash-text"><span class="dash-title">المرضى حسب الأيام</span><span class="dash-sub">تنظيم أسبوعي</span></span></button>
+        <button type="button" class="dash-card" data-go="reqs"><span class="dash-emoji">📋</span><span class="dash-text"><span class="dash-title">متطلبات الكلية</span><span class="dash-sub">التقدّم</span></span></button>
+        <button type="button" class="dash-card" data-go="completed"><span class="dash-emoji">✅</span><span class="dash-text"><span class="dash-title">الحالات المكتملة</span><span class="dash-count" id="dcCompleted">0</span></span></button>
+        <button type="button" class="dash-card accent" data-go="add"><span class="dash-emoji">➕</span><span class="dash-text"><span class="dash-title">إضافة حالة</span><span class="dash-sub">جديدة</span></span></button>
+        <button type="button" class="dash-card accent" data-go="casesheets"><span class="dash-emoji">📄</span><span class="dash-text"><span class="dash-title">إضافة كاسشيت</span><span class="dash-sub">ملف تسليم جاهز</span></span></button>
+        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji">📚</span><span class="dash-text"><span class="dash-title">الحالات حسب المادة</span><span class="dash-sub">تجميع حسب القسم/المادة</span></span></button>
+        <button type="button" class="dash-card" data-go="backup"><span class="dash-emoji">💾</span><span class="dash-text"><span class="dash-title">نسخة احتياطية</span><span class="dash-sub">حفظ/استعادة</span></span></button>
+        <button type="button" class="dash-card" data-go="settings"><span class="dash-emoji">⚙️</span><span class="dash-text"><span class="dash-title">الإعدادات</span><span class="dash-sub">الجدول والاسم</span></span></button>
+        <button type="button" class="dash-card support" data-go="support"><span class="dash-emoji">🛟</span><span class="dash-text"><span class="dash-title">الدعم والتفعيل</span><span class="dash-sub" id="dcSupportSub">ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم</span></span></button>
       </div>
     </section>
 
@@ -133,6 +140,14 @@
     <section class="view" id="view-reqs" data-view="reqs" hidden>
       <div class="page-head"><h2>📋 متطلبات الكلية</h2></div>
       <p class="hint">أدخل العدد المطلوب لكل قسم، ويُحسب المكتمل تلقائياً من الحالات ذات الحالة «مكتملة».</p>
+      <div class="panel-actions"><button type="button" id="reqAddBtn" class="btn btn-primary" data-act="req-add-toggle">+ إضافة مادة</button></div>
+      <div id="reqAddForm" class="req-add-form" hidden>
+        <div class="field"><input type="text" id="reqNewName" placeholder="اسم المادة أو المتطلب (مثال: أطفال)" /></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-act="req-add-cancel">إلغاء</button>
+          <button type="button" class="btn btn-primary" data-act="req-add-save">حفظ</button>
+        </div>
+      </div>
       <div id="reqsList" class="reqs"></div>
     </section>
 
@@ -180,6 +195,9 @@
         <p id="updateStatus" class="hint" style="margin-top:8px"></p>
         <p class="hint">الحالة: <b id="accessStatus">—</b></p>
         <p class="hint" style="margin-top:6px">رمز التطبيق الخاص بهذا الهاتف: <b id="setDeviceId">—</b></p>
+        <h3 class="sub-h">📲 تثبيت التطبيق</h3>
+        <p id="setInstallStatus" class="hint">—</p>
+        <div class="panel-actions"><button type="button" id="setInstallBtn" class="btn btn-ghost" hidden>تثبيت التطبيق على الشاشة الرئيسية</button></div>
         <h3 class="sub-h">🛟 الدعم والتفعيل</h3>
         <div class="panel-actions"><button type="button" class="btn btn-primary" data-act="nav" data-go="support">فتح صفحة الدعم والتفعيل</button></div>
         <div class="dev-card">
@@ -202,6 +220,24 @@
     <!-- ملف الحالة -->
     <section class="view" id="view-file" data-view="file" hidden>
       <div id="fileBody"></div>
+    </section>
+
+    <!-- اختيار قالب الكاسشيت + القائمة المحفوظة -->
+    <section class="view" id="view-casesheets" data-view="casesheets" hidden>
+      <div class="page-head"><h2>📄 إضافة كاسشيت</h2></div>
+      <p class="hint">اختر نموذج الكاسشيت لبدء ملف تسليم جديد، أو افتح كاسشيت محفوظاً سابقاً.</p>
+      <div id="csTemplates"></div>
+    </section>
+
+    <!-- نموذج تعبئة الكاسشيت -->
+    <section class="view" id="view-csform" data-view="csform" hidden>
+      <div class="page-head"><h2 id="csTitle">كاسشيت جديد</h2></div>
+      <div id="csFormBody"></div>
+      <div class="form-actions cs-form-actions">
+        <button type="button" class="btn btn-primary" data-act="cs-save">💾 حفظ الكاسشيت</button>
+        <button type="button" class="btn btn-ghost" data-act="cs-preview">👁️ معاينة الكاسشيت للطباعة</button>
+        <button type="button" class="btn btn-ghost" data-act="cs-print">🖨️ طباعة / تصدير PDF</button>
+      </div>
     </section>
 
   </main>

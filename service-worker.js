@@ -1,7 +1,7 @@
 /* DentPilot Student — Service Worker (تحديث آمن مُتحكَّم به) */
-const CACHE = 'dentpilot-student-v1.3.11';
+const CACHE = 'dentpilot-student-v1.5.2';
 const ASSETS = [
-  './', 'index.html', 'style.css', 'script.js', 'activation.js', 'manifest.json', 'version.json',
+  './', 'index.html', 'case-sheet-print.html', 'style.css', 'script.js', 'activation.js', 'manifest.json', 'version.json',
   'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png', 'favicon.ico', 'favicon-32.png'
 ];
 

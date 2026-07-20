@@ -11,28 +11,33 @@
   var REQS_KEY = 'dentpilot_student_requirements_v1';
   var ATT_KEY = 'dentpilot_student_attachments_v1';
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
-  var APP_VERSION = '1.3.11';
+  var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
+  var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
+  var APP_VERSION = '1.5.2';
 
   var DEPTS = ['حشوات', 'عصب', 'تنظيف', 'تقويم', 'جراحة', 'مراجعة', 'أخرى'];
   var MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   var WEEKDAYS_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']; // getDay(): 0..6
   var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
   var STATUSES = ['قيد الانتظار', 'قيد العمل', 'مكتملة', 'تحتاج مراجعة', 'ملغاة'];
-  var VIEWS = ['dashboard', 'all', 'days', 'day', 'reqs', 'completed', 'bysubject', 'backup', 'settings', 'support', 'file'];
+  var VIEWS = ['dashboard', 'all', 'days', 'day', 'reqs', 'completed', 'bysubject', 'backup', 'settings', 'support', 'file', 'casesheets', 'csform'];
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {};
-  ['backBtn','installBtn','dcAll','dcCompleted','allSearch','allList','allEmpty','daysList','dayTitle','dayList','dayEmpty',
-   'reqsList','completedList','completedEmpty','bySubjectList','bySubjectEmpty','exportBtn','importBtn','importFile','setName','scheduleEditor','saveSettingsBtn','setDeviceId',
+  ['backBtn','installBtn','installBanner','dcAll','dcCompleted','allSearch','allList','allEmpty','daysList','dayTitle','dayList','dayEmpty',
+   'reqsList','reqAddBtn','reqAddForm','reqNewName','completedList','completedEmpty','bySubjectList','bySubjectEmpty','exportBtn','importBtn','importFile','setName','scheduleEditor','saveSettingsBtn','setDeviceId',
    'attViewOverlay','attViewImg','attViewTitle','attViewClose','attViewCloseBtn','attViewTab',
    'caseOverlay','caseForm','caseTitle','caseClose','caseCancel','caseId','cName','cPhone','cDept','cType','cTooth','cDay','cDate','cWeekday','cTime','cStatus','cNotes',
    'sessionOverlay','sessionForm','sessionTitle','sessionClose','sessionCancel','sCaseId','sId','sNum','sDate','sTime','sProc','sNext','sNotes','sStatus',
    'confirmOverlay','confirmTitle','confirmText','confirmOk','confirmCancel','toast','splash','fileBody',
    'trialBanner','trialText','accessStatus','supportBody','dcSupportSub',
-   'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus'
+   'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus',
+   'setInstallBtn','setInstallStatus',
+   'csTemplates','csTitle','csFormBody'
   ].forEach(function (k) { els[k] = $(k); });
 
-  var cases = [], settings = { studentName: '', schedule: {} }, requirements = {}, attachments = {};
+  var cases = [], settings = { studentName: '', schedule: {} }, requirements = {}, attachments = {}, customReqs = [], casesheets = [];
+  var currentCsId = null, currentCsPhotos = {};   // حالة نموذج الكاسشيت المفتوح حالياً (غير محفوظة بعد إن كانت جديدة)
   var adminConfig = {};
   var currentView = 'dashboard', currentParam = '', fileOrigin = 'all', pendingConfirm = null, deferredPrompt = null, toastTimer = null;
 
@@ -44,6 +49,8 @@
     if (!settings.schedule) settings.schedule = {};
     requirements = jget(REQS_KEY, {}) || {};
     attachments = jget(ATT_KEY, {}) || {};
+    customReqs = jget(CUSTOM_REQS_KEY, []); if (!Array.isArray(customReqs)) customReqs = [];
+    casesheets = jget(CASESHEETS_KEY, []); if (!Array.isArray(casesheets)) casesheets = [];
     loadAdminConfig();
     normalizeCases();
   }
@@ -59,6 +66,8 @@
   function saveCases() { try { localStorage.setItem(CASES_KEY, JSON.stringify(cases)); } catch (e) { alert('تعذّر الحفظ — قد تكون المساحة ممتلئة.'); } }
   function saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {} }
   function saveReqs() { try { localStorage.setItem(REQS_KEY, JSON.stringify(requirements)); } catch (e) {} }
+  function saveCustomReqs() { try { localStorage.setItem(CUSTOM_REQS_KEY, JSON.stringify(customReqs)); } catch (e) {} }
+  function saveCasesheets() { try { localStorage.setItem(CASESHEETS_KEY, JSON.stringify(casesheets)); } catch (e) { alert('تعذّر الحفظ — قد تكون المساحة ممتلئة.'); } }
   function saveAtt() { localStorage.setItem(ATT_KEY, JSON.stringify(attachments)); }
 
   /* ---------- helpers ---------- */
@@ -96,7 +105,7 @@
   }
   function sessStMeta(s) { return { 'منجزة': 'st-done', 'مجدولة': 'st-work', 'ملغاة': 'st-cancel' }[s] || 'st-work'; }
   function fillSelect(sel, arr, extra) { sel.innerHTML = (extra ? '<option value="">' + extra + '</option>' : '') + arr.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join(''); }
-  function toast(m) { els.toast.textContent = m; els.toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { els.toast.hidden = true; }, 2500); }
+  function toast(m, ms) { els.toast.textContent = m; els.toast.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { els.toast.hidden = true; }, ms || 2500); }
 
   /* ---------- completed archive helpers ---------- */
   function isCompleted(c) { return !!c && c.status === 'مكتملة'; }
@@ -163,7 +172,7 @@
         '<div class="row-name">' + esc(c.name) + '</div>' +
         '<div class="row-line">' + esc(line2) + '</div>' +
         '<div class="row-appt">' + esc(appt) + '</div>' +
-        '<span class="row-status ' + st.cls + '">' + esc(c.status || '—') + '</span>' +
+        '<span class="row-status ' + st.cls + '">' + (c.status === 'مكتملة' ? '✅ ' : '') + esc(c.status || '—') + '</span>' +
       '</div>' +
       '<button type="button" class="row-open" data-act="open" data-id="' + c.id + '" title="فتح ملف الحالة">📂</button>' +
     '</div>';
@@ -185,7 +194,7 @@
 
   /* ---------- Days ---------- */
   function renderDays() {
-    var act = activeCases();
+    var act = cases;   // تشمل الحالات المكتملة أيضاً (لا يُستبعدن من ترتيب الأيام)
     var html = DAYS.map(function (day) {
       var dept = settings.schedule[day] || '';
       var count = act.filter(function (c) { return effWeekday(c) === day; }).length;
@@ -201,7 +210,7 @@
     var dayName = isNone ? 'بدون يوم محدد' : dayKey;
     var dept = isNone ? '' : (settings.schedule[dayKey] || '');
     els.dayTitle.textContent = '📅 ' + dayName + (dept ? ' — ' + dept : '');
-    var list = activeCases().filter(function (c) { var w = effWeekday(c); return isNone ? (!w || DAYS.indexOf(w) < 0) : (w === dayKey); });
+    var list = cases.filter(function (c) { var w = effWeekday(c); return isNone ? (!w || DAYS.indexOf(w) < 0) : (w === dayKey); });   // تشمل المكتملة
     list.sort(caseSort);
     if (list.length === 0) { els.dayList.innerHTML = ''; els.dayEmpty.hidden = false; return; }
     els.dayEmpty.hidden = true;
@@ -209,8 +218,10 @@
   }
 
   /* ---------- Requirements ---------- */
+  function allReqNames() { return DEPTS.concat(customReqs); }
   function renderReqs() {
-    els.reqsList.innerHTML = DEPTS.map(function (d) {
+    els.reqsList.innerHTML = allReqNames().map(function (d) {
+      var isCustom = customReqs.indexOf(d) >= 0;
       var req = toNum(requirements[d]);
       var done = cases.filter(function (c) { return c.department === d && c.status === 'مكتملة'; }).length;
       var remaining = Math.max(0, req - done);
@@ -218,12 +229,238 @@
       var full = req > 0 && done >= req;
       return '<div class="req">' +
         '<div class="req-top"><span class="req-name">' + esc(d) + (full ? ' ✅' : '') + '</span>' +
+          (isCustom ? '<button type="button" class="req-del" data-act="req-del-custom" data-name="' + esc(d) + '" title="حذف المادة" aria-label="حذف المادة">✕</button>' : '') +
           '<input class="req-input" type="number" min="0" inputmode="numeric" data-dept="' + esc(d) + '" value="' + (req || 0) + '" /></div>' +
         '<div class="req-bar"><div class="req-fill ' + (full ? 'full' : '') + '" style="width:' + pct + '%"></div></div>' +
         '<div class="req-meta"><span class="req-done">المكتمل: <b>' + done + ' / ' + (req || 0) + '</b></span><span>المتبقي: <b>' + remaining + '</b></span></div>' +
       '</div>';
     }).join('');
   }
+  function toggleReqAddForm(show) {
+    if (!els.reqAddForm) return;
+    var willShow = (show === undefined) ? !!els.reqAddForm.hidden : !!show;
+    els.reqAddForm.hidden = !willShow;
+    if (willShow && els.reqNewName) { els.reqNewName.value = ''; setTimeout(function () { els.reqNewName.focus(); }, 30); }
+  }
+  function addCustomReq(name) {
+    var n = String(name || '').trim();
+    if (!n) return false;
+    var exists = allReqNames().some(function (d) { return d.toLowerCase() === n.toLowerCase(); });
+    if (exists) { toast('هذه المادة موجودة بالفعل'); return false; }
+    customReqs.push(n); saveCustomReqs(); renderReqs(); toast('تمت إضافة «' + n + '»');
+    return true;
+  }
+  function deleteCustomReq(name) {
+    customReqs = customReqs.filter(function (d) { return d !== name; });
+    delete requirements[name];
+    saveCustomReqs(); saveReqs(); renderReqs();
+  }
+
+  /* ============================================================
+     الكاسشيتات (نظام مستقل تماماً عن نظام الحالات — لا يُغيّر أي منطق فيه)
+     ============================================================ */
+  var CS_TEMPLATES = { 'jazeera-oral-surgery': { name: 'جامعة الجزيرة — Oral Surgery', sub: 'University of Al-Jazeera — Faculty of Oral and Dental Medicine' } };
+  var CS_PHOTO_SLOTS = [
+    { key: 'pre1', label: 'Preoperative Image 1' },
+    { key: 'pre2', label: 'Preoperative Image 2' },
+    { key: 'during', label: 'During operative Image' },
+    { key: 'xray', label: 'X-ray Image' }
+  ];
+
+  function csField(label, inputHtml) { return '<div class="field"><label>' + esc(label) + '</label>' + inputHtml + '</div>'; }
+  function csSelect(fieldKey, options, placeholder) {
+    return '<select data-field="' + fieldKey + '"><option value="">' + esc(placeholder || '—') + '</option>' +
+      options.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join('') + '</select>';
+  }
+  var CS_YESNO = [['yes', 'Yes'], ['no', 'No']];
+  function csCheck(fieldKey, label) { return '<label class="cs-check"><input type="checkbox" data-field="' + fieldKey + '" /> ' + esc(label) + '</label>'; }
+  function csSection(title, bodyHtml) { return '<div class="cs-block"><h3 class="cs-sec-title">' + esc(title) + '</h3>' + bodyHtml + '</div>'; }
+
+  function buildCasesheetFormHTML() {
+    return (
+      csSection('بيانات عامة (General)',
+        csField('Student Name', '<input type="text" data-field="studentName" />') +
+        csField('Level', csSelect('level', [['4th', '4th Year'], ['5th', '5th Year']], '—')) +
+        csField('Clinic Date', '<input type="date" data-field="clinicDate" />') +
+        csField('Supervisor of starting', '<input type="text" data-field="supervisorStart" />')
+      ) +
+      csSection('بيانات المريض (Patient Data)',
+        csField('Patient Name', '<input type="text" data-field="patientName" />') +
+        '<div class="grid-2">' + csField('Gender', csSelect('gender', [['M', 'Male'], ['F', 'Female']], '—')) + csField('Age', '<input type="number" min="0" data-field="age" />') + '</div>' +
+        csField('Occupation', '<input type="text" data-field="occupation" />') +
+        csField('Address', '<input type="text" data-field="address" />') +
+        '<div class="grid-2">' + csField('Marital status', '<input type="text" data-field="maritalStatus" />') + csField('Phone No', '<input type="tel" data-field="phone" />') + '</div>' +
+        csField('Chief Complaint', '<textarea data-field="chiefComplaint" rows="2"></textarea>')
+      ) +
+      csSection('Medical History',
+        '<div class="cs-check-row">' + csCheck('healthy', 'Healthy') + '</div>' +
+        csField('Chronic diseases', '<input type="text" data-field="chronic" />') +
+        csField('Current medications', '<input type="text" data-field="meds" />') +
+        '<div class="grid-2">' + csField('Allergies', csSelect('allergies', CS_YESNO, '—')) + csField('If yes, details', '<input type="text" data-field="allergiesDetail" />') + '</div>'
+      ) +
+      csSection('Dental History',
+        csField('Last dental visit', '<input type="text" data-field="lastVisit" />') +
+        '<div class="grid-2">' + csField('Past extractions or oral surgeries', csSelect('pastExtractions', CS_YESNO, '—')) + csField('Complications in previous treatments', csSelect('complications', CS_YESNO, '—')) + '</div>' +
+        csField('Oral hygiene habits', csSelect('hygiene', [['good', 'Good'], ['fair', 'Fair'], ['poor', 'Poor']], '—'))
+      ) +
+      csSection('Extraoral Examination',
+        '<div class="grid-2">' + csField('Swelling', csSelect('swelling', CS_YESNO, '—')) + csField('Facial symmetry', csSelect('symmetry', [['normal', 'Normal'], ['asym', 'Asymmetrical']], '—')) + '</div>' +
+        '<div class="grid-2">' + csField('Lymph nodes', csSelect('lymph', [['normal', 'Normal'], ['enlarged', 'Enlarged']], '—')) + csField('TMJ', csSelect('tmj', [['normal', 'Normal'], ['clicking', 'Clicking'], ['tender', 'Tenderness']], '—')) + '</div>'
+      ) +
+      csSection('Intraoral Examination',
+        '<div class="grid-2">' + csField('Mucosa', csSelect('mucosa', [['normal', 'Normal'], ['lesions', 'Lesions']], '—')) + csField('Tooth involved', '<input type="text" data-field="toothInvolved" />') + '</div>' +
+        '<div class="grid-2">' + csField('Tender on percussion', csSelect('percussion', CS_YESNO, '—')) + csField('Mobility', csSelect('mobility', CS_YESNO, '—')) + '</div>' +
+        '<div class="grid-2">' + csField('Sinus tract or pus discharge', csSelect('sinus', CS_YESNO, '—')) + csField('Trismus', csSelect('trismus', CS_YESNO, '—')) + '</div>' +
+        csField('Other findings', '<input type="text" data-field="otherFindings" />')
+      ) +
+      csSection('Radiographic Findings',
+        '<div class="cs-check-row">' + csCheck('rxPeriapical', 'Periapical') + csCheck('rxOpg', 'OPG') + csCheck('rxCbct', 'CBCT') + '</div>' +
+        csField('Findings', '<textarea data-field="rxFindings" rows="2"></textarea>')
+      ) +
+      csSection('Final Diagnosis', csField('', '<textarea data-field="diagnosis" rows="2"></textarea>')) +
+      csSection('Planned Procedure',
+        '<div class="cs-check-row">' + csCheck('procSimpleExt', 'Simple extraction') + csCheck('procSurgicalExt', 'Surgical extraction') + csCheck('procIncision', 'Incision & drainage') +
+          csCheck('procCyst', 'Cyst enucleation') + csCheck('procBiopsy', 'Biopsy') + csCheck('procSoftTissue', 'Soft tissue surgery') + '</div>' +
+        '<div class="grid-2">' + csField('Tooth/Area', '<input type="text" data-field="procTooth" />') + csField('Type of anesthesia', '<input type="text" data-field="anesthesia" />') + '</div>'
+      ) +
+      csSection('Post-operative instructions',
+        '<div class="cs-check-row">' + csCheck('poPain', 'Pain control (analgesics)') + csCheck('poBleeding', 'Bleeding control (gauze bite)') + csCheck('poCold', 'Cold compress (first 24 hrs)') +
+          csCheck('poHygiene', 'Oral hygiene (gentle brushing, no rinsing 24 hrs)') + csCheck('poDiet', 'Soft diet') + csCheck('poSmoking', 'Avoid smoking and spitting') + '</div>' +
+        csField('Follow-up after (days)', '<input type="number" min="0" data-field="followupDays" />') +
+        csField('Additional notes', '<textarea data-field="postOpNotes" rows="2"></textarea>')
+      ) +
+      csSection('Supervisor Notes', csField('', '<textarea data-field="supervisorNotes" rows="2"></textarea>')) +
+      csSection('Photographs',
+        '<div class="cs-photo-grid">' + CS_PHOTO_SLOTS.map(function (s) {
+          return '<div class="cs-photo-slot" data-slot-box="' + s.key + '">' +
+            '<div class="cs-photo-thumb" id="csThumb_' + s.key + '"></div>' +
+            '<div class="cs-photo-label">' + esc(s.label) + '</div>' +
+            '<div class="cs-photo-actions">' +
+              '<button type="button" class="card-btn" data-act="cs-photo-add" data-slot="' + s.key + '">📷 إضافة</button>' +
+              '<button type="button" class="card-btn del" data-act="cs-photo-del" data-slot="' + s.key + '">✕ إزالة</button>' +
+            '</div>' +
+            '<input type="file" accept="image/*" id="csPhotoInput_' + s.key + '" data-slot-input="' + s.key + '" hidden />' +
+          '</div>';
+        }).join('') + '</div>'
+      )
+    );
+  }
+
+  function collectCasesheetForm() {
+    var data = {};
+    document.querySelectorAll('#csFormBody [data-field]').forEach(function (el) {
+      var k = el.dataset.field;
+      data[k] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    return data;
+  }
+  function fillCasesheetForm(data) {
+    data = data || {};
+    document.querySelectorAll('#csFormBody [data-field]').forEach(function (el) {
+      var k = el.dataset.field, v = data[k];
+      if (el.type === 'checkbox') el.checked = !!v;
+      else el.value = (v === undefined || v === null) ? '' : v;
+    });
+  }
+  function refreshCasesheetPhotos() {
+    CS_PHOTO_SLOTS.forEach(function (s) {
+      var box = document.getElementById('csThumb_' + s.key); if (!box) return;
+      var p = currentCsPhotos[s.key];
+      box.innerHTML = p ? '<img src="' + p.dataUrl + '" alt="" />' : '<span class="cs-photo-empty">لا توجد صورة</span>';
+    });
+  }
+  function triggerCasesheetPhoto(slot) { var inp = document.getElementById('csPhotoInput_' + slot); if (inp) inp.click(); }
+  function handleCasesheetPhotoChange(slot, file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      currentCsPhotos[slot] = { name: file.name, type: file.type, dataUrl: reader.result };
+      refreshCasesheetPhotos();
+    };
+    reader.readAsDataURL(file);
+  }
+  function removeCasesheetPhoto(slot) { delete currentCsPhotos[slot]; refreshCasesheetPhotos(); }
+
+  function renderCasesheets() {
+    var tpl = CS_TEMPLATES['jazeera-oral-surgery'];
+    var tplCard = '<button type="button" class="dash-card accent" data-act="cs-new" data-template="jazeera-oral-surgery" style="width:100%">' +
+      '<span class="dash-emoji">📄</span><span class="dash-title">' + esc(tpl.name) + '</span><span class="dash-sub">' + esc(tpl.sub) + '</span></button>';
+    var saved = casesheets.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
+    var savedHtml = saved.length
+      ? '<h3 class="sub-h" style="margin-top:18px">📁 الكاسشيتات المحفوظة</h3><div class="rows">' + saved.map(csRow).join('') + '</div>'
+      : '';
+    if (els.csTemplates) els.csTemplates.innerHTML = tplCard + savedHtml;
+  }
+  function csRow(sheet) {
+    var d = sheet.data || {};
+    return '<div class="row">' +
+      '<span class="row-no">📄</span>' +
+      '<div class="row-main">' +
+        '<div class="row-name">' + esc(d.patientName || 'بدون اسم مريض') + '</div>' +
+        '<div class="row-line">' + esc(d.studentName || '—') + ' — ' + esc(CS_TEMPLATES[sheet.template] ? CS_TEMPLATES[sheet.template].name : sheet.template) + '</div>' +
+        '<div class="row-appt">' + esc(fmtDate(sheet.updatedAt || sheet.createdAt)) + '</div>' +
+      '</div>' +
+      '<button type="button" class="req-del" data-act="cs-del" data-id="' + sheet.id + '" title="حذف الكاسشيت">✕</button>' +
+      '<button type="button" class="row-open" data-act="cs-open" data-id="' + sheet.id + '" title="فتح الكاسشيت">📂</button>' +
+    '</div>';
+  }
+  function openCasesheetForm(id) { location.hash = 'csform/' + (id || 'new'); applyRoute(); }
+  function renderCasesheetForm(param) {
+    var sheet = (param && param !== 'new') ? casesheets.find(function (x) { return x.id === param; }) : null;
+    currentCsId = sheet ? sheet.id : null;
+    currentCsPhotos = sheet && sheet.photos ? Object.assign({}, sheet.photos) : {};
+    if (els.csTitle) els.csTitle.textContent = sheet ? 'تعديل الكاسشيت' : 'كاسشيت جديد — ' + (CS_TEMPLATES['jazeera-oral-surgery'].name);
+    if (els.csFormBody) {
+      els.csFormBody.innerHTML = buildCasesheetFormHTML();
+      fillCasesheetForm(sheet ? sheet.data : {});
+      refreshCasesheetPhotos();
+      // مستمعات ملفات الصور (خاصة بهذا الرسم فقط، لا تتراكم لأن innerHTML يُستبدل بالكامل في كل مرة)
+      CS_PHOTO_SLOTS.forEach(function (s) {
+        var inp = document.getElementById('csPhotoInput_' + s.key);
+        if (inp) inp.addEventListener('change', function (e) { handleCasesheetPhotoChange(s.key, e.target.files && e.target.files[0]); e.target.value = ''; });
+      });
+    }
+  }
+  function saveCasesheetFromForm() {
+    var data = collectCasesheetForm();
+    var nameEl = document.querySelector('#csFormBody [data-field="patientName"]');
+    if (!data.patientName || !data.patientName.trim()) {
+      if (nameEl) { nameEl.classList.add('invalid'); nameEl.focus(); }
+      toast('يرجى إدخال اسم المريض على الأقل قبل الحفظ'); return;
+    }
+    if (nameEl) nameEl.classList.remove('invalid');
+    if (currentCsId) {
+      var i = casesheets.findIndex(function (x) { return x.id === currentCsId; });
+      if (i >= 0) casesheets[i] = Object.assign({}, casesheets[i], { data: data, photos: currentCsPhotos, updatedAt: new Date().toISOString() });
+    } else {
+      var sheet = { id: uid(), template: 'jazeera-oral-surgery', data: data, photos: currentCsPhotos, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      casesheets.unshift(sheet); currentCsId = sheet.id;
+    }
+    saveCasesheets(); toast('تم حفظ الكاسشيت');
+  }
+  function deleteCasesheet(id) {
+    confirmAsk({ title: 'حذف الكاسشيت', text: 'هل تريد حذف هذا الكاسشيت؟', okLabel: 'حذف', onOk: function () {
+      casesheets = casesheets.filter(function (x) { return x.id !== id; }); saveCasesheets();
+      if (currentView === 'csform' && currentCsId === id) go('casesheets'); else renderCasesheets();
+      toast('تم حذف الكاسشيت');
+    } });
+  }
+
+  /* ---------- طباعة/معاينة الكاسشيت عبر صفحة القالب المستقلة case-sheet-print.html ----------
+     لا نطبع DOM التطبيق إطلاقاً ولا نعتمد على @media print فوق واجهة التطبيق:
+     نُسلّم بيانات الكاسشيت عبر مفتاح مؤقت ثم نفتح صفحة القالب الورقي المستقلة تماماً،
+     والطباعة تتم من داخل تلك الصفحة نفسها (التي لا تحتوي أي عنصر من واجهة التطبيق). */
+  var CS_PRINT_HANDOFF_KEY = 'dentpilot_student_cs_print_v1';
+  function openCasesheetPrintPage(autoprint) {
+    try {
+      localStorage.setItem(CS_PRINT_HANDOFF_KEY, JSON.stringify({ template: 'jazeera-oral-surgery', data: collectCasesheetForm(), photos: currentCsPhotos }));
+    } catch (e) { toast('تعذر تجهيز بيانات الطباعة — قد تكون الصور كبيرة جداً'); return; }
+    var w = null;
+    try { w = window.open('case-sheet-print.html' + (autoprint ? '?print=1' : ''), '_blank'); } catch (e) {}
+    if (!w) toast('يرجى السماح بفتح النوافذ لعرض قالب الطباعة');
+  }
+  function previewCasesheetLive() { openCasesheetPrintPage(false); }
+  function printCasesheetLive() { openCasesheetPrintPage(true); }
 
   /* ---------- Completed archive ---------- */
   function completedRow(c, index) {
@@ -274,7 +511,7 @@
   /* ---------- Cases by subject/material ---------- */
   var NO_SUBJECT = 'بدون مادة محددة';
   function renderBySubject() {
-    var act = activeCases();
+    var act = cases;   // تشمل الحالات المكتملة أيضاً (لا يُستبعدن من ترتيب المادة)
     if (act.length === 0) { els.bySubjectList.innerHTML = ''; els.bySubjectEmpty.hidden = false; return; }
     els.bySubjectEmpty.hidden = true;
     var groups = {}, order = [];
@@ -472,6 +709,7 @@
     }).join('');
     els.setDeviceId.textContent = (window.DPLicense && window.DPLicense.getDeviceId) ? window.DPLicense.getDeviceId() : '—';
     if (els.appVersion) els.appVersion.textContent = APP_VERSION;
+    updateSettingsInstallUI();
     if (els.accessStatus && window.DPLicense) {
       var stt = window.DPLicense.getAccessState();
       var info = window.DPLicense.getActivationInfo ? window.DPLicense.getActivationInfo() : null;
@@ -554,6 +792,7 @@
   function goBack() {
     if (currentView === 'file') { var o = fileOrigin || 'all'; location.hash = o; applyRoute(); }
     else if (currentView === 'day') go('days');
+    else if (currentView === 'csform') go('casesheets');
     else go('dashboard');
   }
   function applyRoute() {
@@ -575,6 +814,8 @@
     else if (currentView === 'settings') renderSettings();
     else if (currentView === 'support') renderSupport();
     else if (currentView === 'file') renderFile(currentParam);
+    else if (currentView === 'casesheets') renderCasesheets();
+    else if (currentView === 'csform') renderCasesheetForm(currentParam);
   }
   function refresh() { renderActiveView(); }
 
@@ -803,7 +1044,7 @@
 
   /* ---------- Backup ---------- */
   function exportBackup() {
-    var data = { app: 'DentPilot Student', version: '1.3.3', exportedAt: new Date().toISOString(), cases: cases, settings: settings, requirements: requirements, attachments: attachments, adminConfig: adminConfig };
+    var data = { app: 'DentPilot Student', version: '1.3.3', exportedAt: new Date().toISOString(), cases: cases, settings: settings, requirements: requirements, customReqs: customReqs, attachments: attachments, casesheets: casesheets, adminConfig: adminConfig };
     var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob), a = document.createElement('a');
     a.href = url; a.download = 'dentpilot-student-backup-' + new Date().toISOString().slice(0, 10) + '.json';
@@ -819,9 +1060,11 @@
         cases = o.cases; normalizeCases();
         if (o.settings) settings = Object.assign({ studentName: '', schedule: {} }, o.settings);
         if (o.requirements) requirements = o.requirements;
+        if (Array.isArray(o.customReqs)) customReqs = o.customReqs;
         if (o.attachments) attachments = o.attachments;
+        if (Array.isArray(o.casesheets)) casesheets = o.casesheets;
         if (o.adminConfig) { adminConfig = normalizeAdminConfig(o.adminConfig); saveAdminConfig(); }
-        saveCases(); saveSettings(); saveReqs(); try { saveAtt(); } catch (e) {}
+        saveCases(); saveSettings(); saveReqs(); saveCustomReqs(); saveCasesheets(); try { saveAtt(); } catch (e) {}
         refresh(); toast('تم استيراد النسخة الاحتياطية');
       } catch (e) { toast('تعذّر الاستيراد — تأكد أنه ملف DentPilot Student صحيح'); }
     };
@@ -852,6 +1095,7 @@
     els.importFile.addEventListener('change', function (e) { var f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; });
 
     els.confirmOk.addEventListener('click', confirmYes); els.confirmCancel.addEventListener('click', confirmNo);
+    if (els.reqNewName) els.reqNewName.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); if (addCustomReq(els.reqNewName.value)) toggleReqAddForm(false); } });
     var actLater = document.getElementById('actLaterBtn');
     if (actLater) actLater.addEventListener('click', function () { var ov = document.getElementById('activationOverlay'); if (ov) ov.hidden = true; });
     if (els.updateNowBtn) els.updateNowBtn.addEventListener('click', applyUpdate);
@@ -892,6 +1136,19 @@
       else if (act === 'nav') go(btn.dataset.go);
       else if (act === 'activate-now') openActivation();
       else if (act === 'save-notes') saveNotes(id);
+      else if (act === 'req-add-toggle') toggleReqAddForm();
+      else if (act === 'req-add-cancel') toggleReqAddForm(false);
+      else if (act === 'req-add-save') { if (addCustomReq(els.reqNewName && els.reqNewName.value)) toggleReqAddForm(false); }
+      else if (act === 'req-del-custom') { var reqName = btn.dataset.name; confirmAsk({ title: 'حذف المادة', text: 'هل تريد حذف مادة «' + reqName + '» من المتطلبات؟', okLabel: 'حذف', onOk: function () { deleteCustomReq(reqName); } }); }
+      else if (act === 'install-app') triggerInstall();
+      else if (act === 'cs-new') openCasesheetForm(null);
+      else if (act === 'cs-open') openCasesheetForm(btn.dataset.id);
+      else if (act === 'cs-del') deleteCasesheet(btn.dataset.id);
+      else if (act === 'cs-save') saveCasesheetFromForm();
+      else if (act === 'cs-preview') previewCasesheetLive();
+      else if (act === 'cs-print') printCasesheetLive();
+      else if (act === 'cs-photo-add') triggerCasesheetPhoto(btn.dataset.slot);
+      else if (act === 'cs-photo-del') removeCasesheetPhoto(btn.dataset.slot);
     }
     appRoot.addEventListener('click', function (e) { runAction(findAction(e), e); });
     // delegation (change): requirements inputs + attachment input
@@ -911,17 +1168,38 @@
     if (els.attViewTab) els.attViewTab.addEventListener('click', function () { if (attViewUrl) { try { window.open(attViewUrl, '_blank'); } catch (e) {} } });
 
     window.addEventListener('hashchange', applyRoute);
-    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; if (els.installBtn) els.installBtn.hidden = false; });
-    if (els.installBtn) els.installBtn.addEventListener('click', function () {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function () {
-        deferredPrompt = null; els.installBtn.hidden = true;
-      }, function () {
-        deferredPrompt = null; els.installBtn.hidden = true;
-      });
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault(); deferredPrompt = e;
+      if (!isStandalone()) { if (els.installBtn) els.installBtn.hidden = false; if (els.installBanner) els.installBanner.hidden = false; }
     });
-    window.addEventListener('appinstalled', function () { if (els.installBtn) els.installBtn.hidden = true; });
+    if (els.installBtn) els.installBtn.addEventListener('click', triggerInstall);
+    if (els.installBanner) els.installBanner.addEventListener('click', triggerInstall);
+    if (els.setInstallBtn) els.setInstallBtn.addEventListener('click', triggerInstall);
+    window.addEventListener('appinstalled', function () { hideInstallUI(); });
+  }
+  /* ---------- تثبيت التطبيق (PWA) ---------- */
+  function isStandalone() {
+    try { return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; }
+    catch (e) { return false; }
+  }
+  function hideInstallUI() {
+    deferredPrompt = null;
+    if (els.installBtn) els.installBtn.hidden = true;
+    if (els.installBanner) els.installBanner.hidden = true;
+    updateSettingsInstallUI();
+  }
+  function updateSettingsInstallUI() {
+    if (!els.setInstallStatus) return;
+    if (isStandalone()) { els.setInstallStatus.textContent = 'التطبيق مثبت على الشاشة الرئيسية ✅'; if (els.setInstallBtn) els.setInstallBtn.hidden = true; }
+    else { els.setInstallStatus.textContent = 'يمكنك تثبيت التطبيق على شاشتك الرئيسية لفتحه بسرعة كتطبيق مستقل.'; if (els.setInstallBtn) els.setInstallBtn.hidden = false; }
+  }
+  function triggerInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () { hideInstallUI(); }, function () { hideInstallUI(); });
+    } else {
+      toast('اضغط على ⋮ أعلى المتصفح ثم اختر «إضافة إلى الشاشة الرئيسية»', 4500);
+    }
   }
 
   /* ---------- نظام تحديث PWA الآمن ---------- */
