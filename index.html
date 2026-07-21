@@ -100,17 +100,47 @@
 
     <!-- لوحة الطالب -->
     <section class="view" id="view-dashboard" data-view="dashboard">
+      <div class="welcome-card">
+        <div class="welcome-glow welcome-glow-1"></div>
+        <div class="welcome-glow welcome-glow-2"></div>
+        <div class="welcome-main">
+          <div class="welcome-greet" id="welcomeGreet">مرحباً بك 👋</div>
+          <div class="welcome-meta" id="welcomeMeta" hidden></div>
+          <div class="welcome-sub" id="welcomeTagline">متابعة ذكية لحالاتك الأكاديمية اليومية</div>
+        </div>
+        <div class="welcome-date-chip">
+          <span class="welcome-date-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M8 3v4M16 3v4M3.5 10h17"></path></svg></span>
+          <span class="welcome-date-text" id="welcomeDate">—</span>
+        </div>
+      </div>
+
+      <div class="dash-stats">
+        <button type="button" class="dash-card dash-stat" data-go="reqs">
+          <span class="dash-ring" id="dcReqsRing" style="--pct:0"><span class="dash-ring-val" id="dcReqsVal">0%</span></span>
+          <span class="dash-stat-label">متطلبات الكلية</span>
+          <span class="dash-stat-hint">نسبة الإنجاز</span>
+        </button>
+        <button type="button" class="dash-card dash-stat dash-stat-mid" data-go="all">
+          <span class="dash-stat-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"></path><circle cx="17" cy="9" r="2.4"></circle><path d="M15.2 13.6c2.6.2 4.3 2 4.3 4.9"></path></svg></span>
+          <span class="dash-stat-num" id="dcAll">0</span>
+          <span class="dash-stat-label">إجمالي الحالات</span>
+          <span class="dash-stat-hint">كل الحالات</span>
+        </button>
+        <button type="button" class="dash-card dash-stat" data-go="completed">
+          <span class="dash-stat-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M8.2 12.3l2.5 2.5 5-5.2"></path></svg></span>
+          <span class="dash-stat-num" id="dcCompleted">0</span>
+          <span class="dash-stat-label">الحالات المكتملة</span>
+          <span class="dash-stat-hint">مكتملة فقط</span>
+        </button>
+      </div>
+
       <div class="dash-grid">
-        <button type="button" class="dash-card" data-go="all"><span class="dash-emoji">👥</span><span class="dash-text"><span class="dash-title">جميع المرضى</span><span class="dash-count" id="dcAll">0</span></span></button>
-        <button type="button" class="dash-card" data-go="days"><span class="dash-emoji">📅</span><span class="dash-text"><span class="dash-title">المرضى حسب الأيام</span><span class="dash-sub">تنظيم أسبوعي</span></span></button>
-        <button type="button" class="dash-card" data-go="reqs"><span class="dash-emoji">📋</span><span class="dash-text"><span class="dash-title">متطلبات الكلية</span><span class="dash-sub">التقدّم</span></span></button>
-        <button type="button" class="dash-card" data-go="completed"><span class="dash-emoji">✅</span><span class="dash-text"><span class="dash-title">الحالات المكتملة</span><span class="dash-count" id="dcCompleted">0</span></span></button>
-        <button type="button" class="dash-card accent" data-go="add"><span class="dash-emoji">➕</span><span class="dash-text"><span class="dash-title">إضافة حالة</span><span class="dash-sub">جديدة</span></span></button>
-        <button type="button" class="dash-card accent" data-go="casesheets"><span class="dash-emoji">📄</span><span class="dash-text"><span class="dash-title">إضافة كاسشيت</span><span class="dash-sub">ملف تسليم جاهز</span></span></button>
-        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji">📚</span><span class="dash-text"><span class="dash-title">الحالات حسب المادة</span><span class="dash-sub">تجميع حسب القسم/المادة</span></span></button>
-        <button type="button" class="dash-card" data-go="backup"><span class="dash-emoji">💾</span><span class="dash-text"><span class="dash-title">نسخة احتياطية</span><span class="dash-sub">حفظ/استعادة</span></span></button>
-        <button type="button" class="dash-card" data-go="settings"><span class="dash-emoji">⚙️</span><span class="dash-text"><span class="dash-title">الإعدادات</span><span class="dash-sub">الجدول والاسم</span></span></button>
-        <button type="button" class="dash-card support" data-go="support"><span class="dash-emoji">🛟</span><span class="dash-text"><span class="dash-title">الدعم والتفعيل</span><span class="dash-sub" id="dcSupportSub">ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم</span></span></button>
+        <button type="button" class="dash-card accent" data-go="add"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></span><span class="dash-text"><span class="dash-title">إضافة حالة</span><span class="dash-sub">حالة سريرية جديدة</span></span></button>
+        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></span><span class="dash-text"><span class="dash-title">الحالات حسب المادة</span><span class="dash-sub">تجميع حسب القسم/المادة</span></span></button>
+        <button type="button" class="dash-card accent2" data-go="casesheets"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-text"><span class="dash-title">إضافة كاسشيت</span><span class="dash-sub">ملف تسليم جاهز</span></span></button>
+        <button type="button" class="dash-card" data-go="backup"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.7-8.9A5.5 5.5 0 0 1 17.4 8 4 4 0 0 1 17 18H7z"></path><path d="M12 10.5v6M9.5 13l2.5-2.5 2.5 2.5"></path></svg></span><span class="dash-text"><span class="dash-title">نسخة احتياطية</span><span class="dash-sub">حفظ واستعادة بياناتك</span></span></button>
+        <button type="button" class="dash-card settings-card" data-go="settings"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6"></path></svg></span><span class="dash-text"><span class="dash-title">الإعدادات</span><span class="dash-sub">بياناتك والجدول والتفضيلات</span></span></button>
+        <button type="button" class="dash-card support" data-go="support"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.6"></circle><path d="M6.3 6.3l3.6 3.6M17.7 6.3l-3.6 3.6M6.3 17.7l3.6-3.6M17.7 17.7l-3.6-3.6"></path></svg></span><span class="dash-text"><span class="dash-title">الدعم والتفعيل</span><span class="dash-sub" id="dcSupportSub">ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم</span></span></button>
       </div>
     </section>
 
@@ -121,19 +151,6 @@
         <input type="search" id="allSearch" placeholder="بحث بالاسم أو الهاتف أو القسم أو نوع الحالة…" autocomplete="off" /></div>
       <div id="allList" class="rows"></div>
       <div id="allEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
-    </section>
-
-    <!-- المرضى حسب الأيام -->
-    <section class="view" id="view-days" data-view="days" hidden>
-      <div class="page-head"><h2>📅 المرضى حسب الأيام</h2></div>
-      <div id="daysList" class="day-groups"></div>
-    </section>
-
-    <!-- يوم واحد -->
-    <section class="view" id="view-day" data-view="day" hidden>
-      <div class="page-head"><h2 id="dayTitle">اليوم</h2></div>
-      <div id="dayList" class="rows"></div>
-      <div id="dayEmpty" class="empty-state" hidden><p>لا توجد حالات في هذا اليوم.</p><span>يمكنك تخصيص يوم للحالة من نموذج التعديل.</span></div>
     </section>
 
     <!-- متطلبات الكلية -->
@@ -162,9 +179,16 @@
     <!-- الحالات حسب المادة -->
     <section class="view" id="view-bysubject" data-view="bysubject" hidden>
       <div class="page-head"><h2>📚 الحالات حسب المادة</h2></div>
-      <p class="hint">تُجمَّع الحالات الحالية حسب المادة/القسم. الحالات بلا مادة تظهر تحت «بدون مادة محددة».</p>
+      <p class="hint">اختر مادة لعرض حالاتها فقط.</p>
       <div id="bySubjectList" class="subj-groups"></div>
       <div id="bySubjectEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+    </section>
+
+    <!-- حالات مادة واحدة -->
+    <section class="view" id="view-subject" data-view="subject" hidden>
+      <div class="page-head"><h2 id="subjectTitle">حالات</h2></div>
+      <div id="subjectList" class="rows"></div>
+      <div id="subjectEmpty" class="empty-state" hidden><p>لا توجد حالات في هذه المادة.</p></div>
     </section>
 
     <!-- نسخة احتياطية -->
@@ -184,11 +208,17 @@
     <section class="view" id="view-settings" data-view="settings" hidden>
       <div class="page-head"><h2>⚙️ الإعدادات</h2></div>
       <div class="panel">
-        <div class="field"><label for="setName">اسم الطالب (اختياري)</label><input type="text" id="setName" placeholder="اسمك" /></div>
+        <h3 class="sub-h">👤 بيانات الطالب</h3>
+        <div class="field-display">
+          <div class="fd-row"><span class="fd-label">اسم الطالب</span><span class="fd-value" id="setNameDisplay">—</span></div>
+          <div class="fd-row"><span class="fd-label">المستوى الدراسي</span><span class="fd-value" id="setLevelDisplay">—</span></div>
+          <div class="fd-row"><span class="fd-label">الكلية</span><span class="fd-value" id="setCollegeDisplay">—</span></div>
+        </div>
+        <div class="panel-actions"><button type="button" id="editStudentBtn" class="btn btn-primary">✏️ تعديل بيانات الطالب</button></div>
         <h3 class="sub-h">📅 جدول الأسبوع السريري</h3>
-        <p class="hint">اختر القسم المخصّص لكل يوم (اختياري) — يُستخدم لتنظيم صفحة «المرضى حسب الأيام» فقط.</p>
+        <p class="hint">اختر القسم المخصّص لكل يوم (اختياري) — تنظيم شخصي مرجعي لجدولك الأسبوعي.</p>
         <div id="scheduleEditor" class="sched"></div>
-        <div class="panel-actions"><button type="button" id="saveSettingsBtn" class="btn btn-primary">حفظ الإعدادات</button></div>
+        <div class="panel-actions"><button type="button" id="saveSettingsBtn" class="btn btn-primary">حفظ الجدول</button></div>
         <h3 class="sub-h">🔄 التحديثات</h3>
         <p class="hint">الإصدار الحالي: <b id="appVersion">—</b></p>
         <div class="panel-actions"><button type="button" id="checkUpdateBtn" class="btn btn-ghost">التحقق من التحديثات</button></div>
@@ -248,26 +278,43 @@
       <div class="modal-head"><h2 id="caseTitle">إضافة حالة</h2><button type="button" id="caseClose" class="modal-close" aria-label="إغلاق">✕</button></div>
       <form id="caseForm" class="form" novalidate>
         <input type="hidden" id="caseId" />
+        <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
         <div class="grid-2">
-          <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
           <div class="field"><label for="cPhone">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." /></div>
+          <div class="field"><label for="cStatus">حالة الحالة</label><select id="cStatus"></select></div>
         </div>
         <div class="grid-2">
-          <div class="field"><label for="cDept">القسم</label><select id="cDept"></select></div>
+          <div class="field"><label for="cDept">المادة / القسم</label><select id="cDept"></select></div>
           <div class="field"><label for="cType">نوع الحالة</label><input type="text" id="cType" placeholder="مثال: Class II" /></div>
         </div>
+        <div class="field other-inline" id="cDeptOtherWrap" hidden><label for="cDeptOther">اكتب اسم المادة</label><input type="text" id="cDeptOther" placeholder="مثلاً: تعويضات" /></div>
         <div class="grid-2">
-          <div class="field"><label for="cTooth">السن / السن المعالَج</label><input type="text" id="cTooth" placeholder="مثال: سن 36" /></div>
-          <div class="field"><label for="cStatus">حالة الحالة</label><select id="cStatus"></select></div>
+          <div class="field"><label for="cTooth">السن المعالَج</label><input type="text" id="cTooth" placeholder="مثال: 36" /></div>
+          <div class="field"><label for="cDay">اليوم المخصّص</label><select id="cDay"></select></div>
         </div>
         <div class="grid-2">
           <div class="field"><label for="cDate">تاريخ الموعد</label><input type="date" id="cDate" /></div>
           <div class="field"><label for="cTime">وقت الموعد</label><input type="time" id="cTime" /></div>
         </div>
-        <div class="grid-2">
-          <div class="field"><label for="cDay">اليوم المخصّص (اختياري)</label><select id="cDay"></select></div>
-          <div class="field"><label for="cWeekday">اليوم (تلقائي من التاريخ)</label><input type="text" id="cWeekday" readonly placeholder="—" /></div>
+        <div class="field"><label for="cWeekday">اليوم (تلقائي من التاريخ)</label><input type="text" id="cWeekday" readonly placeholder="—" /></div>
+
+        <!-- Endo Details — يظهر فقط عند اختيار مادة Endo -->
+        <div id="endoDetails" hidden>
+          <div class="form-section-title">Endo Details</div>
+          <div class="form-sub-title">Basic Endo</div>
+          <div class="grid-2">
+            <div class="field"><label for="endoTooth">Tooth No</label><input type="text" id="endoTooth" placeholder="e.g. 46" /></div>
+            <div class="field"><label for="endoVisit">Visit Stage</label><select id="endoVisit"></select></div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label for="endoDiagnosis">Diagnosis</label><input type="text" id="endoDiagnosis" placeholder="e.g. Irreversible pulpitis" /></div>
+            <div class="field"><label for="endoPeriapical">Periapical status</label><input type="text" id="endoPeriapical" placeholder="e.g. Normal / PAI" /></div>
+          </div>
+          <div class="form-sub-title">Canals</div>
+          <div id="endoCanalsList"></div>
+          <button type="button" class="btn btn-ghost" data-act="endo-canal-add" style="width:100%">+ إضافة قناة</button>
         </div>
+
         <div class="field"><label for="cNotes">ملاحظات</label><textarea id="cNotes" rows="2" placeholder="ملاحظات عامة عن الحالة"></textarea></div>
         <div class="form-actions"><button type="button" id="caseCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ</button></div>
       </form>
@@ -292,6 +339,20 @@
         <div class="field"><label for="sNext">الموعد القادم</label><input type="datetime-local" id="sNext" /></div>
         <div class="field"><label for="sNotes">ملاحظات الجلسة</label><textarea id="sNotes" rows="2"></textarea></div>
         <div class="form-actions"><button type="button" id="sessionCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ الجلسة</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- بيانات الطالب: تظهر عند أول استخدام إن لم تكن محفوظة، وتُفتح لاحقاً من الإعدادات للتعديل -->
+  <div id="studentSetupOverlay" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2 id="studentSetupTitle">مرحباً بك في DentPilot 👋</h2><button type="button" id="studentSetupSkip" class="modal-close" aria-label="لاحقاً" title="لاحقاً">✕</button></div>
+      <form id="studentSetupForm" class="form" novalidate>
+        <p class="hint" style="margin-top:0">أدخل بياناتك لتخصيص التطبيق — يمكنك تعديلها لاحقاً في أي وقت من الإعدادات.</p>
+        <div class="field"><label for="setupName">اسم الطالب</label><input type="text" id="setupName" required placeholder="اكتب اسمك" /></div>
+        <div class="field"><label for="setupLevel">المستوى الدراسي</label><input type="text" id="setupLevel" placeholder="مثال: السنة الخامسة" /></div>
+        <div class="field"><label for="setupCollege">اسم الكلية</label><input type="text" id="setupCollege" placeholder="مثال: كلية طب وجراحة الفم والأسنان" /></div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary" style="width:100%">حفظ ومتابعة</button></div>
       </form>
     </div>
   </div>
