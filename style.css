@@ -32,9 +32,9 @@ img{ max-width:100%; }
 @keyframes sOut{ to{opacity:0;visibility:hidden} }
 
 /* Topbar */
-.topbar{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:15px 20px; padding-top:calc(15px + env(safe-area-inset-top)); background:linear-gradient(120deg,var(--navy-900),var(--navy-700) 70%,var(--teal-600)); color:#fff; box-shadow:var(--shadow-md); position:sticky; top:0; z-index:30; }
+.topbar{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:15px 20px; padding-top:calc(15px + env(safe-area-inset-top)); background:linear-gradient(120deg,var(--navy-900),var(--navy-700) 70%,var(--teal-600)); color:#fff; box-shadow:0 6px 20px rgba(10,44,82,.22); position:sticky; top:0; z-index:30; }
 .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
-.brand-mark{ display:grid; place-items:center; width:42px; height:42px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); border-radius:12px; font-size:1.3rem; flex:none; }
+.brand-mark{ display:grid; place-items:center; width:42px; height:42px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28); border-radius:13px; font-size:1.3rem; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.25); }
 .brand-text{ min-width:0; } .brand-text h1{ font-size:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .brand-text p{ margin:0; font-size:.76rem; opacity:.8; }
 .icon-btn{ display:grid; place-items:center; width:42px; height:42px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); border-radius:12px; color:#fff; cursor:pointer; flex:none; transition:background .15s; }
 .icon-btn:hover{ background:rgba(255,255,255,.22); } .back-btn{ margin-inline-end:2px; }
@@ -53,36 +53,30 @@ img{ max-width:100%; }
 .dash-emoji svg{ width:17px; height:17px; }
 .dash-title{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.8rem; color:var(--navy-800); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .dash-sub{ font-size:.65rem; color:var(--muted); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .dash-count{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.95rem; color:var(--teal-700); line-height:1.15; }
-/* كرت الترحيب الفاخر — بين شريط التجربة والكروت الثلاثة العلوية */
-.welcome-card{
-  position:relative; overflow:hidden; isolation:isolate;
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  background:linear-gradient(120deg, var(--navy-900) 0%, var(--navy-700) 55%, var(--teal-500) 100%);
-  border-radius:20px; padding:16px 18px; margin-bottom:11px;
-  min-height:112px; box-shadow:0 10px 26px rgba(10,44,82,.28), 0 2px 8px rgba(10,44,82,.14);
-  color:#fff;
-}
-.welcome-card::after{
-  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
-  background:linear-gradient(115deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 32%);
-}
-.welcome-glow{ position:absolute; border-radius:50%; filter:blur(30px); pointer-events:none; z-index:0; }
-.welcome-glow-1{ width:150px; height:150px; background:radial-gradient(circle, rgba(255,255,255,.45), transparent 70%); top:-65px; inset-inline-start:-45px; opacity:.5; }
-.welcome-glow-2{ width:130px; height:130px; background:radial-gradient(circle, var(--teal-500), transparent 70%); bottom:-60px; inset-inline-end:-30px; opacity:.45; }
-.welcome-main{ position:relative; z-index:1; min-width:0; }
-.welcome-greet{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.02rem; opacity:.98; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.welcome-meta{ font-size:.76rem; font-weight:700; opacity:.88; margin-bottom:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.welcome-sub{ font-size:.72rem; opacity:.82; line-height:1.35; }
-.welcome-date-chip{
-  position:relative; z-index:1; flex:none;
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.28);
-  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  border-radius:14px; padding:10px 12px; min-width:84px; text-align:center;
-}
-.welcome-date-ico{ display:flex; color:rgba(255,255,255,.92); }
-.welcome-date-ico svg{ width:16px; height:16px; }
-.welcome-date-text{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.76rem; white-space:nowrap; }
+.hero-card{ position:relative; overflow:hidden; display:flex; align-items:center; gap:14px; background:linear-gradient(135deg, var(--navy-900) 0%, var(--teal-700) 100%); color:#fff; border-radius:20px; padding:22px 20px; box-shadow:0 10px 25px -5px rgba(22,168,166,0.3), 0 8px 10px -6px rgba(15,23,42,0.5); margin-bottom:16px; border:1px solid rgba(255,255,255,0.08); min-height: 120px; box-sizing: border-box; }
+.hero-card::before{ content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size:20px 20px; opacity:0.6; z-index:0; pointer-events:none; }
+.hero-glow{ position:absolute; border-radius:50%; filter:blur(30px); pointer-events:none; z-index:0; }
+.hero-glow-1{ width:160px; height:160px; background:radial-gradient(circle, rgba(255,255,255,.15), transparent 70%); top:-70px; inset-inline-start:-50px; opacity:.7; }
+.hero-glow-2{ width:180px; height:180px; background:radial-gradient(circle, rgba(6,182,212,.4), transparent 70%); bottom:-70px; inset-inline-end:-30px; opacity:.6; }
+.hero-info{ position:relative; z-index:1; min-width:0; flex:1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+.hero-name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.25rem; margin-bottom:6px; line-height:1.3; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hero-meta{ font-size:.85rem; font-weight:600; color:#cffafe; margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hero-stats{ align-self: flex-start; font-size:.72rem; font-weight:700; color:#e0f2fe; background:rgba(255,255,255,0.12); padding:5px 12px; border-radius:14px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.15); }
+.hero-tooth{ position:relative; z-index:1; flex:none; width:90px; height:90px; display:grid; place-items:center; }
+.hero-tooth::before{ content:''; position:absolute; inset:-6px; border-radius:50%; background:radial-gradient(circle, rgba(34,211,238,0.15) 0%, transparent 70%); pointer-events:none; z-index:0; }
+.hero-tooth-svg{ position:relative; z-index:2; width:100%; height:100%; filter:drop-shadow(0 4px 10px rgba(6,182,212,0.3)) drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+
+/* شريط التقويم الأفقي */
+.cal-strip-wrap{ margin-bottom:16px; position:relative; max-width: 100%; overflow: hidden; }
+.cal-strip{ display:flex; gap:10px; overflow-x:auto; padding:4px 4px 12px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; max-width: 100%; box-sizing: border-box; }
+.cal-strip::-webkit-scrollbar{ display:none; }
+.cal-day{ flex:0 0 auto; scroll-snap-align:center; min-width:68px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:10px 4px; border-radius:16px; border:1px solid var(--line); background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.03); font-family:inherit; cursor:pointer; transition:all 0.2s ease; box-sizing: border-box; }
+.cal-day-name{ font-size:.72rem; color:var(--muted); font-weight:700; white-space:nowrap; overflow:visible; }
+.cal-day-num{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.1rem; color:var(--navy-800); line-height:1; }
+.cal-day-today{ border-color:transparent; background:linear-gradient(135deg,var(--navy-700),var(--teal-600)); box-shadow:0 6px 12px rgba(22,168,166,0.25); transform:translateY(-2px); }
+.cal-day-today .cal-day-name,.cal-day-today .cal-day-num{ color:#fff; }
+.cal-day-active:not(.cal-day-today){ border-color:var(--teal-500); box-shadow:0 0 0 2px var(--teal-100); }
+.cal-note{ font-size:.76rem; color:var(--navy-800); font-weight:700; margin-top:7px; padding-inline-start:2px; }
 
 .dash-stats{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin-bottom:10px; }
 .dash-stat{ flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:6px; padding:20px 6px; min-height:152px; height:152px; }
@@ -95,11 +89,9 @@ img{ max-width:100%; }
 .dash-ring{ width:50px; height:50px; border-radius:50%; margin:0 auto; display:grid; place-items:center; position:relative; background:conic-gradient(var(--teal-700) calc(var(--pct)*1%), var(--teal-100) 0); }
 .dash-ring::before{ content:''; position:absolute; inset:5px; background:#fff; border-radius:50%; }
 .dash-ring-val{ position:relative; z-index:1; font-family:'Cairo',sans-serif; font-weight:800; font-size:.76rem; color:var(--teal-700); }
-.dash-card.settings-card{ border-color:#b9cfe8; background:linear-gradient(135deg,#eef4fb,#dce8f7); }
-.dash-card.settings-card .dash-emoji{ background:#cfe0f5; color:var(--navy-800); } .dash-card.settings-card .dash-title{ color:var(--navy-900); }
 .dash-card.accent{ background:linear-gradient(135deg, var(--teal-500) 0%, var(--teal-600) 55%, var(--teal-700) 100%); border-color:transparent; box-shadow:0 6px 16px rgba(14,143,143,.3); }
 .dash-card.accent .dash-title,.dash-card.accent .dash-sub,.dash-card.accent .dash-emoji{ color:#fff; } .dash-card.accent .dash-emoji{ background:rgba(255,255,255,.22); }
-.dash-card.accent2{ background:linear-gradient(135deg,var(--navy-700),var(--teal-600) 90%); border-color:transparent; box-shadow:0 5px 14px rgba(11,59,111,.2); }
+.dash-card.accent2{ background:linear-gradient(135deg,var(--navy-800) 0%,var(--navy-700) 55%,#5b64c9 100%); border-color:transparent; box-shadow:0 5px 14px rgba(45,55,140,.22); }
 .dash-card.accent2 .dash-title,.dash-card.accent2 .dash-sub,.dash-card.accent2 .dash-emoji{ color:#fff; } .dash-card.accent2 .dash-emoji{ background:rgba(255,255,255,.2); }
 
 /* Search */
@@ -392,3 +384,51 @@ html, body{ max-width:100%; overflow-x:hidden; }
 .file-actions a, .file-actions span.card-btn{ max-width:100%; }
 .activate-cta{ text-align:center; border:1px solid var(--teal-100); background:var(--teal-50); }
 .activate-cta .sup-fine{ margin-top:8px; }
+
+/* ============================================================
+   الشريط السفلي — مخصوص بالصفحة الرئيسية فقط (داخل #view-dashboard)
+   ============================================================ */
+#view-dashboard{ padding-bottom:76px; }
+.dash-bottombar{
+  position:fixed; left:0; right:0; bottom:0; z-index:25;
+  display:flex; padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--line); box-shadow:0 -6px 20px rgba(11,59,111,.1); max-width:100%;
+}
+.dbb-item{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:transparent; border:1px solid transparent; box-shadow:none; border-radius:12px; padding:6px 4px; min-height:0; width:auto; }
+.dbb-item:hover{ transform:none; box-shadow:none; }
+.dbb-ico{ width:auto; height:auto; background:transparent; color:var(--muted); }
+.dbb-ico svg{ width:20px; height:20px; }
+.dbb-label{ font-size:.65rem; font-weight:700; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
+.dbb-active{ background:var(--teal-50); }
+.dbb-active .dbb-ico{ color:var(--teal-700); } .dbb-active .dbb-label{ color:var(--teal-700); }
+
+/* ============================================================
+   النموذج السريري (Smart Clinical Form)
+   ============================================================ */
+
+/* زر اختيار القسم */
+.dept-select-btn{ width:100%; text-align:start; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:.92rem; color:var(--ink); display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-family:inherit; transition:border .15s, box-shadow .15s; }
+.dept-select-btn:after{ content:'›'; font-size:1.2rem; color:var(--muted); transform:rotate(90deg); margin-inline-start:8px; }
+.dept-select-btn:hover, .dept-select-btn:focus{ border-color:var(--teal-500); box-shadow:0 0 0 3px rgba(22,168,166,.14); }
+
+/* Bottom Sheet Overlay — يجب أن يظهر فوق modal-overlay (z-index:60) */
+.dept-overlay{ align-items:flex-end; padding:0; z-index:120; }
+.dept-sheet{ width:100%; max-width:600px; background:#fff; border-radius:24px 24px 0 0; padding:20px; box-shadow:0 -10px 40px rgba(0,0,0,.15); animation:sheetUp .3s cubic-bezier(0.1, 0.9, 0.2, 1); max-height:85vh; overflow-y:auto; margin:0 auto; }
+@keyframes sheetUp{ from{transform:translateY(100%)} to{transform:none} }
+.dept-sheet-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:12px; }
+.dept-sheet-head h3{ font-size:1.1rem; color:var(--navy-800); margin:0; }
+
+/* بطاقات التخصصات */
+.dept-cards{ display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
+.dept-card{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:all .2s; }
+.dept-card:hover, .dept-card:active{ background:var(--teal-50); border-color:var(--teal-500); transform:translateY(-2px); box-shadow:0 4px 12px rgba(22,168,166,.15); }
+.dept-icon{ font-size:1.8rem; line-height:1; }
+.dept-name{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.9rem; color:var(--navy-800); }
+.dept-desc{ font-size:.65rem; color:var(--muted); line-height:1.2; }
+
+/* الأقسام الديناميكية */
+.dyn-section{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:14px; box-shadow:0 2px 6px rgba(0,0,0,.02); animation:fadeIn .3s ease; }
+.dyn-section .form-section-title{ font-size:.9rem; font-weight:700; color:var(--teal-700); margin-bottom:12px; border-bottom:1px dashed var(--teal-100); padding-bottom:6px; }
+.dyn-add-btn{ width:100%; margin-top:10px; border-style:dashed; color:var(--teal-700); border-color:var(--teal-500); }
+.dyn-add-btn:hover{ background:var(--teal-50); }

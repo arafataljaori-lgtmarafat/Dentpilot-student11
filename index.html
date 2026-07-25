@@ -100,18 +100,188 @@
 
     <!-- لوحة الطالب -->
     <section class="view" id="view-dashboard" data-view="dashboard">
-      <div class="welcome-card">
-        <div class="welcome-glow welcome-glow-1"></div>
-        <div class="welcome-glow welcome-glow-2"></div>
-        <div class="welcome-main">
-          <div class="welcome-greet" id="welcomeGreet">مرحباً بك 👋</div>
-          <div class="welcome-meta" id="welcomeMeta" hidden></div>
-          <div class="welcome-sub" id="welcomeTagline">متابعة ذكية لحالاتك الأكاديمية اليومية</div>
+      <div class="hero-card">
+        <div class="hero-glow hero-glow-1"></div>
+        <div class="hero-glow hero-glow-2"></div>
+        <div class="hero-info">
+          <div class="hero-name" id="heroName">طالب طب الأسنان</div>
+          <div class="hero-meta" id="heroMeta">DentPilot Student</div>
+          <div class="hero-stats" id="heroStats">إجمالي الحالات: 0 • المكتملة: 0</div>
         </div>
-        <div class="welcome-date-chip">
-          <span class="welcome-date-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M8 3v4M16 3v4M3.5 10h17"></path></svg></span>
-          <span class="welcome-date-text" id="welcomeDate">—</span>
+        <div class="hero-tooth" aria-hidden="true">
+          <svg viewBox="0 0 160 160" class="hero-tooth-svg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Radial background glow -->
+              <radialGradient id="htBgGlow" cx="50%" cy="48%" r="50%">
+                <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.18"/>
+                <stop offset="60%" stop-color="#06b6d4" stop-opacity="0.06"/>
+                <stop offset="100%" stop-color="#0e7490" stop-opacity="0"/>
+              </radialGradient>
+              <!-- Main tooth body gradient — pearly white to icy blue -->
+              <linearGradient id="htBodyGrad" x1="25%" y1="0%" x2="75%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="25%" stop-color="#f8fffe"/>
+                <stop offset="55%" stop-color="#e0f7fa"/>
+                <stop offset="80%" stop-color="#b2ebf2"/>
+                <stop offset="100%" stop-color="#80deea"/>
+              </linearGradient>
+              <!-- Left shadow gradient for depth -->
+              <linearGradient id="htShadowL" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0e7490" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#0e7490" stop-opacity="0"/>
+              </linearGradient>
+              <!-- Right shadow gradient for depth -->
+              <linearGradient id="htShadowR" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#0e7490" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#0e7490" stop-opacity="0"/>
+              </linearGradient>
+              <!-- Glass highlight on crown -->
+              <linearGradient id="htGlassHL" x1="30%" y1="0%" x2="70%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                <stop offset="40%" stop-color="#ffffff" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </linearGradient>
+              <!-- Rim light gradient -->
+              <linearGradient id="htRimLight" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.7"/>
+                <stop offset="50%" stop-color="#22d3ee" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.6"/>
+              </linearGradient>
+              <!-- Root occlusion shadow -->
+              <linearGradient id="htRootShadow" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color="#0d9488" stop-opacity="0"/>
+                <stop offset="60%" stop-color="#134e4a" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#042f2e" stop-opacity="0.3"/>
+              </linearGradient>
+              <!-- Outer glow filter -->
+              <filter id="htOuterGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+                <feFlood flood-color="#22d3ee" flood-opacity="0.35" result="color"/>
+                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <!-- Drop shadow for 3D depth -->
+              <filter id="htDropShadow" x="-15%" y="-10%" width="130%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#042f2e" flood-opacity="0.45"/>
+                <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#134e4a" flood-opacity="0.2"/>
+              </filter>
+            </defs>
+
+            <!-- Background radial glow -->
+            <circle cx="80" cy="76" r="58" fill="url(#htBgGlow)"/>
+
+            <!-- Outer tech ring — static -->
+            <circle cx="80" cy="76" r="56" fill="none" stroke="#67e8f9" stroke-width="0.6" opacity="0.2"/>
+
+            <!-- Dotted tech ring — slowly rotating -->
+            <circle cx="80" cy="76" r="50" fill="none" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="2.5 6" opacity="0.35">
+              <animateTransform attributeName="transform" type="rotate" from="0 80 76" to="360 80 76" dur="30s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Inner dotted ring — counter-rotating -->
+            <circle cx="80" cy="76" r="44" fill="none" stroke="#a5f3fc" stroke-width="0.8" stroke-dasharray="1.5 8" opacity="0.25">
+              <animateTransform attributeName="transform" type="rotate" from="360 80 76" to="0 80 76" dur="22s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Small accent dots -->
+            <circle cx="38" cy="42" r="1.4" fill="#67e8f9" opacity="0.6"/>
+            <circle cx="122" cy="52" r="1.1" fill="#a5f3fc" opacity="0.5"/>
+            <circle cx="46" cy="108" r="1.0" fill="#22d3ee" opacity="0.4"/>
+            <circle cx="116" cy="98" r="1.3" fill="#67e8f9" opacity="0.45"/>
+
+            <!-- ===== TOOTH ===== -->
+            <g filter="url(#htDropShadow)">
+              <!-- Main tooth body with pearly gradient -->
+              <path d="
+                M80 28
+                C62 28 48 38 44 54
+                C42 60 42 66 44 72
+                C46 78 50 82 52 88
+                L52 92
+                C52 100 54 108 56 112
+                C57 115 59 116 61 116
+                C63 116 65 114 65 108
+                L65 96
+                C65 92 68 89 72 89
+                L72 89
+                C72 89 76 89 78 89
+                C80 89 80 92 80 96
+                C80 89 80 89 82 89
+                C84 89 88 89 88 89
+                L88 89
+                C92 89 95 92 95 96
+                L95 108
+                C95 114 97 116 99 116
+                C101 116 103 115 104 112
+                C106 108 108 100 108 92
+                L108 88
+                C110 82 114 78 116 72
+                C118 66 118 60 116 54
+                C112 38 98 28 80 28 Z
+              " fill="url(#htBodyGrad)" stroke="url(#htRimLight)" stroke-width="1.2"/>
+
+              <!-- Left depth shadow -->
+              <path d="
+                M80 28
+                C62 28 48 38 44 54
+                C42 60 42 66 44 72
+                C46 78 50 82 52 88
+                L52 92
+                C52 100 54 108 56 112
+                C57 115 59 116 61 116
+                C63 116 65 114 65 108
+                L65 96
+                C65 92 68 89 72 89
+                L72 89 L68 89
+                C64 89 62 86 62 82
+                L62 78
+                C58 72 54 66 54 58
+                C54 44 64 32 80 28 Z
+              " fill="url(#htShadowL)" opacity="0.7"/>
+
+              <!-- Right depth shadow -->
+              <path d="
+                M80 28
+                C98 28 112 38 116 54
+                C118 60 118 66 116 72
+                C114 78 110 82 108 88
+                L108 92
+                C108 100 106 108 104 112
+                C103 115 101 116 99 116
+                C97 116 95 114 95 108
+                L95 96
+                C95 92 92 89 88 89
+                L88 89 L92 89
+                C96 89 98 86 98 82
+                L98 78
+                C102 72 106 66 106 58
+                C106 44 96 32 80 28 Z
+              " fill="url(#htShadowR)" opacity="0.5"/>
+
+              <!-- Root occlusion shadow -->
+              <path d="
+                M52 88 L52 92 C52 100 54 108 56 112 C57 115 59 116 61 116 C63 116 65 114 65 108 L65 96 C65 92 68 89 72 89 L88 89 C92 89 95 92 95 96 L95 108 C95 114 97 116 99 116 C101 116 103 115 104 112 C106 108 108 100 108 92 L108 88 Z
+              " fill="url(#htRootShadow)"/>
+
+              <!-- Crown glass highlight -->
+              <ellipse cx="68" cy="44" rx="12" ry="16" fill="url(#htGlassHL)" transform="rotate(-20 68 44)" opacity="0.7"/>
+
+              <!-- Small specular highlight -->
+              <ellipse cx="72" cy="36" rx="4" ry="6" fill="#ffffff" opacity="0.85" transform="rotate(-15 72 36)"/>
+
+              <!-- Secondary soft highlight on right -->
+              <ellipse cx="92" cy="50" rx="5" ry="10" fill="#ffffff" opacity="0.2" transform="rotate(10 92 50)"/>
+
+              <!-- Subtle occlusal groove line -->
+              <path d="M68 58 Q74 62 80 60 Q86 58 92 60" fill="none" stroke="#b2ebf2" stroke-width="0.8" opacity="0.35"/>
+            </g>
+          </svg>
         </div>
+      </div>
+
+      <div class="cal-strip-wrap">
+        <div class="cal-strip" id="calStrip"></div>
+        <div class="cal-note" id="calNote">—</div>
       </div>
 
       <div class="dash-stats">
@@ -134,13 +304,26 @@
         </button>
       </div>
 
-      <div class="dash-grid">
+      <div class="dash-grid dash-grid-4">
         <button type="button" class="dash-card accent" data-go="add"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></span><span class="dash-text"><span class="dash-title">إضافة حالة</span><span class="dash-sub">حالة سريرية جديدة</span></span></button>
         <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></span><span class="dash-text"><span class="dash-title">الحالات حسب المادة</span><span class="dash-sub">تجميع حسب القسم/المادة</span></span></button>
         <button type="button" class="dash-card accent2" data-go="casesheets"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-text"><span class="dash-title">إضافة كاسشيت</span><span class="dash-sub">ملف تسليم جاهز</span></span></button>
-        <button type="button" class="dash-card" data-go="backup"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.7-8.9A5.5 5.5 0 0 1 17.4 8 4 4 0 0 1 17 18H7z"></path><path d="M12 10.5v6M9.5 13l2.5-2.5 2.5 2.5"></path></svg></span><span class="dash-text"><span class="dash-title">نسخة احتياطية</span><span class="dash-sub">حفظ واستعادة بياناتك</span></span></button>
-        <button type="button" class="dash-card settings-card" data-go="settings"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6"></path></svg></span><span class="dash-text"><span class="dash-title">الإعدادات</span><span class="dash-sub">بياناتك والجدول والتفضيلات</span></span></button>
         <button type="button" class="dash-card support" data-go="support"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.6"></circle><path d="M6.3 6.3l3.6 3.6M17.7 6.3l-3.6 3.6M6.3 17.7l3.6-3.6M17.7 17.7l-3.6-3.6"></path></svg></span><span class="dash-text"><span class="dash-title">الدعم والتفعيل</span><span class="dash-sub" id="dcSupportSub">ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم</span></span></button>
+      </div>
+
+      <div class="dash-bottombar">
+        <button type="button" class="dash-card dbb-item dbb-active" data-go="dashboard">
+          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"></path></svg></span>
+          <span class="dbb-label">الرئيسية</span>
+        </button>
+        <button type="button" class="dash-card dbb-item" data-go="backup">
+          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.7-8.9A5.5 5.5 0 0 1 17.4 8 4 4 0 0 1 17 18H7z"></path><path d="M12 10.5v6M9.5 13l2.5-2.5 2.5 2.5"></path></svg></span>
+          <span class="dbb-label">نسخة احتياطية</span>
+        </button>
+        <button type="button" class="dash-card dbb-item" data-go="settings">
+          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6"></path></svg></span>
+          <span class="dbb-label">الإعدادات</span>
+        </button>
       </div>
     </section>
 
@@ -272,6 +455,159 @@
 
   </main>
 
+  <!-- نافذة اختيار القسم (Bottom Sheet) -->
+  <div id="deptOverlay" class="modal-overlay dept-overlay" hidden>
+    <div class="dept-sheet">
+      <div class="dept-sheet-head">
+        <div class="dept-sheet-title-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.1 2 5 5.1 5 9c0 3.1 1.8 5.8 4.4 7.1L8 22h8l-1.4-5.9C17.2 14.8 19 12.1 19 9c0-3.9-3.1-7-7-7z"/></svg>
+          <h3>اختر التخصص السريري</h3>
+        </div>
+        <button type="button" id="deptClose" class="modal-close" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="dept-cards">
+
+        <!-- Operative -->
+        <button type="button" class="dept-card" data-val="Operative">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4C12 4 8.5 6.8 7.5 11C7 13.2 7.4 15.3 8.5 17L9.5 21C10 24 11 27 12.4 27C13.8 27 14 25.2 14 23.5V21C14 20 15 19.4 16 19.4C17 19.4 18 20 18 21V23.5C18 25.2 18.2 27 19.6 27C21 27 22 24 22.5 21L23.5 17C24.6 15.3 25 13.2 24.5 11C23.5 6.8 20 4 16 4Z"/>
+              <rect x="12" y="9.5" width="8" height="5" rx="1.4" fill="currentColor" opacity="0.18" stroke="currentColor" stroke-width="1.5"/>
+              <line x1="14.5" y1="9.5" x2="14.5" y2="14.5" stroke-width="1" opacity="0.5"/>
+            </svg>
+          </span>
+          <span class="dept-name">Operative</span>
+          <span class="dept-desc">حشوات تحفظية</span>
+        </button>
+
+        <!-- Endo -->
+        <button type="button" class="dept-card" data-val="Endo">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4C12 4 8.5 6.8 7.5 11C7 13.2 7.4 15.3 8.5 17L9.5 21C10 24 11 27 12.4 27C13.8 27 14 25.2 14 23.5V21C14 20 15 19.4 16 19.4C17 19.4 18 20 18 21V23.5C18 25.2 18.2 27 19.6 27C21 27 22 24 22.5 21L23.5 17C24.6 15.3 25 13.2 24.5 11C23.5 6.8 20 4 16 4Z"/>
+              <path d="M13 12Q16 10 19 12" stroke-width="1.4"/>
+              <line x1="13" y1="12" x2="12.5" y2="23" stroke-width="1.3" stroke-dasharray="2.8 2"/>
+              <line x1="19" y1="12" x2="19.5" y2="23" stroke-width="1.3" stroke-dasharray="2.8 2"/>
+            </svg>
+          </span>
+          <span class="dept-name">Endo</span>
+          <span class="dept-desc">علاج عصب وجذور</span>
+        </button>
+
+        <!-- Periodontics (data-val stays "Cleaning" for backward compat) -->
+        <button type="button" class="dept-card" data-val="Cleaning">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Three teeth stubs -->
+              <rect x="6" y="18" width="5.5" height="10" rx="2.75"/>
+              <rect x="13.25" y="15.5" width="5.5" height="12.5" rx="2.75"/>
+              <rect x="20.5" y="18" width="5.5" height="10" rx="2.75"/>
+              <!-- Gum scallop line -->
+              <path d="M4 18 Q8.75 12 13.25 15.5 Q18 19 22.25 15.5 Q26 12 28 18" stroke-width="2.1" fill="none"/>
+            </svg>
+          </span>
+          <span class="dept-name">Periodontics</span>
+          <span class="dept-desc">علاج دواعم ولثة</span>
+        </button>
+
+        <!-- Orthodontics -->
+        <button type="button" class="dept-card" data-val="Orthodontics">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Left tooth stub -->
+              <path d="M7 28 L7 14 Q7 11 9.5 11 Q12 11 12 14 L12 28"/>
+              <!-- Right tooth stub -->
+              <path d="M20 28 L20 14 Q20 11 22.5 11 Q25 11 25 14 L25 28"/>
+              <!-- Middle tooth stub -->
+              <path d="M13.5 28 L13.5 12 Q13.5 9 16 9 Q18.5 9 18.5 12 L18.5 28"/>
+              <!-- Bracket left -->
+              <rect x="8" y="17" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.4"/>
+              <!-- Bracket middle -->
+              <rect x="14" y="15" width="4" height="5" rx="0.8" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.4"/>
+              <!-- Bracket right -->
+              <rect x="21" y="17" width="3" height="5" rx="0.8" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.4"/>
+              <!-- Archwire -->
+              <path d="M4 19.5 Q8 19 9.5 19.5 Q12 20 16 17.5 Q20 15 22.5 19.5 Q24 20 28 19.5" stroke-width="1.6" fill="none"/>
+            </svg>
+          </span>
+          <span class="dept-name">Orthodontics</span>
+          <span class="dept-desc">تقويم أسنان</span>
+        </button>
+
+        <!-- Surgery -->
+        <button type="button" class="dept-card" data-val="Surgery">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Forceps left arm -->
+              <path d="M9 5 C8 8 7.5 11 8.5 14 L14 20"/>
+              <!-- Forceps right arm -->
+              <path d="M23 5 C24 8 24.5 11 23.5 14 L18 20"/>
+              <!-- Beak tips -->
+              <path d="M14 20 Q16 22.5 18 20" fill="none"/>
+              <!-- Left handle -->
+              <path d="M9 5 L10 12"/>
+              <!-- Right handle -->
+              <path d="M23 5 L22 12"/>
+              <!-- Small tooth being extracted -->
+              <path d="M13.5 22.5 Q14.5 25 14.5 27" stroke-width="1.3"/>
+              <path d="M18.5 22.5 Q17.5 25 17.5 27" stroke-width="1.3"/>
+              <path d="M13.5 22.5 Q16 23.5 18.5 22.5" stroke-width="1.3"/>
+            </svg>
+          </span>
+          <span class="dept-name">Surgery</span>
+          <span class="dept-desc">قلع وجراحة</span>
+        </button>
+
+        <!-- Pediatric -->
+        <button type="button" class="dept-card" data-val="Pediatric">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Primary (baby) tooth: wider crown, shorter roots, more rounded -->
+              <path d="M16 5C12.5 5 9.5 7.3 8.8 10.8C8.4 12.7 8.7 14.5 9.6 16.1L10.2 18.8C10.7 21.3 11.4 24 12.6 24C13.8 24 14 22.5 14 21.2V19.5C14 18.5 14.9 18 16 18C17.1 18 18 18.5 18 19.5V21.2C18 22.5 18.2 24 19.4 24C20.6 24 21.3 21.3 21.8 18.8L22.4 16.1C23.3 14.5 23.6 12.7 23.2 10.8C22.5 7.3 19.5 5 16 5Z"/>
+              <!-- Wide crown indicator: cervical lines -->
+              <path d="M10.5 16.5 Q16 18 21.5 16.5" stroke-width="1.2" opacity="0.6"/>
+              <!-- Small size indicator: star/dot on crown -->
+              <circle cx="16" cy="10" r="1.3" fill="currentColor" opacity="0.3"/>
+            </svg>
+          </span>
+          <span class="dept-name">Pediatric</span>
+          <span class="dept-desc">طب أسنان أطفال</span>
+        </button>
+
+        <!-- Prosthodontics -->
+        <button type="button" class="dept-card" data-val="Prosthodontics">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Dental crown shape -->
+              <path d="M7 24 L7 17 L10.5 20.5 L16 7 L21.5 20.5 L25 17 L25 24 Z" stroke-linejoin="round"/>
+              <!-- Crown base band -->
+              <line x1="6" y1="24" x2="26" y2="24" stroke-width="2"/>
+              <!-- Anatomical groove lines on crown -->
+              <line x1="13" y1="24" x2="13.5" y2="18.5" stroke-width="1.1" opacity="0.55"/>
+              <line x1="19" y1="24" x2="18.5" y2="18.5" stroke-width="1.1" opacity="0.55"/>
+            </svg>
+          </span>
+          <span class="dept-name">Prosthodontics</span>
+          <span class="dept-desc">تركيبات ثابتة ومتحركة</span>
+        </button>
+
+        <!-- Other -->
+        <button type="button" class="dept-card" data-val="أخرى">
+          <span class="dept-icon-wrap">
+            <svg class="dept-svg" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="16" cy="16" r="11"/>
+              <line x1="16" y1="10" x2="16" y2="22"/>
+              <line x1="10" y1="16" x2="22" y2="16"/>
+            </svg>
+          </span>
+          <span class="dept-name">أخرى</span>
+          <span class="dept-desc">تخصصات أخرى</span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
   <!-- نافذة إضافة/تعديل حالة -->
   <div id="caseOverlay" class="modal-overlay" hidden>
     <div class="modal" role="dialog" aria-modal="true">
@@ -281,41 +617,298 @@
         <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
         <div class="grid-2">
           <div class="field"><label for="cPhone">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." /></div>
-          <div class="field"><label for="cStatus">حالة الحالة</label><select id="cStatus"></select></div>
+          <div class="field"><label for="cStatus">الحالة</label><select id="cStatus"></select></div>
+        </div>
+        <div class="field">
+          <label>المادة / القسم</label>
+          <button type="button" id="cDeptBtn" class="dept-select-btn">اختر التخصص</button>
+          <input type="hidden" id="cDept" />
+        </div>
+        <div class="field other-inline" id="cDeptOtherWrap" hidden>
+          <label for="cDeptOther">اسم التخصص (مخصّص)</label>
+          <input type="text" id="cDeptOther" placeholder="مثلاً: تعويضات" />
         </div>
         <div class="grid-2">
-          <div class="field"><label for="cDept">المادة / القسم</label><select id="cDept"></select></div>
-          <div class="field"><label for="cType">نوع الحالة</label><input type="text" id="cType" placeholder="مثال: Class II" /></div>
-        </div>
-        <div class="field other-inline" id="cDeptOtherWrap" hidden><label for="cDeptOther">اكتب اسم المادة</label><input type="text" id="cDeptOther" placeholder="مثلاً: تعويضات" /></div>
-        <div class="grid-2">
-          <div class="field"><label for="cTooth">السن المعالَج</label><input type="text" id="cTooth" placeholder="مثال: 36" /></div>
-          <div class="field"><label for="cDay">اليوم المخصّص</label><select id="cDay"></select></div>
-        </div>
-        <div class="grid-2">
+          <div class="field" id="cToothWrap"><label for="cTooth">رقم السن</label><input type="text" id="cTooth" placeholder="مثال: 36" /></div>
           <div class="field"><label for="cDate">تاريخ الموعد</label><input type="date" id="cDate" /></div>
-          <div class="field"><label for="cTime">وقت الموعد</label><input type="time" id="cTime" /></div>
         </div>
-        <div class="field"><label for="cWeekday">اليوم (تلقائي من التاريخ)</label><input type="text" id="cWeekday" readonly placeholder="—" /></div>
+        <input type="hidden" id="cType" />
+        <input type="hidden" id="cTime" />
+        <input type="hidden" id="cWeekday" />
+        <div class="field" style="display:none"><select id="cDay"></select></div>
 
-        <!-- Endo Details — يظهر فقط عند اختيار مادة Endo -->
-        <div id="endoDetails" hidden>
-          <div class="form-section-title">Endo Details</div>
-          <div class="form-sub-title">Basic Endo</div>
+        <!-- === Dynamic Sections === -->
+        
+        <!-- Operative -->
+        <div id="opDetails" class="dyn-section" hidden>
+          <div class="form-section-title">🦷 Operative Details</div>
           <div class="grid-2">
-            <div class="field"><label for="endoTooth">Tooth No</label><input type="text" id="endoTooth" placeholder="e.g. 46" /></div>
+            <div class="field"><label for="opClass">Class</label>
+              <select id="opClass">
+                <option value="">—</option>
+                <option value="Class I">Class I</option>
+                <option value="Class II">Class II</option>
+                <option value="Class III">Class III</option>
+                <option value="Class IV">Class IV</option>
+                <option value="Class V">Class V</option>
+                <option value="Class VI">Class VI</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="opMaterial">Material</label>
+              <select id="opMaterial">
+                <option value="">—</option>
+                <option value="Composite">Composite</option>
+                <option value="Amalgam">Amalgam</option>
+                <option value="GIC">GIC</option>
+                <option value="RMGIC">RMGIC</option>
+                <option value="Temporary">Temporary</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label for="opSurface">Surface</label>
+              <select id="opSurface">
+                <option value="">—</option>
+                <option value="Occlusal">Occlusal</option>
+                <option value="Mesial">Mesial</option>
+                <option value="Distal">Distal</option>
+                <option value="Buccal">Buccal</option>
+                <option value="Lingual">Lingual</option>
+                <option value="MO">MO</option>
+                <option value="DO">DO</option>
+                <option value="MOD">MOD</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="opAnesthesia">Anesthesia</label>
+              <select id="opAnesthesia">
+                <option value="">—</option>
+                <option value="None">None</option>
+                <option value="Infiltration">Infiltration</option>
+                <option value="IAN block">IAN block</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endo -->
+        <div id="endoDetails" class="dyn-section" hidden>
+          <div class="form-section-title">🌀 Endo Details</div>
+          <div class="grid-2">
+            <div class="field"><label for="endoDiagnosis">Pulp Diagnosis</label>
+              <select id="endoDiagnosis">
+                <option value="">—</option>
+                <option value="Normal pulp">Normal pulp</option>
+                <option value="Reversible pulpitis">Reversible pulpitis</option>
+                <option value="Irreversible pulpitis">Irreversible pulpitis</option>
+                <option value="Necrosis">Necrosis</option>
+                <option value="Previously treated">Previously treated</option>
+                <option value="Retreatment">Retreatment</option>
+              </select>
+            </div>
             <div class="field"><label for="endoVisit">Visit Stage</label><select id="endoVisit"></select></div>
           </div>
           <div class="grid-2">
-            <div class="field"><label for="endoDiagnosis">Diagnosis</label><input type="text" id="endoDiagnosis" placeholder="e.g. Irreversible pulpitis" /></div>
-            <div class="field"><label for="endoPeriapical">Periapical status</label><input type="text" id="endoPeriapical" placeholder="e.g. Normal / PAI" /></div>
+            <div class="field"><label for="endoPeriapical">Periapical Status</label>
+              <select id="endoPeriapical">
+                <option value="">—</option>
+                <option value="Normal">Normal</option>
+                <option value="PAI 1">PAI 1</option>
+                <option value="PAI 2">PAI 2</option>
+                <option value="PAI 3">PAI 3</option>
+                <option value="PAI 4">PAI 4</option>
+                <option value="PAI 5">PAI 5</option>
+              </select>
+            </div>
+            <div class="field"><label for="endoAnesthesia">Anesthesia</label>
+              <select id="endoAnesthesia">
+                <option value="">—</option>
+                <option value="None">None</option>
+                <option value="Infiltration">Infiltration</option>
+                <option value="IAN block">IAN block</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
-          <div class="form-sub-title">Canals</div>
+          <div class="form-sub-title" style="margin-top:10px">Canals</div>
           <div id="endoCanalsList"></div>
-          <button type="button" class="btn btn-ghost" data-act="endo-canal-add" style="width:100%">+ إضافة قناة</button>
+          <button type="button" class="btn btn-ghost dyn-add-btn" data-act="endo-canal-add">+ إضافة قناة</button>
         </div>
 
-        <div class="field"><label for="cNotes">ملاحظات</label><textarea id="cNotes" rows="2" placeholder="ملاحظات عامة عن الحالة"></textarea></div>
+        <!-- Orthodontics -->
+        <div id="orthoDetails" class="dyn-section" hidden>
+          <div class="form-section-title">🪥 Orthodontics</div>
+          <div class="grid-2">
+            <div class="field"><label for="orthoVisit">Visit Type</label>
+              <select id="orthoVisit">
+                <option value="">—</option>
+                <option value="Initial exam">Initial exam</option>
+                <option value="Bracket bonding">Bracket bonding</option>
+                <option value="Wire change">Wire change</option>
+                <option value="Activation">Activation</option>
+                <option value="Retainer fit">Retainer fit</option>
+                <option value="Retainer check">Retainer check</option>
+                <option value="Debonding">Debonding</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Consultation">Consultation</option>
+              </select>
+            </div>
+            <div class="field"><label for="orthoAppliance">Appliance Type</label>
+              <select id="orthoAppliance">
+                <option value="">—</option>
+                <option value="Fixed (metal)">Fixed (metal)</option>
+                <option value="Fixed (ceramic)">Fixed (ceramic)</option>
+                <option value="Removable">Removable</option>
+                <option value="Retainer">Retainer</option>
+                <option value="Functional">Functional</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label for="orthoDevice">Notes / Appliance detail</label><input type="text" id="orthoDevice" placeholder="e.g. 0.016 NiTi upper, bonded lower 3-3" /></div>
+        </div>
+
+        <!-- Cleaning -->
+        <div id="cleaningDetails" class="dyn-section" hidden>
+          <div class="form-section-title">Cleaning & Prev.</div>
+          <div class="grid-2">
+            <div class="field"><label for="cleanProc">Procedure</label>
+              <select id="cleanProc">
+                <option value="">—</option>
+                <option value="Scaling">Scaling</option>
+                <option value="Polishing">Polishing</option>
+                <option value="Scaling + Polishing">Scaling + Polishing</option>
+                <option value="Fluoride application">Fluoride application</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="cleanGingival">Gingival Status</label>
+              <select id="cleanGingival">
+                <option value="">—</option>
+                <option value="Mild">Mild</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Severe">Severe</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Surgery -->
+        <div id="surgDetails" class="dyn-section" hidden>
+          <div class="form-section-title">✂️ Surgery</div>
+          <div class="grid-2">
+            <div class="field"><label for="surgProc">Procedure</label>
+              <select id="surgProc">
+                <option value="">—</option>
+                <option value="Simple extraction">Simple extraction</option>
+                <option value="Surgical extraction">Surgical extraction</option>
+                <option value="Impacted tooth">Impacted tooth removal</option>
+                <option value="Biopsy">Biopsy</option>
+                <option value="Incision & drainage">Incision &amp; drainage</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="surgAnesthesia">Anesthesia</label>
+              <select id="surgAnesthesia">
+                <option value="">—</option>
+                <option value="Infiltration">Infiltration</option>
+                <option value="IAN block">IAN block</option>
+                <option value="GA">GA</option>
+                <option value="Sedation">Sedation</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label for="surgPostOp">Post-op instructions given</label>
+            <select id="surgPostOp">
+              <option value="">—</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Pediatric -->
+        <div id="pedoDetails" class="dyn-section" hidden>
+          <div class="form-section-title">🧸 Pediatric</div>
+          <div class="grid-2">
+            <div class="field"><label for="pedoTreat">Treatment</label>
+              <select id="pedoTreat">
+                <option value="">—</option>
+                <option value="Examination">Examination</option>
+                <option value="Fluoride">Fluoride</option>
+                <option value="Sealant">Sealant</option>
+                <option value="Filling">Filling</option>
+                <option value="Pulpotomy">Pulpotomy</option>
+                <option value="Pulpectomy">Pulpectomy</option>
+                <option value="SSC">SSC (Steel crown)</option>
+                <option value="Extraction">Extraction</option>
+                <option value="Space maintainer">Space maintainer</option>
+              </select>
+            </div>
+            <div class="field"><label for="pedoBehavior">Behavior (Frankl)</label>
+              <select id="pedoBehavior">
+                <option value="">—</option>
+                <option value="Definitely positive (+2)">Definitely positive (+2)</option>
+                <option value="Positive (+1)">Positive (+1)</option>
+                <option value="Negative (-1)">Negative (-1)</option>
+                <option value="Definitely negative (-2)">Definitely negative (-2)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label for="pedoAge">Age (سن الطفل)</label><input type="number" id="pedoAge" min="1" max="16" placeholder="مثال: 7" /></div>
+        </div>
+
+        <!-- Prosthodontics -->
+        <div id="prosthoDetails" class="dyn-section" hidden>
+          <div class="form-section-title">👑 Prosthodontics</div>
+          <div class="grid-2">
+            <div class="field"><label for="prosthoType">Type</label>
+              <select id="prosthoType">
+                <option value="">—</option>
+                <option value="Crown">Crown</option>
+                <option value="Bridge">Bridge</option>
+                <option value="Veneer">Veneer</option>
+                <option value="Inlay / Onlay">Inlay / Onlay</option>
+                <option value="Complete denture">Complete denture</option>
+                <option value="Partial denture (RPD)">Partial denture (RPD)</option>
+                <option value="Immediate denture">Immediate denture</option>
+                <option value="Implant crown">Implant crown</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="prosthoVisit">Visit Stage</label>
+              <select id="prosthoVisit">
+                <option value="">—</option>
+                <option value="Examination">Examination</option>
+                <option value="Tooth preparation">Tooth preparation</option>
+                <option value="Impression">Impression</option>
+                <option value="Try-in">Try-in</option>
+                <option value="Fitting">Fitting / Insertion</option>
+                <option value="Review">Review</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label for="prosthoMaterial">Material</label>
+              <select id="prosthoMaterial">
+                <option value="">—</option>
+                <option value="PFM">PFM</option>
+                <option value="Zirconia">Zirconia</option>
+                <option value="All-ceramic">All-ceramic</option>
+                <option value="Metal">Metal</option>
+                <option value="Acrylic">Acrylic</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="prosthoShade">Shade</label><input type="text" id="prosthoShade" placeholder="e.g. A2, B1" /></div>
+          </div>
+        </div>
+
+        <div class="field"><label for="cNotes">ملاحظات عامة</label><textarea id="cNotes" rows="2" placeholder="أية ملاحظات أخرى..."></textarea></div>
         <div class="form-actions"><button type="button" id="caseCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ</button></div>
       </form>
     </div>

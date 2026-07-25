@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.9.0';
+  var APP_VERSION = '1.10.0';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -31,19 +31,28 @@
   function deptLabel(v) { for (var i = 0; i < DEPT_DEFS.length; i++) { if (DEPT_DEFS[i].value === v) return DEPT_DEFS[i].label; } return v; }
   var MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   var WEEKDAYS_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']; // getDay(): 0..6
+  var WEEKDAYS_SHORT = ['أحد','اثن','ثلا','أرب','خمي','جمع','سبت'];
   var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
   var STATUSES = ['قيد الانتظار', 'قيد العمل', 'مكتملة', 'تحتاج مراجعة', 'ملغاة'];
   var VIEWS = ['dashboard', 'all', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'file', 'casesheets', 'csform'];
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {};
-  ['backBtn','installBtn','installBanner','welcomeDate','dcAll','dcCompleted','dcReqsRing','dcReqsVal','allSearch','allList','allEmpty',
+  ['backBtn','installBtn','installBanner','dcAll','dcCompleted','dcReqsRing','dcReqsVal','allSearch','allList','allEmpty',
    'reqsList','reqAddBtn','reqAddForm','reqNewName','completedList','completedEmpty','bySubjectList','bySubjectEmpty','subjectTitle','subjectList','subjectEmpty','exportBtn','importBtn','importFile','setNameDisplay','setLevelDisplay','setCollegeDisplay','editStudentBtn','scheduleEditor','saveSettingsBtn','setDeviceId',
    'studentSetupOverlay','studentSetupTitle','studentSetupForm','studentSetupSkip','setupName','setupLevel','setupCollege',
-   'welcomeGreet','welcomeMeta','welcomeTagline',
+   'heroName','heroMeta','heroStats','calStrip','calNote',
    'attViewOverlay','attViewImg','attViewTitle','attViewClose','attViewCloseBtn','attViewTab',
-   'caseOverlay','caseForm','caseTitle','caseClose','caseCancel','caseId','cName','cPhone','cDept','cType','cTooth','cDay','cDate','cWeekday','cTime','cStatus','cNotes',
-   'cDeptOtherWrap','cDeptOther','endoDetails','endoTooth','endoVisit','endoDiagnosis','endoPeriapical','endoCanalsList',
+   'caseOverlay','caseForm','caseTitle','caseClose','caseCancel','caseId','cName','cPhone','cDept','cDeptBtn','cToothWrap','cType','cTooth','cDay','cDate','cWeekday','cTime','cStatus','cNotes',
+   'deptOverlay','deptClose',
+   'cDeptOtherWrap','cDeptOther',
+   'opDetails','opClass','opMaterial','opSurface','opAnesthesia',
+   'endoDetails','endoVisit','endoDiagnosis','endoPeriapical','endoAnesthesia','endoCanalsList',
+   'orthoDetails','orthoVisit','orthoAppliance','orthoDevice',
+   'cleaningDetails','cleanProc','cleanGingival','cleanBpe',
+   'surgDetails','surgProc','surgAnesthesia','surgPostOp',
+   'pedoDetails','pedoTreat','pedoBehavior','pedoAge',
+   'prosthoDetails','prosthoType','prosthoVisit','prosthoMaterial','prosthoShade',
    'sessionOverlay','sessionForm','sessionTitle','sessionClose','sessionCancel','sCaseId','sId','sNum','sDate','sTime','sProc','sNext','sNotes','sStatus',
    'confirmOverlay','confirmTitle','confirmText','confirmOk','confirmCancel','toast','splash','fileBody',
    'trialBanner','trialText','accessStatus','supportBody','dcSupportSub',
@@ -96,6 +105,7 @@
   function toNum(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function v(k) { return (els[k] && els[k].value) ? els[k].value.trim() : ''; }
   function phoneDigits(p) { return String(p || '').replace(/\D/g, ''); }
   function initial(n) { n = (n || '').trim(); return n ? n[0] : 'ح'; }
   function fmtDate(s) { if (!s) return '—'; var d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
@@ -167,30 +177,42 @@
   function waLink(phone, cls, label) { var d = phoneDigits(phone); return d ? '<a class="card-btn wa ' + cls + '" href="https://wa.me/' + d + '" target="_blank" rel="noopener">💬' + label + '</a>' : '<span class="card-btn wa disabled ' + cls + '">💬' + label + '</span>'; }
 
   /* ---------- counts ---------- */
-  function todayLabelAr() {
-    var d = new Date();
-    return WEEKDAYS_AR[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-  }
-  function welcomeTagline(total, done) {
-    if (total === 0) return 'ابدأ بتسجيل أول حالة سريرية لك اليوم';
-    if (done === 0) return 'لديك ' + total + ' حالة قيد المتابعة';
-    return 'لديك ' + total + ' حالة إجمالاً، منها ' + done + ' مكتملة';
-  }
+  function isoDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function renderStudentDisplay() {
     if (els.setNameDisplay) els.setNameDisplay.textContent = settings.studentName || '—';
     if (els.setLevelDisplay) els.setLevelDisplay.textContent = settings.level || '—';
     if (els.setCollegeDisplay) els.setCollegeDisplay.textContent = settings.college || '—';
   }
-  function updateCounts() {
-    if (els.welcomeDate) els.welcomeDate.textContent = todayLabelAr();
-    if (els.welcomeGreet) els.welcomeGreet.textContent = settings.studentName ? ('مرحباً، ' + settings.studentName + ' 👋') : 'مرحباً بك 👋';
-    if (els.welcomeMeta) {
-      var metaParts = [settings.level, settings.college].filter(Boolean);
-      if (metaParts.length) { els.welcomeMeta.textContent = metaParts.join(' — '); els.welcomeMeta.hidden = false; }
-      else { els.welcomeMeta.hidden = true; }
+  function renderCalStrip() {
+    if (!els.calStrip) return;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var todayIso = isoDate(today);
+    var html = '';
+    for (var i = -3; i <= 3; i++) {
+      var d = new Date(today); d.setDate(d.getDate() + i);
+      var iso = isoDate(d), isToday = (iso === todayIso);
+      html += '<button type="button" class="cal-day' + (isToday ? ' cal-day-today cal-day-active' : '') + '" data-date="' + iso + '" data-today="' + (isToday ? '1' : '0') + '">' +
+        '<span class="cal-day-name">' + WEEKDAYS_AR[d.getDay()] + '</span>' +
+        '<span class="cal-day-num">' + d.getDate() + '</span></button>';
     }
+    els.calStrip.innerHTML = html;
+    updateCalNote(todayIso, true);
+  }
+  function updateCalNote(iso, isToday) {
+    if (!els.calNote) return;
+    var n = cases.filter(function (c) { return c.apptDate === iso; }).length;
+    var suffix = isToday ? 'اليوم' : 'في هذا اليوم';
+    els.calNote.textContent = n > 0 ? ('لديك ' + n + ' ' + (n === 1 ? 'حالة' : 'حالات') + ' ' + suffix) : ('لا توجد حالات ' + suffix);
+  }
+  function updateCounts() {
+    renderCalStrip();
     var totalCount = cases.length, doneCount = completedCases().length;
-    if (els.welcomeTagline) els.welcomeTagline.textContent = welcomeTagline(totalCount, doneCount);
+    if (els.heroName) els.heroName.textContent = settings.studentName || 'طالب طب الأسنان';
+    if (els.heroMeta) {
+      var metaParts = [settings.college, settings.level].filter(Boolean);
+      els.heroMeta.textContent = metaParts.length ? metaParts.join(' - ') : 'DentPilot Student';
+    }
+    if (els.heroStats) els.heroStats.textContent = 'إجمالي الحالات: ' + totalCount + ' • المكتملة: ' + doneCount;
     els.dcAll.textContent = totalCount;   // إجمالي الحالات: كل الحالات (مكتملة وغير مكتملة)
     if (els.dcCompleted) els.dcCompleted.textContent = doneCount;
     if (els.dcReqsRing) {
@@ -947,81 +969,167 @@
   function addEndoCanal() { syncEndoCanalsFromDOM(); currentEndoCanals.push({ name: '', wl: '', stop: '', initial: '', master: '' }); renderEndoCanals(); }
   function delEndoCanal(idx) { syncEndoCanalsFromDOM(); currentEndoCanals.splice(idx, 1); renderEndoCanals(); }
 
-  function isEndoDept() { return els.cDept && els.cDept.value === 'Endo'; }
-  function toggleEndoSection() { if (els.endoDetails) els.endoDetails.hidden = !isEndoDept(); }
-  function toggleDeptOther() { if (els.cDeptOtherWrap) els.cDeptOtherWrap.hidden = !(els.cDept && els.cDept.value === 'أخرى'); }
-  function onDeptChange() { toggleEndoSection(); toggleDeptOther(); }
+  function openDeptSheet() { if (els.deptOverlay) showOverlay(els.deptOverlay); }
+  function closeDeptSheet() { if (els.deptOverlay) els.deptOverlay.hidden = true; }
+  
+  function onDeptChange() {
+    var d = els.cDept.value;
+    // تحديث نص الزر باسم عربي مقروء
+    var DEPT_LABELS = { 'Operative': '🦷 Operative', 'Endo': '🌀 Endo', 'Orthodontics': '🪥 Orthodontics',
+      'Cleaning': '🧼 Cleaning', 'Surgery': '✂️ Surgery', 'Pediatric': '🧸 Pediatric',
+      'Prosthodontics': '👑 Prosthodontics', 'أخرى': 'أخرى...' };
+    if (els.cDeptBtn) els.cDeptBtn.textContent = (d && DEPT_LABELS[d]) ? DEPT_LABELS[d] : (d || 'اختر التخصص');
+
+    if (els.opDetails)      els.opDetails.hidden      = (d !== 'Operative');
+    if (els.endoDetails)    els.endoDetails.hidden    = (d !== 'Endo');
+    if (els.orthoDetails)   els.orthoDetails.hidden   = (d !== 'Orthodontics');
+    if (els.cleaningDetails) els.cleaningDetails.hidden = (d !== 'Cleaning');
+    if (els.surgDetails)    els.surgDetails.hidden    = (d !== 'Surgery');
+    if (els.pedoDetails)    els.pedoDetails.hidden    = (d !== 'Pediatric');
+    if (els.prosthoDetails) els.prosthoDetails.hidden = (d !== 'Prosthodontics');
+
+    if (els.cDeptOtherWrap) els.cDeptOtherWrap.hidden = (d !== 'أخرى');
+
+    // إظهار حقل السن للأقسام التي تحتاجه
+    var noTooth = ['Orthodontics', 'Cleaning', 'أخرى', '', 'Prosthodontics'].indexOf(d) >= 0;
+    if (els.cToothWrap) els.cToothWrap.hidden = noTooth;
+  }
 
   function openCase(id) {
     els.caseForm.reset(); els.cName.classList.remove('invalid');
-    fillSelect(els.cDept, DEPT_DEFS); fillSelect(els.cStatus, STATUSES); fillSelect(els.cDay, DAYS, 'بدون يوم محدد');
+    fillSelect(els.cStatus, STATUSES); fillSelect(els.cDay, DAYS, 'بدون يوم محدد');
     fillSelect(els.endoVisit, ENDO_VISITS);
     currentEndoCanals = [];
     if (els.cDeptOther) els.cDeptOther.value = '';
-    if (els.endoTooth) els.endoTooth.value = '';
-    if (els.endoDiagnosis) els.endoDiagnosis.value = '';
-    if (els.endoPeriapical) els.endoPeriapical.value = '';
+    
+    // تفريغ كل الحقول الديناميكية
+    ['opClass','opMaterial','opSurface','opAnesthesia',
+     'endoDiagnosis','endoPeriapical','endoAnesthesia',
+     'orthoVisit','orthoAppliance','orthoDevice',
+     'cleanProc','cleanGingival','cleanBpe',
+     'surgProc','surgAnesthesia','surgPostOp',
+     'pedoTreat','pedoBehavior','pedoAge',
+     'prosthoType','prosthoVisit','prosthoMaterial','prosthoShade',
+     'cDeptOther'
+    ].forEach(function(k) { if (els[k]) els[k].value = ''; });
+
     if (id) {
       var c = cases.find(function (x) { return x.id === id; });
       if (c) {
         els.caseTitle.textContent = 'تعديل الحالة'; els.caseId.value = c.id;
         els.cName.value = c.name || ''; els.cPhone.value = c.phone || '';
-        // المادة: إن كانت قيمة غير معروفة فهي قيمة مخصّصة (Other) → اختر «أخرى» واعرض الحقل النصي
-        if (c.department && DEPTS.indexOf(c.department) < 0) { els.cDept.value = 'أخرى'; if (els.cDeptOther) els.cDeptOther.value = c.department; }
-        else { els.cDept.value = c.department || DEPTS[0]; }
+        
+        // المادة
+        if (c.department && ['Operative','Endo','Orthodontics','Cleaning','Surgery','Pediatric','Prosthodontics'].indexOf(c.department) < 0) { 
+          els.cDept.value = 'أخرى'; if (els.cDeptOther) els.cDeptOther.value = c.department; 
+        } else { els.cDept.value = c.department || ''; }
+        
         els.cType.value = c.caseType || ''; els.cTooth.value = c.tooth || ''; els.cDay.value = c.day || '';
         els.cDate.value = c.apptDate || ''; els.cTime.value = c.apptTime || ''; els.cStatus.value = c.status || STATUSES[0]; els.cNotes.value = c.notes || '';
-        // Endo: تعبئة إن وُجدت (الحالات القديمة بلا endo تفتح دون أخطاء)
+        
+        // تعبئة كل الأقسام
+        if (c.operative && typeof c.operative === 'object') {
+          if (els.opClass)      els.opClass.value      = c.operative.class      || '';
+          if (els.opMaterial)   els.opMaterial.value   = c.operative.material   || '';
+          if (els.opSurface)    els.opSurface.value    = c.operative.surface    || '';
+          if (els.opAnesthesia) els.opAnesthesia.value = c.operative.anesthesia || '';
+        }
         if (c.endo && typeof c.endo === 'object') {
-          if (els.endoTooth) els.endoTooth.value = c.endo.tooth || '';
-          if (els.endoDiagnosis) els.endoDiagnosis.value = c.endo.diagnosis || '';
+          if (els.endoDiagnosis)  els.endoDiagnosis.value  = c.endo.diagnosis  || '';
+          if (els.endoVisit)      els.endoVisit.value      = c.endo.visit      || '';
           if (els.endoPeriapical) els.endoPeriapical.value = c.endo.periapical || '';
-          if (els.endoVisit) els.endoVisit.value = c.endo.visit || '';
+          if (els.endoAnesthesia) els.endoAnesthesia.value = c.endo.anesthesia || '';
           currentEndoCanals = Array.isArray(c.endo.canals) ? c.endo.canals.map(function (x) { return { name: x.name || '', wl: x.wl || '', stop: x.stop || '', initial: x.initial || '', master: x.master || '' }; }) : [];
         }
+        if (c.ortho && typeof c.ortho === 'object') {
+          if (els.orthoVisit)     els.orthoVisit.value     = c.ortho.visit     || '';
+          if (els.orthoAppliance) els.orthoAppliance.value = c.ortho.appliance || '';
+          if (els.orthoDevice)    els.orthoDevice.value    = c.ortho.device    || '';
+        }
+        if (c.cleaning && typeof c.cleaning === 'object') {
+          if (els.cleanProc)     els.cleanProc.value     = c.cleaning.proc     || '';
+          if (els.cleanGingival) els.cleanGingival.value = c.cleaning.gingival || '';
+          if (els.cleanBpe)      els.cleanBpe.value      = c.cleaning.bpe      || '';
+        }
+        if (c.surgery && typeof c.surgery === 'object') {
+          if (els.surgProc)      els.surgProc.value      = c.surgery.proc      || '';
+          if (els.surgAnesthesia) els.surgAnesthesia.value = c.surgery.anesthesia || '';
+          if (els.surgPostOp)    els.surgPostOp.value    = c.surgery.postOp    || '';
+        }
+        if (c.pedo && typeof c.pedo === 'object') {
+          if (els.pedoTreat)    els.pedoTreat.value    = c.pedo.treat    || '';
+          if (els.pedoBehavior) els.pedoBehavior.value = c.pedo.behavior || '';
+          if (els.pedoAge)      els.pedoAge.value      = c.pedo.age      || '';
+        }
+        if (c.prostho && typeof c.prostho === 'object') {
+          if (els.prosthoType)     els.prosthoType.value     = c.prostho.type     || '';
+          if (els.prosthoVisit)    els.prosthoVisit.value    = c.prostho.visit    || '';
+          if (els.prosthoMaterial) els.prosthoMaterial.value = c.prostho.material || '';
+          if (els.prosthoShade)    els.prosthoShade.value    = c.prostho.shade    || '';
+        }
       }
-    } else { els.caseTitle.textContent = 'إضافة حالة'; els.caseId.value = ''; els.cStatus.value = 'قيد الانتظار'; }
+    } else { 
+      els.caseTitle.textContent = 'إضافة حالة'; els.caseId.value = ''; els.cStatus.value = 'قيد الانتظار'; 
+      els.cDept.value = '';
+    }
     renderEndoCanals();
     onDeptChange();
     updateCaseWeekday();
     showOverlay(els.caseOverlay); setTimeout(function () { els.cName.focus(); }, 50);
   }
   function updateCaseWeekday() { if (els.cWeekday) els.cWeekday.value = els.cDate.value ? weekday(els.cDate.value) : ''; }
-  function closeCase() { els.caseOverlay.hidden = true; }
+  function closeCase() { els.caseOverlay.hidden = true; closeDeptSheet(); }
   function handleCaseSubmit(e) {
     e.preventDefault();
     var name = els.cName.value.trim();
     if (!name) { els.cName.classList.add('invalid'); els.cName.focus(); return; }
-    // المادة: إن كانت «أخرى» وكُتبت قيمة مخصّصة، تُحفظ القيمة المكتوبة بدل «أخرى»
+    
     var dept = els.cDept.value;
     if (dept === 'أخرى' && els.cDeptOther && els.cDeptOther.value.trim()) dept = els.cDeptOther.value.trim();
+    
     var data = { name: name, phone: els.cPhone.value.trim(), department: dept, caseType: els.cType.value.trim(),
       tooth: els.cTooth.value.trim(), day: els.cDay.value, apptDate: els.cDate.value, apptTime: els.cTime.value, status: els.cStatus.value, notes: els.cNotes.value.trim() };
-    // Endo: يُحفظ فقط عندما تكون المادة Endo؛ خلاف ذلك لا نلمس أي endo قديم محفوظ
-    var endoData = null;
-    if (els.cDept.value === 'Endo') {
+      
+    // تجميع بيانات كل قسم
+    var opData = null, endoData = null, orthoData = null, cleaningData = null, surgData = null, pedoData = null, prosthoData = null;
+    var dv = els.cDept.value;
+    if (dv === 'Operative')     opData       = { class: v('opClass'), material: v('opMaterial'), surface: v('opSurface'), anesthesia: v('opAnesthesia') };
+    if (dv === 'Endo') {
       syncEndoCanalsFromDOM();
-      endoData = {
-        tooth: (els.endoTooth && els.endoTooth.value.trim()) || '',
-        diagnosis: (els.endoDiagnosis && els.endoDiagnosis.value.trim()) || '',
-        periapical: (els.endoPeriapical && els.endoPeriapical.value.trim()) || '',
-        visit: (els.endoVisit && els.endoVisit.value) || '',
-        canals: currentEndoCanals.map(function (x) { return { name: x.name || '', wl: x.wl || '', stop: x.stop || '', initial: x.initial || '', master: x.master || '' }; })
-      };
+      endoData = { diagnosis: v('endoDiagnosis'), periapical: v('endoPeriapical'), anesthesia: v('endoAnesthesia'), visit: els.endoVisit ? els.endoVisit.value : '', canals: currentEndoCanals.map(function (x) { return { name: x.name || '', wl: x.wl || '', stop: x.stop || '', initial: x.initial || '', master: x.master || '' }; }) };
     }
+    if (dv === 'Orthodontics')  orthoData    = { visit: v('orthoVisit'), appliance: v('orthoAppliance'), device: v('orthoDevice') };
+    if (dv === 'Cleaning')      cleaningData = { proc: v('cleanProc'), gingival: v('cleanGingival'), bpe: v('cleanBpe') };
+    if (dv === 'Surgery')       surgData     = { proc: v('surgProc'), anesthesia: v('surgAnesthesia'), postOp: v('surgPostOp') };
+    if (dv === 'Pediatric')     pedoData     = { treat: v('pedoTreat'), behavior: v('pedoBehavior'), age: v('pedoAge') };
+    if (dv === 'Prosthodontics') prosthoData = { type: v('prosthoType'), visit: v('prosthoVisit'), material: v('prosthoMaterial'), shade: v('prosthoShade') };
+
     var id = els.caseId.value;
     if (id) {
       var i = cases.findIndex(function (x) { return x.id === id; });
       if (i >= 0) {
         var merged = Object.assign({}, cases[i], data);
-        if (endoData) merged.endo = endoData;   // إن كانت Endo، حدّث بيانات endo (وإلا نُبقي أي endo قديم كما هو)
+        if (opData)       merged.operative = opData;
+        if (endoData)     merged.endo      = endoData;
+        if (orthoData)    merged.ortho     = orthoData;
+        if (cleaningData) merged.cleaning  = cleaningData;
+        if (surgData)     merged.surgery   = surgData;
+        if (pedoData)     merged.pedo      = pedoData;
+        if (prosthoData)  merged.prostho   = prosthoData;
+        
         if (merged.status === 'مكتملة') { if (!merged.completedAt) merged.completedAt = new Date().toISOString(); }
         else if ('completedAt' in merged) delete merged.completedAt;
         cases[i] = merged;
       }
     } else {
       data.id = uid(); data.sessions = []; data.createdAt = new Date().toISOString();
-      if (endoData) data.endo = endoData;
+      if (opData)       data.operative = opData;
+      if (endoData)     data.endo      = endoData;
+      if (orthoData)    data.ortho     = orthoData;
+      if (cleaningData) data.cleaning  = cleaningData;
+      if (surgData)     data.surgery   = surgData;
+      if (pedoData)     data.pedo      = pedoData;
+      if (prosthoData)  data.prostho   = prosthoData;
       if (data.status === 'مكتملة') data.completedAt = data.createdAt;
       cases.unshift(data);
     }
@@ -1242,11 +1350,30 @@
   /* ---------- Events ---------- */
   function bindEvents() {
     document.querySelectorAll('.dash-card').forEach(function (card) { card.addEventListener('click', function () { go(card.dataset.go); }); });
+    if (els.calStrip) els.calStrip.addEventListener('click', function (e) {
+      var btn = e.target.closest('.cal-day'); if (!btn) return;
+      els.calStrip.querySelectorAll('.cal-day').forEach(function (b) { b.classList.remove('cal-day-active'); });
+      btn.classList.add('cal-day-active');
+      updateCalNote(btn.dataset.date, btn.dataset.today === '1');
+    });
     els.backBtn.addEventListener('click', goBack);
     els.allSearch.addEventListener('input', debounce(renderAll, 120));
 
     els.caseForm.addEventListener('submit', handleCaseSubmit);
     els.caseClose.addEventListener('click', closeCase); els.caseCancel.addEventListener('click', closeCase);
+    
+    if (els.cDeptBtn) els.cDeptBtn.addEventListener('click', openDeptSheet);
+    if (els.deptClose) els.deptClose.addEventListener('click', closeDeptSheet);
+    if (els.deptOverlay) els.deptOverlay.addEventListener('click', function(e) {
+      if (e.target === els.deptOverlay) closeDeptSheet();
+      var card = e.target.closest('.dept-card');
+      if (card) {
+        els.cDept.value = card.dataset.val;
+        onDeptChange();
+        closeDeptSheet();
+      }
+    });
+    
     els.cDate.addEventListener('input', updateCaseWeekday); els.cDate.addEventListener('change', updateCaseWeekday);
     // نموذج الحالة خارج #app، فنفوّض أحداثه مباشرةً على caseForm
     els.caseForm.addEventListener('click', function (e) {
