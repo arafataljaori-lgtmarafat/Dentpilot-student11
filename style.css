@@ -70,9 +70,10 @@ img{ max-width:100%; }
 .hero-info{ position:relative; z-index:1; min-width:0; flex:1 1 auto; display: flex; flex-direction: column; justify-content: center; }
 .hero-name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.25rem; margin-bottom:6px; line-height:1.3; color:#ffffff; text-shadow:0 2px 4px rgba(0,0,0,0.3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .hero-meta{ font-size:.85rem; font-weight:600; color:#cffafe; margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.hero-tooth{ position:relative; z-index:1; flex:none; width:90px; height:90px; display:grid; place-items:center; }
-.hero-tooth::before{ content:''; position:absolute; inset:-6px; border-radius:50%; background:radial-gradient(circle, rgba(34,211,238,0.15) 0%, transparent 70%); pointer-events:none; z-index:0; }
-.hero-tooth-svg{ position:relative; z-index:2; width:100%; height:100%; filter:drop-shadow(0 4px 10px rgba(6,182,212,0.3)) drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+.hero-tooth{ position:relative; z-index:1; flex:0 1 clamp(108px,31vw,142px); width:clamp(108px,31vw,142px); height:clamp(96px,28vw,126px); display:grid; place-items:center; min-width:0; }
+.hero-tooth::before{ content:''; position:absolute; inset:10% 2% 0; border-radius:50%; background:radial-gradient(ellipse, rgba(34,211,238,.16) 0%, rgba(6,182,212,.06) 46%, transparent 73%); filter:blur(5px); pointer-events:none; z-index:0; }
+.hero-chair-img{ position:relative; z-index:2; display:block; width:112%; height:112%; max-width:none; object-fit:contain; object-position:center; filter:drop-shadow(0 6px 9px rgba(1,23,43,.34)) drop-shadow(0 2px 4px rgba(34,211,238,.17)); transform:translateY(2px); }
+.hero-chair .hero-tooth-svg{ display:none; }
 
 /* شريط التقويم الأفقي */
 .cal-strip-wrap{ margin-bottom:16px; position:relative; max-width:100%; }
@@ -448,7 +449,7 @@ html, body{ max-width:100%; overflow-x:hidden; }
    ============================================================ */
 .drawer-overlay{ position:fixed; inset:0; z-index:60; background:rgba(4,20,38,.55); opacity:0; transition:opacity .22s ease; }
 .drawer-overlay.drawer-open{ opacity:1; }
-.side-drawer{ position:absolute; top:0; bottom:0; right:0; width:78%; max-width:340px;
+.side-drawer{ position:absolute; top:0; bottom:0; right:0; left:auto; width:78%; max-width:340px;
   background:linear-gradient(165deg,#0a2c52 0%,#0b3358 55%,#0d3a63 100%); color:#fff;
   box-shadow:-12px 0 32px rgba(0,0,0,.35); display:flex; flex-direction:column;
   transform:translateX(100%); transition:transform .24s cubic-bezier(.22,.61,.36,1);
