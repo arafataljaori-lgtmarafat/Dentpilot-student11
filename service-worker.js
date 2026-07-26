@@ -1,5 +1,5 @@
 /* DentPilot Student — Service Worker (تحديث آمن مُتحكَّم به) */
-const CACHE = 'dentpilot-student-v1.10.0';
+const CACHE = 'dentpilot-student-v1.10.1';
 const ASSETS = [
   './', 'index.html', 'case-sheet-print.html', 'style.css', 'script.js', 'activation.js', 'manifest.json', 'version.json',
   'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png', 'favicon.ico', 'favicon-32.png'
@@ -7,7 +7,19 @@ const ASSETS = [
 
 // التثبيت: تخزين مسبق — بلا skipWaiting تلقائي (ينتظر موافقة المستخدم عبر «تحديث الآن»)
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE).then((c) => {
+      return Promise.all(
+        ASSETS.map(url => {
+          return fetch(url + (url.includes('?') ? '&' : '?') + 'v=' + new Date().getTime())
+            .then(res => {
+              if (res.ok) return c.put(url, res);
+            })
+            .catch(err => console.log('SW cache error:', url, err));
+        })
+      );
+    })
+  );
 });
 
 // التفعيل: حذف الكاش القديم + السيطرة الفورية على الصفحات
