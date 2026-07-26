@@ -38,10 +38,11 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {};
-  ['backBtn','installBtn','installBanner','dcAll','dcCompleted','dcReqsRing','dcReqsVal','allSearch','allList','allEmpty',
+  ['backBtn','menuBtn','installBanner','dcAll','dcReqsRing','dcReqsVal','allSearch','allList','allEmpty',
    'reqsList','reqAddBtn','reqAddForm','reqNewName','completedList','completedEmpty','bySubjectList','bySubjectEmpty','subjectTitle','subjectList','subjectEmpty','exportBtn','importBtn','importFile','setNameDisplay','setLevelDisplay','setCollegeDisplay','editStudentBtn','scheduleEditor','saveSettingsBtn','setDeviceId',
    'studentSetupOverlay','studentSetupTitle','studentSetupForm','studentSetupSkip','setupName','setupLevel','setupCollege',
-   'heroName','heroMeta','heroStats','calStrip','calNote',
+   'heroGreet','heroName','heroMeta','heroBadgeTotal','heroBadgeDone','calStrip','calNote','dcTodayTomorrow','todayList','todayEmpty',
+   'drawerOverlay','sideDrawer','drawerCloseBtn','drawerName','drawerLevel','drawerAvatar',
    'attViewOverlay','attViewImg','attViewTitle','attViewClose','attViewCloseBtn','attViewTab',
    'caseOverlay','caseForm','caseTitle','caseClose','caseCancel','caseId','cName','cPhone','cDept','cDeptBtn','cToothWrap','cType','cTooth','cDay','cDate','cWeekday','cTime','cStatus','cNotes',
    'deptOverlay','deptClose',
@@ -55,7 +56,7 @@
    'prosthoDetails','prosthoType','prosthoVisit','prosthoMaterial','prosthoShade',
    'sessionOverlay','sessionForm','sessionTitle','sessionClose','sessionCancel','sCaseId','sId','sNum','sDate','sTime','sProc','sNext','sNotes','sStatus',
    'confirmOverlay','confirmTitle','confirmText','confirmOk','confirmCancel','toast','splash','fileBody',
-   'trialBanner','trialText','accessStatus','supportBody','dcSupportSub',
+   'trialBanner','trialText','accessStatus','supportBody',
    'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus',
    'setInstallBtn','setInstallStatus',
    'csTemplates','csTitle','csFormBody'
@@ -183,13 +184,42 @@
     if (els.setLevelDisplay) els.setLevelDisplay.textContent = settings.level || '—';
     if (els.setCollegeDisplay) els.setCollegeDisplay.textContent = settings.college || '—';
   }
+  /* ---------- Side Drawer (الصفحة الرئيسية) ---------- */
+  function renderDrawerStudent() {
+    var name = settings.studentName || 'طالب طب الأسنان';
+    if (els.drawerName) els.drawerName.textContent = name;
+    if (els.drawerLevel) els.drawerLevel.textContent = settings.level || settings.college || 'DentPilot Student';
+    if (els.drawerAvatar) els.drawerAvatar.textContent = (name.trim().charAt(0) || '؟');
+  }
+  function markDrawerActive() {
+    if (!els.sideDrawer) return;
+    els.sideDrawer.querySelectorAll('.drawer-item').forEach(function (b) {
+      b.classList.toggle('drawer-item-active', b.dataset.go === currentView);
+    });
+  }
+  function openDrawer() {
+    if (!els.drawerOverlay) return;
+    renderDrawerStudent(); markDrawerActive();
+    showOverlay(els.drawerOverlay);
+    els.drawerOverlay.classList.add('drawer-open');
+    if (els.drawerCloseBtn) setTimeout(function () { els.drawerCloseBtn.focus(); }, 60);
+  }
+  function closeDrawer() {
+    if (!els.drawerOverlay) return;
+    els.drawerOverlay.classList.remove('drawer-open');
+    setTimeout(function () { hideOverlay(els.drawerOverlay); }, 220);   // انتظار انتهاء الانتقال
+  }
+  function isDrawerOpen() { return els.drawerOverlay && !els.drawerOverlay.hidden; }
   function renderCalStrip() {
     if (!els.calStrip) return;
     var today = new Date(); today.setHours(0, 0, 0, 0);
     var todayIso = isoDate(today);
+    // بداية الأسبوع = السبت (الأسبوع العربي)، وتُعرض الأيام السبعة كاملة بلا تمرير أفقي
+    var saturday = new Date(today);
+    saturday.setDate(saturday.getDate() - ((today.getDay() + 1) % 7));
     var html = '';
-    for (var i = -3; i <= 3; i++) {
-      var d = new Date(today); d.setDate(d.getDate() + i);
+    for (var i = 0; i <= 6; i++) {
+      var d = new Date(saturday); d.setDate(d.getDate() + i);
       var iso = isoDate(d), isToday = (iso === todayIso);
       html += '<button type="button" class="cal-day' + (isToday ? ' cal-day-today cal-day-active' : '') + '" data-date="' + iso + '" data-today="' + (isToday ? '1' : '0') + '">' +
         '<span class="cal-day-name">' + WEEKDAYS_AR[d.getDay()] + '</span>' +
@@ -204,34 +234,58 @@
     var suffix = isToday ? 'اليوم' : 'في هذا اليوم';
     els.calNote.textContent = n > 0 ? ('لديك ' + n + ' ' + (n === 1 ? 'حالة' : 'حالات') + ' ' + suffix) : ('لا توجد حالات ' + suffix);
   }
+  function todayTomorrowIso() {
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    return { todayIso: isoDate(today), tomorrowIso: isoDate(tomorrow) };
+  }
+  function todayTomorrowCases() {
+    var r = todayTomorrowIso();
+    return cases.filter(function (c) { return c.apptDate === r.todayIso || c.apptDate === r.tomorrowIso; })
+      .sort(function (a, b) { return (a.apptDate + (a.apptTime || '')) < (b.apptDate + (b.apptTime || '')) ? -1 : 1; });
+  }
+  function renderTodayTomorrowSection() {
+    if (!els.todayList) return;
+    var r = todayTomorrowIso();
+    var list = todayTomorrowCases();
+    if (list.length === 0) { els.todayList.innerHTML = ''; if (els.todayEmpty) els.todayEmpty.hidden = false; return; }
+    if (els.todayEmpty) els.todayEmpty.hidden = true;
+    els.todayList.innerHTML = list.map(function (c) {
+      var isToday = c.apptDate === r.todayIso;
+      var tag = isToday ? 'قريب' : 'غداً';
+      var deptText = c.department ? deptLabel(c.department) : '';
+      var typeText = [deptText, c.caseType].filter(Boolean).join(' · ');
+      var desc = c.notes ? c.notes : (isToday ? 'موعد متابعة الحالة السريرية' : 'موعد الحالة السريرية');
+      var timeText = c.apptTime || '—';
+      return '<button type="button" class="today-card" data-act="open" data-id="' + c.id + '">' +
+        '<span class="today-time">' + esc(timeText) + '</span>' +
+        '<span class="today-info">' +
+          '<span class="today-type">' + esc(typeText || '—') + '</span>' +
+          '<span class="today-desc">' + esc(desc) + '</span>' +
+        '</span>' +
+        '<span class="today-tag">' + tag + '</span>' +
+      '</button>';
+    }).join('');
+  }
   function updateCounts() {
     renderCalStrip();
     var totalCount = cases.length, doneCount = completedCases().length;
     if (els.heroName) els.heroName.textContent = settings.studentName || 'طالب طب الأسنان';
     if (els.heroMeta) {
-      var metaParts = [settings.college, settings.level].filter(Boolean);
-      els.heroMeta.textContent = metaParts.length ? metaParts.join(' - ') : 'DentPilot Student';
+      var metaParts = [settings.level, settings.college].filter(Boolean);
+      els.heroMeta.textContent = metaParts.length ? metaParts.join(' · ') : 'DentPilot Student';
     }
-    if (els.heroStats) els.heroStats.textContent = 'إجمالي الحالات: ' + totalCount + ' • المكتملة: ' + doneCount;
-    els.dcAll.textContent = totalCount;   // إجمالي الحالات: كل الحالات (مكتملة وغير مكتملة)
-    if (els.dcCompleted) els.dcCompleted.textContent = doneCount;
+    if (els.heroBadgeTotal) els.heroBadgeTotal.textContent = totalCount + ' حالات';
+    if (els.heroBadgeDone) els.heroBadgeDone.textContent = doneCount + ' مكتملة';
+    els.dcAll.textContent = totalCount;   // جميع المرضى: كل الحالات (مكتملة وغير مكتملة)
+    if (els.dcTodayTomorrow) els.dcTodayTomorrow.textContent = todayTomorrowCases().length;
     if (els.dcReqsRing) {
-      var totalReq = 0, totalDone = 0;
-      allReqNames().forEach(function (d) {
-        var req = toNum(requirements[d]); if (req <= 0) return;
-        var done = cases.filter(function (c) { return c.department === d && c.status === 'مكتملة'; }).length;
-        totalReq += req; totalDone += Math.min(done, req);
-      });
-      var pct = totalReq > 0 ? Math.min(100, Math.round(totalDone / totalReq * 100)) : 0;
+      // حلقة كرت "المكتملة": نسبة الحالات المكتملة من إجمالي الحالات (بلا تكرار مع أي قسم آخر)
+      var pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
       els.dcReqsRing.style.setProperty('--pct', pct);
       if (els.dcReqsVal) els.dcReqsVal.textContent = pct + '%';
     }
-    if (els.dcSupportSub) {
-      var activated = !!(window.DPLicense && window.DPLicense.isActivated && window.DPLicense.isActivated());
-      els.dcSupportSub.textContent = activated
-        ? 'التطبيق مفعل — تواصل مع الدعم عند الحاجة'
-        : 'ادخل هنا لتفعيل التطبيق أو التواصل مع الدعم';
-    }
+    renderTodayTomorrowSection();
   }
 
   /* ---------- compact row ---------- */
@@ -899,6 +953,7 @@
     var r = parseHash(); currentView = r.name; currentParam = r.param;
     document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== r.name; });
     els.backBtn.hidden = (r.name === 'dashboard');
+    if (els.menuBtn) els.menuBtn.hidden = (r.name !== 'dashboard');
     renderActiveView();
     try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
   }
@@ -1349,7 +1404,15 @@
 
   /* ---------- Events ---------- */
   function bindEvents() {
-    document.querySelectorAll('.dash-card').forEach(function (card) { card.addEventListener('click', function () { go(card.dataset.go); }); });
+    document.querySelectorAll('.dash-card, .add-case-bar, .today-viewall').forEach(function (card) { card.addEventListener('click', function () { go(card.dataset.go); }); });
+    // القائمة الجانبية: فتح/إغلاق (لا تمسّ أي منطق تنقّل — تستخدم نفس data-go الحالي)
+    if (els.menuBtn) els.menuBtn.addEventListener('click', openDrawer);
+    if (els.drawerCloseBtn) els.drawerCloseBtn.addEventListener('click', closeDrawer);
+    if (els.drawerOverlay) els.drawerOverlay.addEventListener('click', function (e) {
+      if (e.target === els.drawerOverlay) closeDrawer();                      // النقر على الـOverlay فقط
+      else if (e.target.closest && e.target.closest('[data-drawer-close]')) closeDrawer();   // اختيار عنصر
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isDrawerOpen()) closeDrawer(); });
     if (els.calStrip) els.calStrip.addEventListener('click', function (e) {
       var btn = e.target.closest('.cal-day'); if (!btn) return;
       els.calStrip.querySelectorAll('.cal-day').forEach(function (b) { b.classList.remove('cal-day-active'); });
@@ -1481,9 +1544,8 @@
     window.addEventListener('hashchange', applyRoute);
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault(); deferredPrompt = e;
-      if (!isStandalone()) { if (els.installBtn) els.installBtn.hidden = false; if (els.installBanner) els.installBanner.hidden = false; }
+      if (!isStandalone()) { if (els.installBanner) els.installBanner.hidden = false; }
     });
-    if (els.installBtn) els.installBtn.addEventListener('click', triggerInstall);
     if (els.installBanner) els.installBanner.addEventListener('click', triggerInstall);
     if (els.setInstallBtn) els.setInstallBtn.addEventListener('click', triggerInstall);
     window.addEventListener('appinstalled', function () { hideInstallUI(); });
@@ -1495,7 +1557,6 @@
   }
   function hideInstallUI() {
     deferredPrompt = null;
-    if (els.installBtn) els.installBtn.hidden = true;
     if (els.installBanner) els.installBanner.hidden = true;
     updateSettingsInstallUI();
   }
