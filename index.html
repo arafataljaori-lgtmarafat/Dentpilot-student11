@@ -631,28 +631,46 @@
       <div class="modal-head"><h2 id="caseTitle">إضافة حالة</h2><button type="button" id="caseClose" class="modal-close" aria-label="إغلاق">✕</button></div>
       <form id="caseForm" class="form" novalidate>
         <input type="hidden" id="caseId" />
-        <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
-        <div class="grid-2">
-          <div class="field"><label for="cPhone">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." /></div>
+
+        <div class="form-group">
+          <div class="form-group-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>بيانات المريض</span>
+          </div>
+          <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
+          <div class="field"><label for="cPhone">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." dir="ltr" style="text-align:end" /></div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-group-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>بيانات الحالة</span>
+          </div>
           <div class="field"><label for="cStatus">الحالة</label><select id="cStatus"></select></div>
-        </div>
-        <div class="field">
-          <label>المادة / القسم</label>
-          <button type="button" id="cDeptBtn" class="dept-select-btn">اختر التخصص</button>
-          <input type="hidden" id="cDept" />
-        </div>
-        <div class="field other-inline" id="cDeptOtherWrap" hidden>
-          <label for="cDeptOther">اسم التخصص (مخصّص)</label>
-          <input type="text" id="cDeptOther" placeholder="مثلاً: تعويضات" />
-        </div>
-        <div class="grid-2">
+          <div class="field">
+            <label>المادة / القسم</label>
+            <button type="button" id="cDeptBtn" class="dept-select-btn">اختر التخصص</button>
+            <input type="hidden" id="cDept" />
+          </div>
+          <div class="field other-inline" id="cDeptOtherWrap" hidden>
+            <label for="cDeptOther">اسم التخصص (مخصّص)</label>
+            <input type="text" id="cDeptOther" placeholder="مثلاً: تعويضات" />
+          </div>
           <div class="field" id="cToothWrap"><label for="cTooth">رقم السن</label><input type="text" id="cTooth" placeholder="مثال: 36" /></div>
-          <div class="field"><label for="cDate">تاريخ الموعد</label><input type="date" id="cDate" /></div>
         </div>
-        <input type="hidden" id="cType" />
-        <input type="hidden" id="cTime" />
-        <input type="hidden" id="cWeekday" />
-        <div class="field" style="display:none"><select id="cDay"></select></div>
+
+        <div class="form-group">
+          <div class="form-group-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span>الموعد</span>
+          </div>
+          <div class="field"><label for="cDate">تاريخ الموعد</label><input type="date" id="cDate" dir="ltr" /></div>
+          <input type="hidden" id="cType" />
+          <input type="hidden" id="cTime" />
+          <input type="hidden" id="cWeekday" />
+          <div class="field" style="display:none"><select id="cDay"></select></div>
+        </div>
+
 
         <!-- === Dynamic Sections === -->
         
