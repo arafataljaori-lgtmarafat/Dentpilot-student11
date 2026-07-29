@@ -335,7 +335,8 @@ img{ max-width:100%; }
 .tb-merged{ display:flex; align-items:center; gap:8px; margin:10px 16px 0; }
 .tb-merged:empty{ display:none; }
 .tb-merged > *[hidden]{ display:none !important; }
-.trial-banner{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:7px; justify-content:flex-start; background:linear-gradient(120deg,var(--teal-50),#eaf7f6); color:var(--teal-700); border:1px solid var(--teal-100); border-bottom:1px solid var(--teal-100); border-radius:14px; padding:10px 14px; font-size:.78rem; font-weight:700; text-align:start; }
+.trial-banner{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:7px; justify-content:flex-start; background:linear-gradient(120deg,var(--teal-50),#eaf7f6); color:var(--teal-700); border:1px solid var(--teal-100); border-bottom:1px solid var(--teal-100); border-radius:14px; padding:10px 14px; font-family:inherit; font-size:.78rem; font-weight:700; text-align:start; cursor:pointer; transition:transform .15s, box-shadow .15s; }
+.trial-banner:hover{ box-shadow:var(--shadow-sm); } .trial-banner:active{ transform:scale(.99); }
 .trial-banner .tb-ico{ display:flex; flex:none; color:var(--teal-600); } .trial-banner .tb-ico svg{ width:15px; height:15px; }
 #trialText{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .trial-banner .tb-ico{ font-size:1rem; }
@@ -488,15 +489,17 @@ html, body{ max-width:100%; overflow-x:hidden; }
 .activate-cta .sup-fine{ margin-top:8px; }
 
 /* ============================================================
-   الشريط السفلي — مخصوص بالصفحة الرئيسية فقط (داخل #view-dashboard)
+   الشريط السفلي — ثابت وظاهر في الصفحات الأساسية الأربع فقط
+   (الرئيسية / الحالات / المواعيد / الحساب) — يُتحكَّم بإظهاره من markBottomNavActive() في script.js
    ============================================================ */
-#view-dashboard{ padding-bottom:88px; }
+#view-dashboard, #view-all, #view-account{ padding-bottom:88px; }
 .dash-bottombar{
   position:fixed; left:0; right:0; bottom:0; z-index:25;
   display:flex; padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   border-top:1px solid var(--line); box-shadow:0 -6px 20px rgba(11,59,111,.1); max-width:100%; gap:4px;
 }
+.dash-bottombar[hidden]{ display:none; }
 .dbb-item{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:transparent; border:1px solid transparent; box-shadow:none; border-radius:14px; padding:8px 4px; min-height:0; width:auto; transition:all .2s ease; }
 .dbb-item:hover{ transform:none; box-shadow:none; background:var(--teal-50); }
 .dbb-item:active{ transform:scale(.94); }
@@ -591,4 +594,294 @@ html, body{ max-width:100%; overflow-x:hidden; }
 }
 #activationOverlay .modal {
   max-height: 94vh;
+}
+
+/* ============================================================
+   صفحة الحساب (Firebase Auth) — واجهة ترحيبية Premium
+   تعتمد كلياً على توكنات الهوية الحالية (Midnight Navy + Teal/Cyan)
+   ============================================================ */
+.acc-wrap{ max-width:460px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+
+/* --- Hero --- */
+.acc-hero{ position:relative; overflow:hidden; isolation:isolate; display:flex; align-items:center; gap:14px;
+  background:
+    radial-gradient(circle at 86% 16%, rgba(139,234,229,.20) 0%, rgba(139,234,229,0) 34%),
+    linear-gradient(128deg, var(--dp-navy-deep) 0%, var(--dp-navy) 48%, var(--dp-teal-deep) 100%);
+  color:#fff; border-radius:20px; padding:20px 18px; border:1px solid rgba(255,255,255,.14);
+  box-shadow:var(--dp-hero-shadow), inset 0 1px 0 rgba(255,255,255,.12); }
+.acc-hero-glow{ position:absolute; z-index:-1; width:180px; height:180px; border-radius:50%; filter:blur(38px);
+  background:radial-gradient(circle, rgba(139,234,229,.22), transparent 70%); bottom:-80px; inset-inline-end:-40px; }
+.acc-hero-badge{ flex:none; width:56px; height:56px; border-radius:17px; display:grid; place-items:center;
+  background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.22); color:#8beae5; }
+.acc-hero-badge svg{ width:30px; height:30px; }
+.acc-hero-text{ min-width:0; flex:1 1 auto; }
+.acc-hero-title{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.22rem; line-height:1.35; color:#fff; margin:0; }
+.acc-hero-sub{ font-size:.84rem; line-height:1.5; color:rgba(255,255,255,.80); margin:4px 0 0; }
+.acc-email-top{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.acc-avatar{ flex:none; width:56px; height:56px; border-radius:18px; display:grid; place-items:center;
+  background:linear-gradient(140deg,#8beae5,var(--dp-teal)); color:#06333a;
+  font-family:'Cairo',sans-serif; font-weight:800; font-size:1.5rem; box-shadow:0 4px 14px rgba(8,119,123,.3); }
+
+/* --- بطاقة --- */
+.acc-card{ background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:18px; padding:16px; box-shadow:var(--dp-shadow-sm); }
+
+/* --- تبويبات --- */
+.acc-tabs{ display:flex; gap:5px; background:var(--dp-canvas-wash); border:1px solid var(--dp-border); border-radius:13px; padding:4px; margin-bottom:16px; }
+.acc-tab{ flex:1 1 0; min-width:0; font-family:'Cairo',sans-serif; font-weight:700; font-size:.86rem; color:var(--dp-text-muted);
+  background:transparent; border:1px solid transparent; border-radius:10px; padding:10px 6px; min-height:42px; cursor:pointer;
+  transition:background 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+.acc-tab.is-active{ background:var(--dp-surface); color:var(--dp-teal-deep); border-color:var(--dp-border); box-shadow:0 1px 3px rgba(21,62,82,.08); }
+
+/* --- حقول --- */
+.acc-form{ display:flex; flex-direction:column; gap:13px; }
+.acc-field{ display:flex; flex-direction:column; gap:6px; }
+.acc-field label{ font-size:.8rem; font-weight:700; color:var(--dp-text); }
+.acc-field input{ font-family:inherit; font-size:.94rem; min-height:48px; color:var(--dp-text); padding:12px 14px;
+  border:1px solid var(--dp-border); border-radius:13px; background:var(--dp-surface-tint); outline:none; width:100%; box-sizing:border-box;
+  transition:border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+.acc-field input::placeholder{ color:var(--dp-placeholder); }
+.acc-field input:focus{ border-color:var(--dp-teal); box-shadow:0 0 0 3px rgba(11,146,148,.16); background:var(--dp-surface); }
+.acc-field input:disabled{ opacity:.6; }
+.acc-hint-sm{ font-size:.72rem; color:var(--dp-text-muted); }
+
+.acc-pw{ position:relative; display:flex; }
+.acc-pw input{ padding-inline-start:74px; }
+.acc-pw-toggle{ position:absolute; inset-inline-start:6px; top:50%; transform:translateY(-50%);
+  background:transparent; border:none; color:var(--dp-blue-action-text); font-family:inherit; font-weight:700; font-size:.78rem;
+  padding:8px 10px; border-radius:9px; cursor:pointer; min-height:36px; }
+.acc-pw-toggle:active{ background:var(--dp-blue-action-soft); }
+
+/* --- رسائل --- */
+.acc-msg{ font-size:.84rem; line-height:1.55; border-radius:12px; padding:11px 13px; border:1px solid transparent; }
+.acc-msg.is-err{ background:var(--dp-danger-soft); color:var(--dp-danger); border-color:#e6c4c2; }
+.acc-msg.is-ok{ background:var(--dp-success-soft); color:var(--dp-success); border-color:#bfe3cf; }
+.acc-alert{ font-size:.83rem; line-height:1.55; border-radius:13px; padding:12px 14px; }
+.acc-alert-warn{ background:var(--dp-warning-soft); color:var(--dp-warning); border:1px solid #e8d3a8; }
+
+/* --- أزرار --- */
+.acc-btn{ display:flex; align-items:center; justify-content:center; gap:9px; width:100%; box-sizing:border-box;
+  font-family:'Cairo',sans-serif; font-weight:800; font-size:.98rem; min-height:52px; padding:14px 20px;
+  border-radius:14px; border:1px solid transparent; cursor:pointer;
+  transition:transform 150ms ease, box-shadow 150ms ease, filter 150ms ease, background 150ms ease; }
+.acc-btn:active:not(:disabled){ transform:scale(.985); }
+.acc-btn:disabled{ cursor:default; }
+.acc-btn-primary{ background:linear-gradient(112deg, var(--dp-navy) 0%, var(--dp-teal-deep) 62%, var(--dp-teal) 100%);
+  color:#fff; box-shadow:var(--dp-cta-shadow), inset 0 1px 0 rgba(255,255,255,.14); }
+.acc-btn-primary:disabled{ filter:saturate(.75) brightness(1.02); }
+.acc-btn-ghost{ background:var(--dp-blue-action-soft); color:var(--dp-blue-action-text); border-color:var(--dp-blue-action-border); }
+.acc-btn-outline{ background:var(--dp-surface); color:var(--dp-danger); border-color:#e6c4c2; }
+@media (hover:hover) and (pointer:fine){
+  .acc-btn-primary:hover:not(:disabled){ filter:brightness(1.05); }
+  .acc-btn-ghost:hover:not(:disabled){ background:var(--dp-surface-selected); }
+  .acc-btn-outline:hover:not(:disabled){ background:var(--dp-danger-soft); }
+}
+.acc-link{ background:transparent; border:none; font-family:inherit; font-weight:700; font-size:.85rem;
+  color:var(--dp-blue-action-text); cursor:pointer; padding:10px; min-height:40px; border-radius:10px; }
+.acc-link:active{ background:var(--dp-blue-action-soft); }
+
+/* --- سبينر التحميل --- */
+.acc-spinner{ width:17px; height:17px; flex:none; border-radius:50%;
+  border:2.5px solid rgba(255,255,255,.35); border-top-color:#fff; animation:accSpin .7s linear infinite; }
+.acc-btn-outline .acc-spinner{ border-color:rgba(171,64,64,.3); border-top-color:var(--dp-danger); }
+@keyframes accSpin{ to{ transform:rotate(360deg); } }
+
+/* --- فاصل --- */
+.acc-divider{ display:flex; align-items:center; gap:12px; color:var(--dp-text-muted); font-size:.78rem; }
+.acc-divider::before, .acc-divider::after{ content:''; flex:1 1 auto; height:1px; background:var(--dp-border); }
+
+/* --- حالة الحساب بعد الدخول --- */
+.acc-status-row{ display:flex; align-items:center; gap:9px; margin-bottom:14px; }
+.acc-status-dot{ width:9px; height:9px; border-radius:50%; background:var(--dp-success); flex:none;
+  box-shadow:0 0 0 4px rgba(42,120,84,.14); }
+.acc-status-text{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.92rem; color:var(--dp-success); }
+.acc-kv{ background:var(--dp-surface-tint); border:1px solid var(--dp-border); border-radius:13px; padding:2px 14px; }
+.acc-kv-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid var(--dp-border); }
+.acc-kv-row:last-child{ border-bottom:none; }
+.acc-kv-row span{ font-size:.8rem; color:var(--dp-text-muted); flex:none; }
+.acc-kv-row b{ font-size:.87rem; color:var(--dp-text); font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.acc-mono{ font-family:'Courier New',monospace; letter-spacing:.5px; }
+.acc-note{ background:var(--dp-canvas-wash); border:1px solid var(--dp-border); border-inline-start:4px solid var(--dp-teal); border-radius:13px; padding:13px 15px; }
+.acc-note b{ display:block; font-family:'Cairo',sans-serif; font-weight:800; font-size:.87rem; color:var(--dp-teal-deep); margin-bottom:5px; }
+.acc-note span{ display:block; font-size:.81rem; line-height:1.6; color:var(--dp-text-muted); }
+
+/* --- بطاقة «تم ربط حسابك بنجاح» --- */
+.acc-linked-card{ display:flex; align-items:flex-start; gap:12px; background:var(--dp-surface); border:1px solid var(--dp-border);
+  border-inline-start:4px solid var(--dp-success); border-radius:15px; padding:14px 15px; box-shadow:var(--dp-shadow-sm); }
+.acc-linked-ico{ flex:none; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:var(--dp-success-soft); color:var(--dp-success); }
+.acc-linked-ico svg{ width:18px; height:18px; }
+.acc-linked-text{ min-width:0; }
+.acc-linked-text b{ display:block; font-family:'Cairo',sans-serif; font-weight:800; font-size:.86rem; color:var(--dp-text); margin-bottom:3px; }
+.acc-linked-text span{ display:block; font-size:.8rem; line-height:1.6; color:var(--dp-text-muted); }
+
+/* --- تنبيه: المزامنة السحابية لم تُفعّل بعد --- */
+.acc-alert-info{ background:var(--dp-canvas-wash); color:var(--dp-teal-deep); border:1px solid var(--dp-blue-action-border); }
+.acc-alert-info b{ display:block; font-family:'Cairo',sans-serif; font-weight:800; font-size:.85rem; margin-bottom:4px; }
+.acc-alert-info span{ display:block; font-size:.8rem; line-height:1.6; color:var(--dp-text-muted); }
+
+/* --- ألوان قيم إضافية داخل acc-kv --- */
+.acc-kv-good{ color:var(--dp-success) !important; }
+.acc-kv-muted{ color:var(--dp-text-muted) !important; font-weight:700 !important; }
+
+/* --- بطاقة المزامنة --- */
+.acc-sync-card{ padding:16px; display:flex; flex-direction:column; gap:13px; }
+.acc-sync-head{ display:flex; align-items:flex-start; gap:12px; }
+.acc-sync-ico{ flex:none; width:38px; height:38px; border-radius:11px; display:grid; place-items:center; background:var(--dp-blue-action-soft); color:var(--dp-blue-action-text); }
+.acc-sync-ico svg{ width:20px; height:20px; }
+.acc-sync-ico-good{ background:var(--dp-success-soft); color:var(--dp-success); }
+.acc-sync-head-text{ min-width:0; }
+.acc-sync-head-text b{ display:block; font-family:'Cairo',sans-serif; font-weight:800; font-size:.92rem; color:var(--dp-text); margin-bottom:3px; }
+.acc-sync-head-text span{ display:block; font-size:.8rem; line-height:1.55; color:var(--dp-text-muted); }
+.acc-sync-status{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--dp-surface-tint); border:1px solid var(--dp-border); border-radius:11px; padding:9px 13px; }
+.acc-sync-status span{ font-size:.78rem; color:var(--dp-text-muted); }
+.acc-sync-status b{ font-size:.83rem; color:var(--dp-text); font-weight:700; }
+.acc-sync-actions{ display:flex; gap:10px; }
+.acc-sync-actions .acc-btn{ flex:1 1 0; min-width:0; padding-inline:10px; }
+.acc-sync-actions .acc-btn-label{ display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.acc-sync-actions .acc-btn-label svg{ width:16px; height:16px; flex:none; }
+.acc-sync-note{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--dp-canvas-wash); border:1px solid var(--dp-border); border-radius:10px; padding:8px 12px; }
+.acc-sync-note span{ font-size:.74rem; color:var(--dp-text-muted); line-height:1.5; }
+.acc-sync-note button{ flex:none; background:transparent; border:none; color:var(--dp-text-muted); font-size:1.1rem; line-height:1; cursor:pointer; padding:2px 6px; border-radius:6px; }
+.acc-sync-note button:active{ background:var(--dp-border); }
+
+/* --- معلومات تقنية (قابلة للطي) --- */
+.acc-tech{ background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:14px; overflow:hidden; }
+.acc-tech summary{ list-style:none; cursor:pointer; padding:13px 15px; font-size:.83rem; font-weight:700; color:var(--dp-text-muted); display:flex; align-items:center; justify-content:space-between; }
+.acc-tech summary::-webkit-details-marker{ display:none; }
+.acc-tech summary::after{ content:'\2304'; font-size:.9rem; color:var(--dp-text-muted); transition:transform .2s ease; }
+.acc-tech[open] summary::after{ transform:rotate(180deg); }
+.acc-tech-body{ padding:0 15px 15px; display:flex; flex-direction:column; gap:10px; }
+.acc-copy-btn{ align-self:flex-start; font-family:inherit; font-size:.78rem; font-weight:700; color:var(--dp-blue-action-text); background:var(--dp-blue-action-soft); border:1px solid var(--dp-blue-action-border); border-radius:9px; padding:8px 13px; cursor:pointer; min-height:36px; }
+.acc-copy-btn:active{ background:var(--dp-surface-selected); }
+
+.acc-fine{ font-size:.76rem; line-height:1.55; color:var(--dp-text-muted); text-align:center; margin:0; }
+
+/* --- حالة تحميل محايدة عند إقلاع التطبيق (بانتظار حسم حالة الدخول) --- */
+.acc-loading{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:70px 20px; }
+.acc-spinner-dark{ width:26px; height:26px; border-width:3px; border-color:var(--dp-border); border-top-color:var(--dp-teal); }
+.acc-loading p{ font-size:.84rem; color:var(--dp-text-muted); margin:0; }
+
+/* --- شاشات ضيقة جداً (360px وأقل) --- */
+@media (max-width:370px){
+  .acc-hero{ padding:16px 14px; gap:11px; }
+  .acc-hero-badge, .acc-avatar{ width:48px; height:48px; border-radius:15px; }
+  .acc-hero-badge svg{ width:26px; height:26px; }
+  .acc-avatar{ font-size:1.3rem; }
+  .acc-hero-title{ font-size:1.1rem; }
+  .acc-hero-sub{ font-size:.79rem; }
+  .acc-card{ padding:14px; }
+  .acc-tab{ font-size:.81rem; }
+  .acc-btn{ font-size:.93rem; min-height:50px; }
+}
+
+/* ============================================================
+   الدعم والتفعيل — تصميم Premium بـ Progressive Disclosure
+   ============================================================ */
+.sup-sub{ font-size:.85rem; color:var(--dp-text-muted); margin:-6px 0 16px; line-height:1.5; }
+
+/* --- كرت الحالة --- */
+.sup-status-card{ text-align:center; }
+.sup-status-card .sup-h{ font-size:1rem; }
+.sup-status-card p{ margin:6px 0 0; color:var(--dp-text-muted); font-size:.86rem; }
+.sup-status-card .sup-remain{ display:inline-block; margin:6px 0 0; }
+
+/* --- شبكة الخطط --- */
+.plan-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.plan-card{ position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center;
+  background:var(--dp-surface); border:1.5px solid var(--dp-border); border-radius:16px; padding:18px 10px 14px;
+  cursor:pointer; font-family:inherit; transition:transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, background 150ms ease; }
+.plan-card:active{ transform:scale(.98); }
+.plan-card.selected{ border-color:var(--dp-teal); background:var(--dp-canvas-wash); box-shadow:0 0 0 3px rgba(11,146,148,.14); }
+.plan-badge{ position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:linear-gradient(120deg,var(--dp-navy),var(--dp-teal-deep));
+  color:#fff; font-size:.62rem; font-weight:800; padding:4px 10px; border-radius:999px; white-space:nowrap; box-shadow:0 3px 8px rgba(18,55,79,.25); }
+.plan-name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.9rem; color:var(--dp-text); margin-top:4px; }
+.plan-price{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.15rem; color:var(--dp-teal-deep); }
+.plan-card.selected .plan-price{ color:var(--dp-teal-deep); }
+.plan-price-yer{ font-size:.68rem; color:var(--dp-text-muted); }
+
+/* --- ملخص الخطة المختارة --- */
+.plan-summary{ background:var(--dp-surface); border:1px solid var(--dp-border); border-inline-start:4px solid var(--dp-teal);
+  border-radius:15px; padding:16px; margin-bottom:14px; box-shadow:var(--dp-shadow-sm); display:flex; flex-direction:column; gap:9px; }
+.plan-summary-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:.85rem; }
+.plan-summary-row span{ color:var(--dp-text-muted); }
+.plan-summary-row b{ color:var(--dp-text); font-weight:700; }
+.plan-summary .btn{ margin-top:4px; }
+
+.sup-code-btn{ margin-bottom:14px; }
+
+.sup-mini-help{ text-align:center; }
+.sup-mini-help .sup-h{ font-size:.92rem; margin-bottom:10px; }
+.sup-fine-card{ background:var(--dp-canvas-wash); border:1px dashed var(--dp-border); }
+.sup-fine-card p{ margin:0; font-size:.78rem; color:var(--dp-text-muted); line-height:1.6; text-align:center; }
+
+.agents-card.compact .sup-h{ margin-bottom:10px; font-size:.92rem; }
+
+/* --- نافذة التنبيه (اختيارية/إلزامية) --- */
+.act-prompt-modal{ max-width:380px; background:transparent; box-shadow:none; }
+.act-prompt-body{ background:var(--dp-surface); border-radius:20px; padding:26px 22px 22px; text-align:center;
+  box-shadow:0 20px 50px rgba(18,55,79,.28); border:1px solid var(--dp-border); }
+.act-prompt-ico{ width:52px; height:52px; margin:0 auto 14px; border-radius:16px; display:grid; place-items:center;
+  background:linear-gradient(135deg,var(--dp-navy),var(--dp-teal-deep)); color:#fff; box-shadow:0 8px 18px rgba(18,55,79,.28); }
+.act-prompt-body h2{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.1rem; color:var(--dp-text); margin-bottom:6px; }
+.act-prompt-body p{ font-size:.85rem; color:var(--dp-text-muted); line-height:1.55; margin:0 0 18px; }
+.act-prompt-actions{ display:flex; flex-direction:column; gap:10px; }
+
+/* --- نافذة كود التفعيل --- */
+.act-code-modal{ max-width:420px; }
+.act-help-steps{ margin:0 0 16px 18px; padding:0; color:var(--dp-text-muted); font-size:.85rem; line-height:1.7; }
+.act-label{ font-size:.8rem; font-weight:700; color:var(--dp-text); display:block; margin:2px 0 6px; }
+.acc-link{ background:transparent; border:none; font-family:inherit; font-weight:700; font-size:.84rem; color:var(--dp-blue-action-text); cursor:pointer; padding:10px; min-height:40px; border-radius:10px; display:block; margin:6px auto 0; }
+.acc-link:active{ background:var(--dp-blue-action-soft); }
+
+/* --- نافذة إتمام الدفع --- */
+.act-pay-modal{ max-width:460px; }
+.pay-accordion{ display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+.pay-acc-item{ border:1px solid var(--dp-border); border-radius:13px; overflow:hidden; background:var(--dp-surface-tint); }
+.pay-acc-head{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; background:transparent; border:none;
+  font-family:'Cairo',sans-serif; font-weight:700; font-size:.88rem; color:var(--dp-text); padding:13px 15px; cursor:pointer; text-align:start; }
+.pay-acc-caret{ color:var(--dp-text-muted); font-size:.9rem; transition:transform .2s ease; }
+.pay-acc-body{ padding:0 15px 14px; display:flex; flex-direction:column; gap:8px; }
+.pay-acc-body .pay-kv{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:2px 0; font-size:.85rem; }
+.pay-acc-body .pay-kv span{ color:var(--dp-text-muted); } .pay-acc-body .pay-kv b{ color:var(--dp-text); }
+.pay-acc-body .copy-btn{ width:100%; margin-top:2px; }
+
+/* --- شاشات ضيقة --- */
+@media (max-width:370px){
+  .plan-grid{ gap:9px; }
+  .plan-card{ padding:15px 6px 12px; }
+  .plan-name{ font-size:.84rem; }
+  .plan-price{ font-size:1.05rem; }
+  .act-prompt-body{ padding:22px 16px 18px; }
+}
+
+/* ============================================================
+   قسم التواصل الثابت — كرت المطور والدعم الرسمي + كرت الوكيل الطلابي
+   يظهر قبل التفعيل وبعده بنفس الشكل والترتيب
+   ============================================================ */
+
+/* --- كرت المطور والدعم الرسمي: الأبرز والأجمل في القسم --- */
+.dev-official-card{ position:relative; text-align:center; background:linear-gradient(165deg, var(--dp-surface) 0%, var(--dp-canvas-wash) 100%);
+  border:1.5px solid var(--dp-blue-action-border); border-radius:18px; padding:22px 18px 18px;
+  box-shadow:0 10px 26px rgba(18,55,79,.1), 0 2px 6px rgba(18,55,79,.06); margin-top:4px; }
+.dev-badge{ display:inline-block; background:linear-gradient(120deg,var(--dp-navy),var(--dp-teal-deep)); color:#fff;
+  font-size:.66rem; font-weight:800; padding:5px 14px; border-radius:999px; margin-bottom:12px; box-shadow:0 4px 10px rgba(18,55,79,.22); }
+.dev-official-name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.15rem; color:var(--dp-text); line-height:1.4; }
+.dev-official-fullname{ font-size:.76rem; color:var(--dp-text-muted); margin-top:2px; }
+.dev-official-desc{ font-size:.84rem; color:var(--dp-text-muted); line-height:1.6; margin:10px auto 16px; max-width:280px; }
+.dev-official-actions{ display:flex; flex-direction:column; gap:10px; }
+.dev-wa-btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.dev-wa-btn svg{ flex:none; }
+
+/* --- كرت الوكيل الطلابي: أقل بروزاً، لكن مرتّب وجميل --- */
+.agent-official-card{ text-align:center; background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:15px; padding:16px; }
+.agent-official-card .sup-h{ font-size:.9rem; margin-bottom:8px; }
+.agent-official-name{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.96rem; color:var(--dp-text); }
+.agent-official-province{ font-size:.76rem; color:var(--dp-teal-deep); font-weight:700; margin-top:2px; }
+.agent-official-desc{ font-size:.8rem; color:var(--dp-text-muted); line-height:1.6; margin:8px auto 14px; max-width:270px; }
+.agent-wa-btn{ width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.agent-wa-btn svg{ flex:none; }
+
+@media (max-width:370px){
+  .dev-official-card{ padding:18px 14px 16px; }
+  .dev-official-name{ font-size:1.05rem; }
+  .dev-official-desc{ font-size:.8rem; }
 }

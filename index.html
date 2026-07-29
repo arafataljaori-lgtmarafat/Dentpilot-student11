@@ -32,43 +32,57 @@
 
   <!-- شاشة التفعيل -->
   <div id="activationOverlay" class="modal-overlay act-overlay" hidden>
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head"><h2>تفعيل دينت بايلوت للطلاب 🎓</h2></div>
+    <div class="modal modal-sm act-prompt-modal" role="dialog" aria-modal="true">
+      <div class="act-prompt-body">
+        <div class="act-prompt-ico">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 6.5v5c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5v-5Z"/><path d="m9.2 12 1.9 1.9 3.7-3.8"/></svg>
+        </div>
+        <h2 id="actPromptTitle">فعّل DentPilot الآن</h2>
+        <p id="actPromptText">اختر الخطة المناسبة واستمر دون انقطاع.</p>
+        <p id="actHint" class="form-hint" hidden></p>
+        <div id="actPromptButtons" class="act-prompt-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="actCodeOverlay" class="modal-overlay" hidden>
+    <div class="modal modal-sm act-code-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2 id="actCodeStepTitle">أدخل كود التفعيل</h2><button type="button" id="actCodeClose" class="modal-close" aria-label="إغلاق">×</button></div>
       <div class="form">
-        <p class="form-hint" id="actHint">انتهت الفترة التجريبية. للاستمرار في استخدام DentPilot Student، انسخ رمز التطبيق وأرسله عبر واتساب للحصول على كود التفعيل.</p>
-        <p class="act-note">هذا الرمز خاص بالتطبيق فقط، ولا يحتوي على صورك أو بيانات مرضاك أو معلوماتك الشخصية.</p>
-        <label class="act-label">1. انسخ رمز التطبيق الخاص بهذا الهاتف</label>
-        <div class="act-idrow">
-          <span id="actDeviceId" class="act-id">—</span>
-          <button type="button" id="actCopyBtn" class="btn btn-ghost act-copy">نسخ رمز التطبيق</button>
-        </div>
-        <div class="act-contact">
-          <div class="act-section-title">2. احصل على كود التفعيل</div>
-          <p class="act-contact-text">أرسل رمز التطبيق إلى الدعم عبر واتساب للحصول على كود التفعيل.</p>
-          <div class="wa-row act-wa-row">
-            <a class="wa-btn" href="https://wa.me/967775101518" target="_blank" rel="noopener">واتساب 775101518</a>
-            <a class="wa-btn" href="https://wa.me/967779449744" target="_blank" rel="noopener">واتساب 779449744</a>
+        <div id="actStepCode">
+          <p class="form-hint">أدخل الكود الذي وصلك من الدعم أو الوكيل.</p>
+          <div class="field act-code-field">
+            <input type="text" id="actCode" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" dir="ltr" />
           </div>
+          <p id="actError" class="act-error" hidden>⚠️ كود التفعيل غير صحيح لهذا الهاتف.</p>
+          <div class="form-actions"><button type="button" id="actActivateBtn" class="btn btn-primary" style="width:100%">تفعيل التطبيق</button></div>
+          <button type="button" id="actNeedCodeBtn" class="acc-link" style="width:100%">لم أحصل على الكود بعد</button>
         </div>
-        <div class="field act-code-field">
-          <label for="actCode">3. أدخل كود التفعيل</label>
-          <input type="text" id="actCode" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" />
-        </div>
-        <p id="actError" class="act-error" hidden>⚠️ كود التفعيل غير صحيح لهذا الهاتف.</p>
-        <div class="form-actions"><button type="button" id="actActivateBtn" class="btn btn-primary act-activate">تفعيل التطبيق</button></div>
-        <button type="button" id="actLaterBtn" class="btn btn-ghost" style="width:100%;margin-top:8px" hidden>لاحقاً</button>
-        <p class="act-help">بعد استلام كود التفعيل، انسخه والصقه هنا ثم اضغط تفعيل التطبيق.</p>
-        <div class="act-agent-box">
-          <div class="act-agent-title">وكيل طلاب محافظة إب</div>
-          <div class="act-agent-subtitle">خاص بطلاب محافظة إب</div>
-          <div class="act-agent-name">فراس المجمر</div>
-          <div class="act-agent-phone">واتساب: 771697735</div>
-          <p>يمكنكم أيضًا الحصول على كود التفعيل من الوكيل لطلاب محافظة إب.</p>
-          <a class="wa-btn act-agent-wa" href="https://wa.me/967771697735" target="_blank" rel="noopener">واتساب</a>
+        <div id="actStepHelp" hidden>
+          <ol class="sup-steps act-help-steps">
+            <li>انسخ رمز الجهاز.</li>
+            <li>أرسله للدعم بعد الدفع.</li>
+            <li>بعد استلام الكود ارجع وأدخله.</li>
+          </ol>
+          <label class="act-label">رمز الجهاز</label>
+          <div class="act-idrow">
+            <span id="actDeviceId" class="act-id">—</span>
+            <button type="button" id="actCopyBtn" class="btn btn-ghost act-copy">نسخ</button>
+          </div>
+          <div class="form-actions"><a id="actHelpWaBtn" class="btn btn-primary" style="width:100%" target="_blank" rel="noopener">مراسلة الدعم</a></div>
+          <button type="button" id="actHaveCodeBtn" class="btn btn-ghost" style="width:100%">لدي الكود الآن</button>
         </div>
       </div>
     </div>
   </div>
+
+  <div id="paymentOverlay" class="modal-overlay" hidden>
+    <div class="modal act-pay-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><h2>إتمام الدفع</h2><button type="button" id="payClose" class="modal-close" aria-label="إغلاق">×</button></div>
+      <div class="form" id="payBody"></div>
+    </div>
+  </div>
+
 
   <header class="topbar">
     <div class="topbar-actions">
@@ -86,10 +100,10 @@
   </header>
 
   <div class="tb-merged">
-    <div id="trialBanner" class="trial-banner" hidden>
+    <button type="button" id="trialBanner" class="trial-banner" hidden>
       <span class="tb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
       <span id="trialText">الفترة التجريبية المجانية متاحة لمدة 24 ساعة.</span>
-    </div>
+    </button>
     <button type="button" id="installBanner" class="install-banner" hidden>
       <span class="install-banner-text">تثبيت التطبيق</span>
       <span class="install-banner-arrow">‹</span>
@@ -323,25 +337,6 @@
         <div id="todayList" class="today-list"></div>
         <div id="todayEmpty" class="today-empty" hidden>لا توجد مواعيد اليوم أو غداً.</div>
       </div>
-
-      <div class="dash-bottombar">
-        <button type="button" class="dash-card dbb-item" data-go="reqs">
-          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"></circle><path d="M8.5 13.5 7 21l5-2.5 5 2.5-1.5-7.5"></path></svg></span>
-          <span class="dbb-label">المتطلبات</span>
-        </button>
-        <button type="button" class="dash-card dbb-item" data-go="all">
-          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>
-          <span class="dbb-label">المواعيد</span>
-        </button>
-        <button type="button" class="dash-card dbb-item" data-go="all">
-          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"></rect><path d="M3.5 9.5h17"></path></svg></span>
-          <span class="dbb-label">الحالات</span>
-        </button>
-        <button type="button" class="dash-card dbb-item dbb-active" data-go="dashboard">
-          <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"></path></svg></span>
-          <span class="dbb-label">الرئيسية</span>
-        </button>
-      </div>
     </section>
 
     <!-- جميع المرضى -->
@@ -352,6 +347,9 @@
       <div id="allList" class="rows"></div>
       <div id="allEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
     </section>
+
+    <!-- الحساب (Firebase Authentication) — يُبنى محتواها من account-ui.js -->
+    <section class="view" id="view-account" data-view="account" hidden></section>
 
     <!-- متطلبات الكلية -->
     <section class="view" id="view-reqs" data-view="reqs" hidden>
@@ -444,6 +442,7 @@
     <!-- الدعم والتفعيل -->
     <section class="view" id="view-support" data-view="support" hidden>
       <div class="page-head"><h2>🛟 الدعم والتفعيل</h2></div>
+      <p class="sup-sub" id="supSubtitle">اختر الخطة المناسبة ثم أكمل التفعيل بسهولة.</p>
       <div id="supportBody"></div>
     </section>
 
@@ -469,6 +468,28 @@
         <button type="button" class="btn btn-ghost" data-act="cs-print">🖨️ طباعة / تصدير PDF</button>
       </div>
     </section>
+
+    <!-- شريط تنقّل سفلي ثابت — خارج جميع أقسام .view حتى لا يُخفى مع تبديل الصفحات.
+         ظاهر فقط في الصفحات الأساسية الأربع (الرئيسية/الحالات/المواعيد/الحساب)، ويُتحكَّم بذلك من applyRoute().
+         ترتيب DOM يمين→يسار (RTL): الرئيسية، الحالات، المواعيد، الحساب. -->
+    <div class="dash-bottombar" id="dashBottomBar" hidden>
+      <button type="button" class="dash-card dbb-item" data-go="dashboard">
+        <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"></path></svg></span>
+        <span class="dbb-label">الرئيسية</span>
+      </button>
+      <button type="button" class="dash-card dbb-item" data-go="all">
+        <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"></rect><path d="M3.5 9.5h17"></path></svg></span>
+        <span class="dbb-label">الحالات</span>
+      </button>
+      <button type="button" class="dash-card dbb-item" data-go="all" data-nav-alias="1">
+        <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>
+        <span class="dbb-label">المواعيد</span>
+      </button>
+      <button type="button" class="dash-card dbb-item" data-go="account">
+        <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5 20.5a7 7 0 0 1 14 0"></path></svg></span>
+        <span class="dbb-label">الحساب</span>
+      </button>
+    </div>
 
   </main>
 
@@ -1071,5 +1092,17 @@
 
   <script src="activation.js"></script>
   <script src="script.js"></script>
+
+  <!-- Firebase Web SDK (compat) — نسخ CDN كلاسيكية تناسب بنية المشروع الحالية (بدون bundler).
+       defer/async غير مستخدمة عمداً حتى تكون window.firebase جاهزة قبل ملفاتنا.
+       في حال تعذّر تحميلها (offline) يستمر التطبيق بالعمل بالكامل محلياً. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="firebase-auth.js"></script>
+  <script src="firebase-sync.js"></script>
+  <script src="account-ui.js"></script>
 </body>
 </html>
