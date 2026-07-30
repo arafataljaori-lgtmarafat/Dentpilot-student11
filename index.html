@@ -440,29 +440,38 @@
           <div class="fd-row"><span class="fd-label">الكلية</span><span class="fd-value" id="setCollegeDisplay">—</span></div>
         </div>
         <div class="panel-actions"><button type="button" id="editStudentBtn" class="btn btn-primary">✏️ تعديل بيانات الطالب</button></div>
-        <h3 class="sub-h">📅 جدول الأسبوع السريري</h3>
-        <p class="hint">اختر القسم المخصّص لكل يوم (اختياري) — تنظيم شخصي مرجعي لجدولك الأسبوعي.</p>
-        <div id="scheduleEditor" class="sched"></div>
-        <div class="panel-actions"><button type="button" id="saveSettingsBtn" class="btn btn-primary">حفظ الجدول</button></div>
-        <h3 class="sub-h">🔄 التحديثات</h3>
-        <p class="hint">الإصدار الحالي: <b id="appVersion">—</b></p>
-        <div class="panel-actions"><button type="button" id="checkUpdateBtn" class="btn btn-ghost">التحقق من التحديثات</button></div>
-        <p id="updateStatus" class="hint" style="margin-top:8px"></p>
-        <p class="hint">الحالة: <b id="accessStatus">—</b></p>
-        <p class="hint" style="margin-top:6px">رمز التطبيق الخاص بهذا الهاتف: <b id="setDeviceId">—</b></p>
-        <h3 class="sub-h">📲 تثبيت التطبيق</h3>
-        <p id="setInstallStatus" class="hint">—</p>
-        <div class="panel-actions"><button type="button" id="setInstallBtn" class="btn btn-ghost" hidden>تثبيت التطبيق على الشاشة الرئيسية</button></div>
-        <h3 class="sub-h">🛟 الدعم والتفعيل</h3>
-        <div class="panel-actions"><button type="button" class="btn btn-primary" data-act="nav" data-go="support">فتح صفحة الدعم والتفعيل</button></div>
-        <div class="dev-card">
-          <div class="dev-title">👨‍⚕️ المطور والدعم</div>
-          <div class="dev-name">تم تطوير التطبيق بواسطة:<br><b>د. عرفات الجعوري</b></div>
-          <div class="wa-row">
-            <a class="wa-btn" href="https://wa.me/967775101518" target="_blank" rel="noopener">واتساب 775101518</a>
-            <a class="wa-btn" href="https://wa.me/967779449744" target="_blank" rel="noopener">واتساب 779449744</a>
+
+        <div id="clinicalInsights" class="insights-panel"></div>
+
+        <details class="dp-accordion" open>
+          <summary>⚙️ التفضيلات</summary>
+          <div class="dp-accordion-body">
+            <h3 class="sub-h">🔄 التحديثات</h3>
+            <p class="hint">الإصدار الحالي: <b id="appVersion">—</b></p>
+            <div class="panel-actions"><button type="button" id="checkUpdateBtn" class="btn btn-ghost">التحقق من التحديثات</button></div>
+            <p id="updateStatus" class="hint" style="margin-top:8px"></p>
+            <p class="hint">الحالة: <b id="accessStatus">—</b></p>
+            <p class="hint" style="margin-top:6px">رمز التطبيق الخاص بهذا الهاتف: <b id="setDeviceId">—</b></p>
+            <h3 class="sub-h">📲 تثبيت التطبيق</h3>
+            <p id="setInstallStatus" class="hint">—</p>
+            <div class="panel-actions"><button type="button" id="setInstallBtn" class="btn btn-ghost" hidden>تثبيت التطبيق على الشاشة الرئيسية</button></div>
           </div>
-        </div>
+        </details>
+
+        <details class="dp-accordion">
+          <summary>🛟 الدعم</summary>
+          <div class="dp-accordion-body">
+            <div class="panel-actions"><button type="button" class="btn btn-primary" data-act="nav" data-go="support">فتح صفحة الدعم والتفعيل</button></div>
+            <div class="dev-card">
+              <div class="dev-title">👨‍⚕️ المطور والدعم</div>
+              <div class="dev-name">تم تطوير التطبيق بواسطة:<br><b>د. عرفات الجعوري</b></div>
+              <div class="wa-row">
+                <a class="wa-btn" href="https://wa.me/967775101518" target="_blank" rel="noopener">واتساب 775101518</a>
+                <a class="wa-btn" href="https://wa.me/967779449744" target="_blank" rel="noopener">واتساب 779449744</a>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
     </section>
 

@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.11.1';
+  var APP_VERSION = '1.12.0';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -39,7 +39,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var els = {};
   ['backBtn','menuBtn','installBanner','dcAll','dcReqsRing','dcReqsVal','allSearch','allList','allEmpty',
-   'reqsList','reqAddBtn','reqAddForm','reqNewName','completedList','completedEmpty','bySubjectList','bySubjectEmpty','subjectTitle','subjectList','subjectEmpty','exportBtn','importBtn','importFile','setNameDisplay','setLevelDisplay','setCollegeDisplay','editStudentBtn','scheduleEditor','saveSettingsBtn','setDeviceId',
+   'reqsList','reqAddBtn','reqAddForm','reqNewName','completedList','completedEmpty','bySubjectList','bySubjectEmpty','subjectTitle','subjectList','subjectEmpty','exportBtn','importBtn','importFile','setNameDisplay','setLevelDisplay','setCollegeDisplay','editStudentBtn','scheduleEditor','saveSettingsBtn','clinicalInsights','setDeviceId',
    'studentSetupOverlay','studentSetupTitle','studentSetupForm','studentSetupSkip','setupName','setupLevel','setupCollege',
    'heroGreet','heroName','heroMeta','heroBadgeTotal','heroBadgeDone','calStrip','calNote','dcTodayTomorrow','todayList','todayEmpty',
    'drawerOverlay','sideDrawer','drawerCloseBtn','drawerName','drawerLevel','drawerAvatar',
@@ -455,7 +455,7 @@
     if (past.length) return { label: 'آخر موعد', c: past[0] };
     return null;
   }
-  function patientCardHtml(p) {
+  function patientCardHtml(p, n) {
     var activeN = p.cases.filter(function (c) { return c.status !== 'مكتملة'; }).length;
     var doneN = p.cases.filter(function (c) { return c.status === 'مكتملة'; }).length;
     var nxt = patientNextOrLast(p);
@@ -464,21 +464,25 @@
     if (activeN) metaParts.push(activeN + ' نشطة');
     if (doneN) metaParts.push(doneN + ' مكتملة');
     return '<div class="patient-card" data-act="patient-open" data-key="' + esc(p.key) + '" role="button" tabindex="0" aria-label="عرض ملفات ' + esc(p.name) + '">' +
-      '<span class="patient-avatar">' + esc(initial(p.name)) + '</span>' +
+      '<span class="patient-avatar patient-num">' + pad(n) + '</span>' +
       '<span class="patient-main">' +
         '<span class="patient-name">' + esc(p.name) + '</span>' +
+        '<span class="patient-fileno">رقم الملف: ' + n + '</span>' +
         (p.phone ? '<span class="patient-phone" dir="ltr">' + esc(p.phone) + '</span>' : '') +
         '<span class="patient-meta">' + esc(metaParts.join(' · ')) + '</span>' +
-        '<span class="patient-appt">' + esc(apptText) + '</span>' +
       '</span>' +
-      '<span class="patient-chevron">عرض الملفات ›</span>' +
+      '<span class="patient-side">' +
+        '<span class="patient-next-panel">' + esc(apptText) + '</span>' +
+        '<span class="patient-chevron">عرض الملفات ›</span>' +
+      '</span>' +
     '</div>';
   }
   function renderPatients() {
     if (!els.patientsList) return;
     var list = buildPatients();
     var q = els.patientsSearch ? els.patientsSearch.value.trim().toLowerCase() : '';
-    var filtered = q ? list.filter(function (p) { return (p.name || '').toLowerCase().indexOf(q) >= 0 || (p.phone || '').toLowerCase().indexOf(q) >= 0; }) : list;
+    var indexed = list.map(function (p, i) { return { p: p, n: i + 1 }; });   // ترقيم ثابت حسب ترتيب القائمة الكاملة، لا يتغير عند الفلترة بالبحث
+    var filtered = q ? indexed.filter(function (x) { return (x.p.name || '').toLowerCase().indexOf(q) >= 0 || (x.p.phone || '').toLowerCase().indexOf(q) >= 0; }) : indexed;
     if (els.patientsTitle) els.patientsTitle.textContent = '👥 جميع المرضى (' + list.length + ')';
     if (list.length === 0) {
       els.patientsList.innerHTML = ''; if (els.patientsEmpty) { els.patientsEmpty.hidden = false; els.patientsEmpty.querySelector('p').textContent = 'لا يوجد مرضى بعد.'; els.patientsEmpty.querySelector('span').textContent = 'اضغط «إضافة حالة» لتسجيل أول حالة.'; }
@@ -489,7 +493,7 @@
       return;
     }
     if (els.patientsEmpty) els.patientsEmpty.hidden = true;
-    els.patientsList.innerHTML = filtered.map(patientCardHtml).join('');
+    els.patientsList.innerHTML = filtered.map(function (x) { return patientCardHtml(x.p, x.n); }).join('');
   }
   function renderPatientSummary(key) {
     if (!els.patientCasesList) return;
@@ -1155,15 +1159,53 @@
     if (currentView === 'account') { setTimeout(maybeShowStudentSetup, 900); return; }  // ولا نتزاحم مع صفحة الحساب
     openStudentSetup();
   }
+  /* ---------- لوحة "نظرة سريعة" (Clinical Insights) ----------
+     بديل قسم "ترتيب الأيام" المحذوف. كل رقم هنا مُشتقّ من بيانات موجودة فعلاً
+     (cases/requirements) بنفس الدوال المستخدمة أصلاً في اللوحة الرئيسية وصفحة المتطلبات —
+     عرض فقط، بلا أي مصدر بيانات جديد وبلا أي تعديل على منطق الحفظ. */
+  function renderClinicalInsights() {
+    if (!els.clinicalInsights) return;
+    var totalCount = cases.length, doneCount = completedCases().length;
+    var pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
+
+    var g = subjectGroups(), topKey = '', topN = 0;
+    g.order.forEach(function (k) { if (g.groups[k].length > topN) { topN = g.groups[k].length; topKey = k; } });
+    var topLabel = topKey ? (topKey === NO_SUBJECT ? topKey : deptLabel(topKey)) : '—';
+
+    var alerts = allReqNames().map(function (d) {
+      var req = toNum(requirements[d]);
+      if (req <= 0) return null;
+      var done = cases.filter(function (c) { return c.department === d && c.status === 'مكتملة'; }).length;
+      var remaining = Math.max(0, req - done);
+      if (remaining <= 0) return null;
+      var deptDef = null; for (var i = 0; i < DEPT_DEFS.length; i++) { if (DEPT_DEFS[i].value === d) { deptDef = DEPT_DEFS[i]; break; } }
+      return { label: deptDef ? deptDef.label : d, remaining: remaining };
+    }).filter(Boolean);
+
+    var alertsHtml = alerts.length
+      ? alerts.map(function (a) { return '<div class="insight-alert-row"><span>' + esc(a.label) + '</span><b>' + a.remaining + ' متبقٍ</b></div>'; }).join('')
+      : '<div class="insight-alert-row insight-alert-empty"><span>لا توجد متطلبات ناقصة حالياً 🎉</span></div>';
+
+    els.clinicalInsights.innerHTML =
+      '<div class="insights-head"><span class="insights-ico">📊</span><h3>نظرة سريعة</h3></div>' +
+      '<div class="insights-grid">' +
+        '<div class="insight-stat"><span class="insight-stat-val">' + pct + '%</span><span class="insight-stat-label">نسبة الإنجاز الإجمالية</span></div>' +
+        '<div class="insight-stat"><span class="insight-stat-val insight-stat-text">' + esc(topLabel) + '</span><span class="insight-stat-label">الأكثر عملاً' + (topN ? ' (' + topN + ')' : '') + '</span></div>' +
+      '</div>' +
+      '<div class="insight-alerts">' + alertsHtml + '</div>';
+  }
   function renderSettings() {
     renderStudentDisplay();
-    els.scheduleEditor.innerHTML = DAYS.map(function (day) {
-      var cur = settings.schedule[day] || '';
-      return '<div class="sched-row"><span class="sched-day">' + esc(day) + '</span>' +
-        '<select data-day="' + esc(day) + '"><option value="">—</option>' +
-        DEPTS.map(function (d) { return '<option value="' + esc(d) + '"' + (d === cur ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('') +
-        '</select></div>';
-    }).join('');
+    if (els.scheduleEditor) {   // القسم القديم قد يكون محذوفاً من الواجهة؛ لا يزال هذا آمناً إن أُعيد لاحقاً
+      els.scheduleEditor.innerHTML = DAYS.map(function (day) {
+        var cur = settings.schedule[day] || '';
+        return '<div class="sched-row"><span class="sched-day">' + esc(day) + '</span>' +
+          '<select data-day="' + esc(day) + '"><option value="">—</option>' +
+          DEPTS.map(function (d) { return '<option value="' + esc(d) + '"' + (d === cur ? ' selected' : '') + '>' + esc(d) + '</option>'; }).join('') +
+          '</select></div>';
+      }).join('');
+    }
+    renderClinicalInsights();
     els.setDeviceId.textContent = (window.DPLicense && window.DPLicense.getDeviceId) ? window.DPLicense.getDeviceId() : '—';
     if (els.appVersion) els.appVersion.textContent = APP_VERSION;
     updateSettingsInstallUI();
@@ -1819,7 +1861,7 @@
     els.sessionForm.addEventListener('submit', handleSessionSubmit);
     els.sessionClose.addEventListener('click', closeSession); els.sessionCancel.addEventListener('click', closeSession);
 
-    els.saveSettingsBtn.addEventListener('click', function () {
+    if (els.saveSettingsBtn) els.saveSettingsBtn.addEventListener('click', function () {
       settings.schedule = {};
       els.scheduleEditor.querySelectorAll('select').forEach(function (sel) { if (sel.value) settings.schedule[sel.dataset.day] = sel.value; });
       saveSettings(); if (window.DPSync) window.DPSync.markSettingsDirty(); toast('تم حفظ الجدول');
