@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.11.0';
+  var APP_VERSION = '1.11.1';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -34,7 +34,7 @@
   var WEEKDAYS_SHORT = ['أحد','اثن','ثلا','أرب','خمي','جمع','سبت'];
   var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
   var STATUSES = ['قيد الانتظار', 'قيد العمل', 'مكتملة', 'تحتاج مراجعة', 'ملغاة'];
-  var VIEWS = ['dashboard', 'all', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'file', 'casesheets', 'csform', 'account'];
+  var VIEWS = ['dashboard', 'all', 'appointments', 'patients', 'patient', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'file', 'casesheets', 'csform', 'account'];
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {};
@@ -59,7 +59,11 @@
    'trialBanner','trialText','accessStatus','supportBody',
    'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus',
    'setInstallBtn','setInstallStatus',
-   'csTemplates','csTitle','csFormBody','dashBottomBar'
+   'csTemplates','csTitle','csFormBody','dashBottomBar',
+   'allTitle','allFilterBar',
+   'apptToggle','apptList','apptEmpty',
+   'patientsTitle','patientsSearch','patientsList','patientsEmpty',
+   'patientTitle','patientSub','patientCasesList'
   ].forEach(function (k) { els[k] = $(k); });
 
   var cases = [], settings = { studentName: '', level: '', college: '', schedule: {} }, requirements = {}, attachments = {}, customReqs = [], casesheets = [];
@@ -200,22 +204,18 @@
       b.classList.toggle('drawer-item-active', b.dataset.go === currentView);
     });
   }
-  /* الشريط السفلي الثابت: ظاهر فقط في الصفحات الأساسية الأربع.
-     «الحالات» و«المواعيد» يفتحان نفس صفحة القائمة حالياً (لا توجد صفحة مواعيد منفصلة بعد)،
-     لذا يُعتمَد تبويب «الحالات» كمؤشر نشط لتلك الصفحة. */
-  var BOTTOMBAR_VIEWS = { dashboard: 'dashboard', all: 'all', account: 'account' };
+  /* الشريط السفلي الثابت: ظاهر فقط في الصفحات الأساسية الأربع. كل تبويب له وجهة حقيقية مستقلة الآن. */
+  var BOTTOMBAR_VIEWS = { dashboard: 'dashboard', all: 'all', appointments: 'appointments', account: 'account' };
   function markBottomNavActive() {
     if (!els.dashBottomBar) return;
     var show = Object.prototype.hasOwnProperty.call(BOTTOMBAR_VIEWS, currentView);
     els.dashBottomBar.hidden = !show;
     if (!show) return;
     var items = els.dashBottomBar.querySelectorAll('.dbb-item');
-    items.forEach(function (b) {
-      var isActive = b.dataset.go === currentView && b.dataset.navAlias !== '1'; // عند التطابق على 'all' نفعّل «الحالات» فقط، لا «المواعيد» (نفس الوجهة حالياً)
-      b.classList.toggle('dbb-active', isActive);
-    });
+    items.forEach(function (b) { b.classList.toggle('dbb-active', b.dataset.go === currentView); });
   }
   function openDrawer() {
+    if (isAccessLocked()) { enforceAccessLock(); return; }
     if (!els.drawerOverlay) return;
     renderDrawerStudent(); markDrawerActive();
     showOverlay(els.drawerOverlay);
@@ -257,6 +257,19 @@
     var tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
     return { todayIso: isoDate(today), tomorrowIso: isoDate(tomorrow) };
   }
+  // حالة تحتاج متابعة: مُشتقّة فقط من حالة موجودة فعلاً («تحتاج مراجعة») أو من موعد فائت لحالة لم تُنجز/تُلغَ — لا تُخترع بيانات جديدة
+  function needsFollowup(c) {
+    if (c.status === 'تحتاج مراجعة') return true;
+    var todayIso = todayTomorrowIso().todayIso;
+    return !!(c.apptDate && c.apptDate < todayIso && c.status !== 'مكتملة' && c.status !== 'ملغاة');
+  }
+  function apptsForDay(dayIso) {
+    return cases.filter(function (c) { return c.apptDate === dayIso; }).slice().sort(function (a, b) {
+      var at = a.apptTime || '', bt = b.apptTime || '';
+      if (!at && !bt) return 0; if (!at) return 1; if (!bt) return -1;
+      return at < bt ? -1 : (at > bt ? 1 : 0);
+    });
+  }
   function todayTomorrowCases() {
     var r = todayTomorrowIso();
     return cases.filter(function (c) { return c.apptDate === r.todayIso || c.apptDate === r.tomorrowIso; })
@@ -295,7 +308,7 @@
     }
     if (els.heroBadgeTotal) els.heroBadgeTotal.textContent = totalCount + ' حالات';
     if (els.heroBadgeDone) els.heroBadgeDone.textContent = doneCount + ' مكتملة';
-    els.dcAll.textContent = totalCount;   // جميع المرضى: كل الحالات (مكتملة وغير مكتملة)
+    els.dcAll.textContent = buildPatients().length;   // جميع المرضى: عدد المرضى الفريدين فعلاً (وليس عدد الحالات)
     if (els.dcTodayTomorrow) els.dcTodayTomorrow.textContent = todayTomorrowCases().length;
     if (els.dcReqsRing) {
       // حلقة كرت "المكتملة": نسبة الحالات المكتملة من إجمالي الحالات (بلا تكرار مع أي قسم آخر)
@@ -311,32 +324,181 @@
     opts = opts || {};
     var st = statusMeta(c.status);
     var deptText = c.department ? deptLabel(c.department) : '';
+    var procText = c.caseType || '';
+    var deptProc = [deptText, procText].filter(Boolean).join(' · ');
+    var apptText = c.apptDate ? (longDateAr(c.apptDate) + (c.apptTime ? ' — ' + timeLabel(c.apptTime) : '')) : 'لا يوجد موعد محدد';
     var restoreBtn = opts.showRestore ? '<button type="button" class="btn-restore" data-act="restore" data-id="' + c.id + '" title="إرجاع إلى الحالات الحالية">↩︎ إرجاع</button>' : '';
     var completeBtn = (c.status !== 'مكتملة') ? '<button type="button" class="row-complete-btn" data-act="complete" data-id="' + c.id + '" title="إنهاء الحالة">✅ إنهاء</button>' : '';
-    return '<div class="row ' + (c.status === 'مكتملة' ? 'is-done' : '') + '">' +
+    return '<div class="row ' + (c.status === 'مكتملة' ? 'is-done' : '') + '" data-act="open" data-id="' + c.id + '" role="button" tabindex="0" aria-label="عرض حالة ' + esc(c.name) + '">' +
       '<span class="row-no">' + pad(index) + '</span>' +
       '<div class="row-main">' +
         '<span class="row-name">' + esc(c.name) + '</span>' +
-        (deptText ? '<span class="row-dept">' + esc(deptText) + '</span>' : '') +
+        (deptProc ? '<span class="row-dept">' + esc(deptProc) + '</span>' : '') +
         '<span class="row-status ' + st.cls + '">' + (c.status === 'مكتملة' ? '✅ ' : '') + esc(c.status || '—') + '</span>' +
+        '<span class="row-appt">' + esc(apptText) + '</span>' +
       '</div>' +
       restoreBtn + completeBtn +
-      '<button type="button" class="row-open-btn" data-act="open" data-id="' + c.id + '">📁 فتح ملف المريض</button>' +
+      '<span class="row-open-btn">عرض الحالة ›</span>' +
     '</div>';
   }
 
   /* ---------- All patients ---------- */
+  var ALL_FILTERS = [
+    { key: 'all', label: 'الكل' },
+    { key: 'active', label: 'قيد العمل' },
+    { key: 'completed', label: 'مكتملة' },
+    { key: 'today', label: 'اليوم' },
+    { key: 'tomorrow', label: 'غداً' },
+    { key: 'followup', label: 'تحتاج متابعة' }
+  ];
+  function applyAllFilter(list, key) {
+    var r = todayTomorrowIso();
+    if (key === 'active') return list.filter(function (c) { return c.status !== 'مكتملة'; });
+    if (key === 'completed') return list.filter(function (c) { return c.status === 'مكتملة'; });
+    if (key === 'today') return list.filter(function (c) { return c.apptDate === r.todayIso; });
+    if (key === 'tomorrow') return list.filter(function (c) { return c.apptDate === r.tomorrowIso; });
+    if (key === 'followup') return list.filter(needsFollowup);
+    return list;
+  }
   function renderAll() {
+    var filter = ALL_FILTERS.some(function (f) { return f.key === currentParam; }) ? currentParam : 'all';
     var q = els.allSearch.value.trim().toLowerCase();
     var base = cases;   // إجمالي الحالات: تطابق رقم الإحصائية العلوية (تشمل المكتملة وغير المكتملة)
-    var list = q ? base.filter(function (c) {
+
+    if (els.allTitle) els.allTitle.textContent = 'الحالات (' + base.length + ')';
+    if (els.allFilterBar) {
+      els.allFilterBar.innerHTML = ALL_FILTERS.map(function (f) {
+        return '<button type="button" class="filter-chip' + (f.key === filter ? ' active' : '') + '" data-act="all-filter" data-filter="' + f.key + '">' + f.label + '</button>';
+      }).join('');
+    }
+
+    var byFilter = applyAllFilter(base, filter);
+    var list = q ? byFilter.filter(function (c) {
       return (c.name || '').toLowerCase().indexOf(q) >= 0 || (c.phone || '').toLowerCase().indexOf(q) >= 0 ||
              (c.department || '').toLowerCase().indexOf(q) >= 0 || (c.caseType || '').toLowerCase().indexOf(q) >= 0;
-    }) : base;
+    }) : byFilter;
+
     if (base.length === 0) { els.allList.innerHTML = ''; els.allEmpty.hidden = false; els.allEmpty.querySelector('p').textContent = 'لا توجد حالات بعد.'; els.allEmpty.querySelector('span').textContent = 'اضغط «إضافة حالة» لتسجيل أول حالة.'; return; }
-    if (list.length === 0) { els.allList.innerHTML = ''; els.allEmpty.hidden = false; els.allEmpty.querySelector('p').textContent = 'لا توجد نتائج.'; els.allEmpty.querySelector('span').textContent = 'جرّب بحثاً آخر.'; return; }
+    if (list.length === 0) {
+      els.allList.innerHTML = ''; els.allEmpty.hidden = false;
+      els.allEmpty.querySelector('p').textContent = q ? 'لا توجد نتائج.' : 'لا توجد حالات ضمن هذا المرشّح.';
+      els.allEmpty.querySelector('span').textContent = q ? 'جرّب بحثاً آخر.' : 'جرّب مرشّحاً آخر.';
+      return;
+    }
     els.allEmpty.hidden = true;
     els.allList.innerHTML = list.slice().sort(caseSort).map(function (c, i) { return caseRow(c, i + 1); }).join('');
+  }
+
+  /* ---------- مواعيد اليوم والغد (صفحة مستقلة) ---------- */
+  function apptCardHtml(c) {
+    var st = statusMeta(c.status);
+    var deptText = c.department ? deptLabel(c.department) : '';
+    var procText = c.caseType || '';
+    var subText = [deptText, procText].filter(Boolean).join(' · ');
+    var timeText = c.apptTime ? timeLabel(c.apptTime) : 'الوقت غير محدد';
+    return '<div class="appt-card' + (!c.apptTime ? ' appt-card-notime' : '') + '" data-act="open" data-id="' + c.id + '" role="button" tabindex="0" aria-label="فتح حالة ' + esc(c.name) + '">' +
+      '<span class="appt-time">' + esc(timeText) + '</span>' +
+      '<span class="appt-main">' +
+        '<span class="appt-name">' + esc(c.name) + '</span>' +
+        '<span class="appt-sub">' + esc(subText || '—') + '</span>' +
+      '</span>' +
+      '<span class="appt-status ' + st.cls + '">' + (c.status === 'مكتملة' ? '✅ ' : '') + esc(c.status || '—') + '</span>' +
+      '<span class="appt-chevron">›</span>' +
+    '</div>';
+  }
+  function renderAppointments() {
+    if (!els.apptList) return;
+    var day = (currentParam === 'tomorrow') ? 'tomorrow' : 'today';
+    var r = todayTomorrowIso();
+    var todayList = apptsForDay(r.todayIso), tomorrowList = apptsForDay(r.tomorrowIso);
+    var list = day === 'today' ? todayList : tomorrowList;
+
+    if (els.apptToggle) {
+      els.apptToggle.innerHTML =
+        '<button type="button" class="acc-tab' + (day === 'today' ? ' is-active' : '') + '" data-act="appt-day" data-day="today">مواعيد اليوم <span class="appt-toggle-count">' + todayList.length + '</span></button>' +
+        '<button type="button" class="acc-tab' + (day === 'tomorrow' ? ' is-active' : '') + '" data-act="appt-day" data-day="tomorrow">مواعيد الغد <span class="appt-toggle-count">' + tomorrowList.length + '</span></button>';
+    }
+
+    if (list.length === 0) {
+      els.apptList.innerHTML = '';
+      if (els.apptEmpty) {
+        els.apptEmpty.hidden = false;
+        els.apptEmpty.querySelector('p').textContent = day === 'today' ? 'لا توجد مواعيد اليوم' : 'لا توجد مواعيد للغد';
+        els.apptEmpty.querySelector('span').textContent = day === 'today' ? 'يمكنك إضافة حالة جديدة بموعد اليوم.' : 'لا داعي للقلق — لا مواعيد مجدولة للغد بعد.';
+      }
+      return;
+    }
+    if (els.apptEmpty) els.apptEmpty.hidden = true;
+    els.apptList.innerHTML = list.map(apptCardHtml).join('');
+  }
+
+  /* ---------- دليل جميع المرضى (على مستوى العرض فقط — لا يعدّل بيانات الحالات) ---------- */
+  function normalizePhone(p) { return String(p || '').replace(/[^\d+]/g, ''); }
+  function normalizeNameKey(n) { return String(n || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+  function patientKey(c) { var ph = normalizePhone(c.phone); return ph ? ('p:' + ph) : ('n:' + normalizeNameKey(c.name)); }
+  function buildPatients() {
+    var map = {}, order = [];
+    cases.forEach(function (c) {
+      var k = patientKey(c);
+      if (!map[k]) { map[k] = { key: k, name: c.name || '—', phone: c.phone || '', cases: [] }; order.push(k); }
+      map[k].cases.push(c);
+      if (!map[k].phone && c.phone) map[k].phone = c.phone;
+    });
+    return order.map(function (k) { return map[k]; });
+  }
+  function patientNextOrLast(p) {
+    var todayIso = todayTomorrowIso().todayIso;
+    var withDates = p.cases.filter(function (c) { return c.apptDate; });
+    var upcoming = withDates.filter(function (c) { return c.apptDate >= todayIso; }).sort(function (a, b) { return apptDT(a) < apptDT(b) ? -1 : 1; });
+    if (upcoming.length) return { label: 'الموعد القادم', c: upcoming[0] };
+    var past = withDates.slice().sort(function (a, b) { return apptDT(a) > apptDT(b) ? -1 : 1; });
+    if (past.length) return { label: 'آخر موعد', c: past[0] };
+    return null;
+  }
+  function patientCardHtml(p) {
+    var activeN = p.cases.filter(function (c) { return c.status !== 'مكتملة'; }).length;
+    var doneN = p.cases.filter(function (c) { return c.status === 'مكتملة'; }).length;
+    var nxt = patientNextOrLast(p);
+    var apptText = nxt ? (nxt.label + ': ' + longDateAr(nxt.c.apptDate) + (nxt.c.apptTime ? ' — ' + timeLabel(nxt.c.apptTime) : '')) : 'لا يوجد موعد محدد';
+    var metaParts = [p.cases.length + (p.cases.length === 1 ? ' حالة' : ' حالات')];
+    if (activeN) metaParts.push(activeN + ' نشطة');
+    if (doneN) metaParts.push(doneN + ' مكتملة');
+    return '<div class="patient-card" data-act="patient-open" data-key="' + esc(p.key) + '" role="button" tabindex="0" aria-label="عرض ملفات ' + esc(p.name) + '">' +
+      '<span class="patient-avatar">' + esc(initial(p.name)) + '</span>' +
+      '<span class="patient-main">' +
+        '<span class="patient-name">' + esc(p.name) + '</span>' +
+        (p.phone ? '<span class="patient-phone" dir="ltr">' + esc(p.phone) + '</span>' : '') +
+        '<span class="patient-meta">' + esc(metaParts.join(' · ')) + '</span>' +
+        '<span class="patient-appt">' + esc(apptText) + '</span>' +
+      '</span>' +
+      '<span class="patient-chevron">عرض الملفات ›</span>' +
+    '</div>';
+  }
+  function renderPatients() {
+    if (!els.patientsList) return;
+    var list = buildPatients();
+    var q = els.patientsSearch ? els.patientsSearch.value.trim().toLowerCase() : '';
+    var filtered = q ? list.filter(function (p) { return (p.name || '').toLowerCase().indexOf(q) >= 0 || (p.phone || '').toLowerCase().indexOf(q) >= 0; }) : list;
+    if (els.patientsTitle) els.patientsTitle.textContent = '👥 جميع المرضى (' + list.length + ')';
+    if (list.length === 0) {
+      els.patientsList.innerHTML = ''; if (els.patientsEmpty) { els.patientsEmpty.hidden = false; els.patientsEmpty.querySelector('p').textContent = 'لا يوجد مرضى بعد.'; els.patientsEmpty.querySelector('span').textContent = 'اضغط «إضافة حالة» لتسجيل أول حالة.'; }
+      return;
+    }
+    if (filtered.length === 0) {
+      els.patientsList.innerHTML = ''; if (els.patientsEmpty) { els.patientsEmpty.hidden = false; els.patientsEmpty.querySelector('p').textContent = 'لا توجد نتائج.'; els.patientsEmpty.querySelector('span').textContent = 'جرّب بحثاً آخر.'; }
+      return;
+    }
+    if (els.patientsEmpty) els.patientsEmpty.hidden = true;
+    els.patientsList.innerHTML = filtered.map(patientCardHtml).join('');
+  }
+  function renderPatientSummary(key) {
+    if (!els.patientCasesList) return;
+    var p = buildPatients().find(function (x) { return x.key === key; });
+    if (!p) { go('patients'); return; }
+    if (els.patientTitle) els.patientTitle.textContent = p.name;
+    if (els.patientSub) els.patientSub.textContent = [p.phone, p.cases.length + (p.cases.length === 1 ? ' حالة' : ' حالات')].filter(Boolean).join(' · ');
+    var sorted = p.cases.slice().sort(caseSort);
+    els.patientCasesList.innerHTML = sorted.map(function (c, i) { return caseRow(c, i + 1); }).join('');
   }
 
   /* ---------- Days ---------- */
@@ -529,7 +691,7 @@
       '<button type="button" class="row-open" data-act="cs-open" data-id="' + sheet.id + '" title="فتح الكاسشيت">📂</button>' +
     '</div>';
   }
-  function openCasesheetForm(id) { location.hash = 'csform/' + (id || 'new'); applyRoute(); }
+  function openCasesheetForm(id) { if (isAccessLocked()) { enforceAccessLock(); return; } location.hash = 'csform/' + (id || 'new'); applyRoute(); }
   function renderCasesheetForm(param) {
     var sheet = (param && param !== 'new') ? casesheets.find(function (x) { return x.id === param; }) : null;
     currentCsId = sheet ? sheet.id : null;
@@ -1081,29 +1243,82 @@
       '<input type="file" id="attInput" accept="image/*,.pdf,.doc,.docx" multiple hidden /></div>';
   }
 
+  /* ---------- حاجز الوصول المركزي (Access Lock) ----------
+     مصدر الحالة الوحيد هو window.DPLicense.getAccessState() من activation.js.
+     كل نقطة تنقّل أو حفظ في هذا الملف تستدعي isAccessLocked()/enforceAccessLock() من هنا فقط،
+     لتفادي تكرار منطق التحقق بصورة متعارضة في أكثر من مكان. */
+  var ACCESS_LOCK_ALLOWED_VIEWS = { support: true };
+  function isAccessLocked() { return accessStateSafe() === 'expired'; }
+  function closeOperationalOverlaysForLock() {
+    // يغلق النوافذ التشغيلية المفتوحة فقط. لا يغلق أبداً: activationOverlay / actCodeOverlay / paymentOverlay
+    hideOverlay(els.caseOverlay); closeDeptSheet();
+    hideOverlay(els.sessionOverlay);
+    if (els.confirmOverlay && !els.confirmOverlay.hidden) { pendingConfirm = null; hideOverlay(els.confirmOverlay); }
+    if (els.attViewOverlay && !els.attViewOverlay.hidden) closeImagePreview();
+    hideOverlay(els.studentSetupOverlay);
+    if (isDrawerOpen()) closeDrawer();
+  }
+  function enforceAccessLock() {
+    var locked = isAccessLocked();
+    document.body.classList.toggle('dp-access-locked', locked);
+    if (!locked) return false;
+    closeOperationalOverlaysForLock();
+    var rawName = location.hash.replace(/^#/, '').split('/')[0];
+    if (!ACCESS_LOCK_ALLOWED_VIEWS[rawName] && rawName !== 'support') {
+      location.hash = 'support';   // hashchange سيستدعي applyRoute() الذي يفرض هذا الحاجز مجدداً بأمان، دون حلقة
+    }
+    return true;
+  }
+
   /* ---------- Router ---------- */
   function parseHash() { var raw = location.hash.replace(/^#/, ''); var p = raw.split('/'); return { name: VIEWS.indexOf(p[0]) >= 0 ? p[0] : 'dashboard', param: decodeURIComponent(p[1] || '') }; }
-  function go(name) { if (name === 'add') { openCase(null); return; } location.hash = name; applyRoute(); }
-  function openFile(id) { fileOrigin = (currentView === 'subject') ? ('subject/' + encodeURIComponent(currentParam)) : (currentView === 'bysubject' ? 'bysubject' : (currentView === 'completed' ? 'completed' : (currentView === 'all' ? 'all' : fileOrigin))); location.hash = 'file/' + id; applyRoute(); }
+  function go(name, param) {
+    if (isAccessLocked() && name !== 'support') { enforceAccessLock(); return; }
+    if (name === 'add') { openCase(null); return; }
+    location.hash = param ? (name + '/' + encodeURIComponent(param)) : name; applyRoute();
+  }
+  function openFile(id) {
+    if (isAccessLocked()) { enforceAccessLock(); return; }
+    fileOrigin = (currentView === 'subject') ? ('subject/' + encodeURIComponent(currentParam))
+      : (currentView === 'bysubject') ? 'bysubject'
+      : (currentView === 'completed') ? 'completed'
+      : (currentView === 'all') ? (currentParam ? ('all/' + currentParam) : 'all')
+      : (currentView === 'appointments') ? (currentParam ? ('appointments/' + currentParam) : 'appointments')
+      : (currentView === 'patient') ? ('patient/' + encodeURIComponent(currentParam))
+      : fileOrigin;
+    location.hash = 'file/' + id; applyRoute();
+  }
   function goBack() {
+    if (isAccessLocked()) { enforceAccessLock(); return; }
     if (currentView === 'file') { var o = fileOrigin || 'all'; location.hash = o; applyRoute(); }
     else if (currentView === 'csform') go('casesheets');
     else if (currentView === 'subject') go('bysubject');
+    else if (currentView === 'patient') go('patients');
     else go('dashboard');
   }
   function applyRoute() {
-    var r = parseHash(); currentView = r.name; currentParam = r.param;
+    var r = parseHash();
+    if (isAccessLocked() && r.name !== 'support') {
+      var rawName = location.hash.replace(/^#/, '').split('/')[0];
+      if (rawName !== 'support') { location.hash = 'support'; return; }   // hashchange سيعيد استدعاء applyRoute بـ #support
+      r.name = 'support'; r.param = '';
+    }
+    currentView = r.name; currentParam = r.param;
     document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== r.name; });
-    els.backBtn.hidden = (r.name === 'dashboard');
-    if (els.menuBtn) els.menuBtn.hidden = (r.name !== 'dashboard');
+    els.backBtn.hidden = (r.name === 'dashboard') || isAccessLocked();
+    if (els.menuBtn) els.menuBtn.hidden = (r.name !== 'dashboard') || isAccessLocked();
     renderActiveView();
     markBottomNavActive();
+    enforceAccessLock();   // يعيد فرض حالة القفل (body class + إغلاق النوافذ التشغيلية) بعد استقرار المسار
     try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
   }
   function renderActiveView() {
     updateCounts();
     if (currentView === 'dashboard') { /* static */ }
     else if (currentView === 'all') renderAll();
+    else if (currentView === 'appointments') renderAppointments();
+    else if (currentView === 'patients') renderPatients();
+    else if (currentView === 'patient') renderPatientSummary(currentParam);
     else if (currentView === 'reqs') renderReqs();
     else if (currentView === 'completed') renderCompleted();
     else if (currentView === 'bysubject') renderBySubject();
@@ -1194,6 +1409,7 @@
   }
 
   function openCase(id) {
+    if (isAccessLocked()) { enforceAccessLock(); return; }
     els.caseForm.reset(); els.cName.classList.remove('invalid');
     fillSelect(els.cStatus, STATUSES); fillSelect(els.cDay, DAYS, 'بدون يوم محدد');
     fillSelect(els.endoVisit, ENDO_VISITS);
@@ -1279,6 +1495,7 @@
   function closeCase() { els.caseOverlay.hidden = true; closeDeptSheet(); }
   function handleCaseSubmit(e) {
     e.preventDefault();
+    if (isAccessLocked()) { enforceAccessLock(); return; }
     var name = els.cName.value.trim();
     if (!name) { els.cName.classList.add('invalid'); els.cName.focus(); return; }
     
@@ -1336,6 +1553,7 @@
 
   /* ---------- Session modal ---------- */
   function openSession(caseId, sId) {
+    if (isAccessLocked()) { enforceAccessLock(); return; }
     var c = cases.find(function (x) { return x.id === caseId; }); if (!c) return;
     els.sessionForm.reset(); els.sCaseId.value = caseId; els.sId.value = sId || '';
     if (sId) {
@@ -1347,6 +1565,7 @@
   function closeSession() { els.sessionOverlay.hidden = true; }
   function handleSessionSubmit(e) {
     e.preventDefault();
+    if (isAccessLocked()) { enforceAccessLock(); return; }
     var c = cases.find(function (x) { return x.id === els.sCaseId.value; }); if (!c) { closeSession(); return; }
     if (!Array.isArray(c.sessions)) c.sessions = [];
     var data = { number: els.sNum.value.trim(), date: els.sDate.value || '', time: els.sTime.value || '', proc: els.sProc.value.trim(), notes: els.sNotes.value.trim(), next: els.sNext.value || '', status: els.sStatus.value };
@@ -1547,7 +1766,7 @@
 
   /* ---------- Events ---------- */
   function bindEvents() {
-    document.querySelectorAll('.dash-card, .add-case-bar, .today-viewall').forEach(function (card) { card.addEventListener('click', function () { go(card.dataset.go); }); });
+    document.querySelectorAll('.dash-card, .add-case-bar, .today-viewall, .hero-badge').forEach(function (card) { card.addEventListener('click', function () { go(card.dataset.go, card.dataset.filter); }); });
     // القائمة الجانبية: فتح/إغلاق (لا تمسّ أي منطق تنقّل — تستخدم نفس data-go الحالي)
     if (els.menuBtn) els.menuBtn.addEventListener('click', openDrawer);
     if (els.drawerCloseBtn) els.drawerCloseBtn.addEventListener('click', closeDrawer);
@@ -1564,6 +1783,7 @@
     });
     els.backBtn.addEventListener('click', goBack);
     els.allSearch.addEventListener('input', debounce(renderAll, 120));
+    if (els.patientsSearch) els.patientsSearch.addEventListener('input', debounce(renderPatients, 120));
 
     els.caseForm.addEventListener('submit', handleCaseSubmit);
     els.caseClose.addEventListener('click', closeCase); els.caseCancel.addEventListener('click', closeCase);
@@ -1629,7 +1849,7 @@
 
     // نافذة إتمام الدفع: إغلاق + أكورديون طرق الدفع + نسخ (تفويض نقر — المحتوى ديناميكي)
     var payClose = document.getElementById('payClose');
-    if (payClose) payClose.addEventListener('click', function () { hideOverlay(document.getElementById('paymentOverlay')); });
+    if (payClose) payClose.addEventListener('click', function () { hideOverlay(document.getElementById('paymentOverlay')); enforceAccessLock(); });
     var payBody = document.getElementById('payBody');
     if (payBody) payBody.addEventListener('click', function (e) {
       var toggleBtn = e.target.closest('[data-acc-toggle]');
@@ -1662,9 +1882,11 @@
       var actBtn = t.closest('[data-act]'); if (actBtn) return { kind: 'act', el: actBtn };
       return null;
     }
+    var ACCESS_LOCK_ALLOWED_ACTIONS = { nav: 1, 'plan-select': 1, 'pay-continue': 1, 'have-code': 1, 'contact-support': 1, 'contact-agent': 1, 'activate-now': 1, copy: 1 };
     function runAction(a, e) {
       if (!a) return;
       var btn = a.el, id = btn.dataset.id, act = btn.dataset.act;
+      if (isAccessLocked() && !ACCESS_LOCK_ALLOWED_ACTIONS[act]) { enforceAccessLock(); return; }   // منع أي إجراء تشغيلي (حفظ/تعديل/حذف/فتح) أثناء القفل
       if (e && btn.tagName === 'BUTTON') e.preventDefault();   // buttons only — never anchors (tel:/wa.me keep default)
       if (act === 'open') openFile(id);
       else if (act === 'edit') openCase(id);
@@ -1689,6 +1911,9 @@
       else if (act === 'contact-agent') window.open(agentWaLink(), '_blank', 'noopener');
       else if (act === 'renew-plan') { showPlansOverride = true; selectedPlanId = null; renderSupport(); }
       else if (act === 'cancel-renew') { showPlansOverride = false; selectedPlanId = null; renderSupport(); }
+      else if (act === 'all-filter') go('all', btn.dataset.filter === 'all' ? '' : btn.dataset.filter);
+      else if (act === 'appt-day') go('appointments', btn.dataset.day === 'today' ? '' : btn.dataset.day);
+      else if (act === 'patient-open') go('patient', btn.dataset.key);
       else if (act === 'save-notes') saveNotes(id);
       else if (act === 'req-add-toggle') toggleReqAddForm();
       else if (act === 'req-add-cancel') toggleReqAddForm(false);
@@ -1707,6 +1932,13 @@
       else if (act === 'endo-canal-del') delEndoCanal(parseInt(btn.dataset.idx, 10));
     }
     appRoot.addEventListener('click', function (e) { runAction(findAction(e), e); });
+    appRoot.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var t = e.target;
+      if (t && t.getAttribute && t.getAttribute('role') === 'button' && (t.classList.contains('row') || t.classList.contains('appt-card') || t.classList.contains('patient-card'))) {
+        e.preventDefault(); runAction(findAction(e), e);
+      }
+    });
     // delegation (change): requirements inputs + attachment input
     $('app').addEventListener('change', function (e) {
       if (e.target && e.target.id === 'attInput') { addAttachments(e.target.dataset.id, e.target.files); e.target.value = ''; }
@@ -1724,6 +1956,11 @@
     if (els.attViewTab) els.attViewTab.addEventListener('click', function () { if (attViewUrl) { try { window.open(attViewUrl, '_blank'); } catch (e) {} } });
 
     window.addEventListener('hashchange', applyRoute);
+    // إعادة فحص حاجز الوصول عند عودة التطبيق/الصفحة — دون فتح أي نافذة بصورة مزعجة، فقط إعادة فرض القفل إن كان قائماً
+    window.addEventListener('pageshow', function () { enforceAccessLock(); });
+    window.addEventListener('focus', function () { enforceAccessLock(); });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') enforceAccessLock(); });
+    window.addEventListener('online', function () { enforceAccessLock(); });
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault(); deferredPrompt = e;
       if (!isStandalone()) { if (els.installBanner) els.installBanner.hidden = false; }
@@ -1801,6 +2038,7 @@
     });
   }
 
+  var _wasInTrial = false;   // لرصد لحظة انتقال الحالة من trial إلى expired أثناء بقاء التطبيق مفتوحاً
   function updateTrialBanner() {
     if (!window.DPLicense || !els.trialBanner) return;
     var st = window.DPLicense.getAccessState();
@@ -1808,25 +2046,40 @@
       var h = window.DPLicense.trialRemainingHours();
       els.trialText.textContent = 'الفترة التجريبية المجانية — متبقٍ من التجربة: ' + h + ' ساعة.';
       els.trialBanner.hidden = false;
+      _wasInTrial = true;
     } else {
       els.trialBanner.hidden = true;   // مُفعّل (لا شريط) أو منتهية (شاشة تفعيل)
+    }
+    if (st === 'expired') {
+      var justExpired = _wasInTrial;   // كانت trial في آخر فحص والآن أصبحت expired: انتهت التجربة أثناء الاستخدام
+      _wasInTrial = false;
+      enforceAccessLock();             // يغلق أي نافذة تشغيلية مفتوحة، يفعّل dp-access-locked، وينقل المسار إلى support فوراً
+      if (justExpired) openActivation();   // يفتح شاشة التفعيل الإلزامية دون انتظار إعادة تحميل الصفحة
+    } else {
+      document.body.classList.remove('dp-access-locked');
     }
   }
 
   function init() {
-    loadAll(); bindEvents(); applyRoute(); setupPWA();
+    loadAll(); bindEvents();
+    enforceAccessLock();   // فرض القفل فوراً قبل أول applyRoute إن كانت التجربة منتهية أصلاً عند الفتح
+    applyRoute(); setupPWA();
     renderActivationPrompt();                // يملأ محتوى نافذة التنبيه (اختيارية/إلزامية) قبل أول رسم — activation.js تتحكم بإظهارها فقط
     updateTrialBanner();
     setInterval(updateTrialBanner, 60000);   // تحديث الوقت المتبقّي دورياً
     setTimeout(maybeShowStudentSetup, 700);  // إعداد أولي لبيانات الطالب إن لم تكن محفوظة (لا يتزاحم مع نافذة التفعيل)
     if (window.DPLicense) window.DPLicense.onActivated = function () {
+      var wasLocked = document.body.classList.contains('dp-access-locked');
       if (els.trialBanner) els.trialBanner.hidden = true;   // إخفاء الشريط نهائياً بعد التفعيل
       showPlansOverride = false; selectedPlanId = null;     // إعادة ضبط تدفّق اختيار الخطة بعد نجاح التفعيل/التجديد
       hideOverlay(document.getElementById('actCodeOverlay'));
       hideOverlay(document.getElementById('paymentOverlay'));
+      hideOverlay(document.getElementById('activationOverlay'));
       actCodeFromForced = false;
+      enforceAccessLock();   // getAccessState() أصبحت الآن activated: يزيل dp-access-locked ويُعيد تفعيل الـRouter وعناصر التنقّل
       updateCounts();
-      if (currentView === 'settings') renderSettings();
+      if (wasLocked) go('dashboard');                        // كان مقفلاً داخل support: انتقل الآن إلى dashboard
+      else if (currentView === 'settings') renderSettings();
       else if (currentView === 'support') renderSupport();
       setTimeout(maybeShowStudentSetup, 400);
     };

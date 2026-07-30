@@ -122,8 +122,8 @@
           <div class="hero-name" id="heroName">طالب طب الأسنان</div>
           <div class="hero-meta" id="heroMeta">DentPilot Student</div>
           <div class="hero-badges">
-            <span class="hero-badge" id="heroBadgeTotal">0 حالات</span>
-            <span class="hero-badge hero-badge-done" id="heroBadgeDone">0 مكتملة</span>
+            <button type="button" class="hero-badge" id="heroBadgeTotal" data-go="all">0 حالات</button>
+            <button type="button" class="hero-badge hero-badge-done" id="heroBadgeDone" data-go="all" data-filter="completed">0 مكتملة</button>
           </div>
         </div>
         <div class="hero-tooth hero-chair" aria-hidden="true">
@@ -303,12 +303,12 @@
       </div>
 
       <div class="dash-stats">
-        <button type="button" class="dash-card dash-stat" data-go="all">
+        <button type="button" class="dash-card dash-stat" data-go="patients">
           <span class="dash-stat-label">جميع المرضى</span>
           <span class="dash-stat-num" id="dcAll">0</span>
           <span class="dash-stat-hint">إجمالي</span>
         </button>
-        <button type="button" class="dash-card dash-stat dash-stat-mid" data-go="all">
+        <button type="button" class="dash-card dash-stat dash-stat-mid" data-go="appointments">
           <span class="dash-stat-label">حالات اليوم / الغد</span>
           <span class="dash-stat-num" id="dcTodayTomorrow">0</span>
           <span class="dash-stat-hint">قريبة</span>
@@ -331,7 +331,7 @@
 
       <div class="today-section">
         <div class="today-section-head">
-          <button type="button" class="today-viewall" data-go="all">عرض الكل</button>
+          <button type="button" class="today-viewall" data-go="appointments">عرض الكل</button>
           <span class="today-section-title">اليوم والغد</span>
         </div>
         <div id="todayList" class="today-list"></div>
@@ -339,13 +339,40 @@
       </div>
     </section>
 
-    <!-- جميع المرضى -->
+    <!-- الحالات (قائمة العمل السريري — حالة واحدة لكل بطاقة) -->
     <section class="view" id="view-all" data-view="all" hidden>
-      <div class="page-head"><h2>👥 جميع المرضى</h2></div>
+      <div class="page-head"><h2 id="allTitle">🩺 الحالات</h2></div>
       <div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="search" id="allSearch" placeholder="بحث بالاسم أو الهاتف أو القسم أو نوع الحالة…" autocomplete="off" /></div>
+      <div id="allFilterBar" class="filter-bar"></div>
       <div id="allList" class="rows"></div>
       <div id="allEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+    </section>
+
+    <!-- مواعيد اليوم والغد (صفحة مستقلة عن قائمة الحالات العامة) -->
+    <section class="view" id="view-appointments" data-view="appointments" hidden>
+      <div class="page-head"><h2>📅 مواعيد اليوم والغد</h2></div>
+      <div id="apptToggle" class="acc-tabs appt-toggle"></div>
+      <div id="apptList" class="appt-list"></div>
+      <div id="apptEmpty" class="empty-state" hidden><p>لا توجد مواعيد اليوم</p><span>يمكنك إضافة حالة جديدة بموعد اليوم.</span>
+        <button type="button" class="btn btn-primary" data-go="add" style="margin-top:12px">+ إضافة حالة</button>
+      </div>
+    </section>
+
+    <!-- دليل جميع المرضى (على مستوى العرض فقط) -->
+    <section class="view" id="view-patients" data-view="patients" hidden>
+      <div class="page-head"><h2 id="patientsTitle">👥 جميع المرضى</h2></div>
+      <div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="patientsSearch" placeholder="بحث بالاسم أو رقم الهاتف…" autocomplete="off" /></div>
+      <div id="patientsList" class="patients-list"></div>
+      <div id="patientsEmpty" class="empty-state" hidden><p>لا يوجد مرضى بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+    </section>
+
+    <!-- ملخص مريض واحد (كل حالاته) -->
+    <section class="view" id="view-patient" data-view="patient" hidden>
+      <div class="page-head"><h2 id="patientTitle">ملخص المريض</h2></div>
+      <p class="hint" id="patientSub"></p>
+      <div id="patientCasesList" class="rows"></div>
     </section>
 
     <!-- الحساب (Firebase Authentication) — يُبنى محتواها من account-ui.js -->
@@ -481,7 +508,7 @@
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"></rect><path d="M3.5 9.5h17"></path></svg></span>
         <span class="dbb-label">الحالات</span>
       </button>
-      <button type="button" class="dash-card dbb-item" data-go="all" data-nav-alias="1">
+      <button type="button" class="dash-card dbb-item" data-go="appointments">
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>
         <span class="dbb-label">المواعيد</span>
       </button>
@@ -1061,6 +1088,14 @@
         <button type="button" class="drawer-item dash-card" data-go="all" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5h17"/></svg></span>
           <span class="drawer-item-label">جميع الحالات</span>
+        </button>
+        <button type="button" class="drawer-item dash-card" data-go="appointments" data-drawer-close="1">
+          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
+          <span class="drawer-item-label">مواعيد اليوم والغد</span>
+        </button>
+        <button type="button" class="drawer-item dash-card" data-go="patients" data-drawer-close="1">
+          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.7-4.7 5.5-4.7s4.9 1.7 5.5 4.7"/><circle cx="17.2" cy="9" r="2.4"/><path d="M15.3 14.8c1.9.4 3.4 1.8 3.9 4.2"/></svg></span>
+          <span class="drawer-item-label">جميع المرضى</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="settings" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>

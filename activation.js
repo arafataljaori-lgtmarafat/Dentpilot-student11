@@ -151,10 +151,12 @@ function planCodeValid(id,code){var info=parsePlanCode(id,code);return !!info&&(
   function trialRemainingMs() { var t = trialInfo(); return t ? Math.max(0, t.expires - _now()) : 0; }
   function trialRemainingHours() { return Math.ceil(trialRemainingMs() / 3600000); }
 
+  /* سطح API مكشوف على window.DPLicense — مقتصر عمداً على ما يحتاجه script.js/واجهة التفعيل فعلياً.
+     توليد الأكواد (licenseFor/planCodeFor) والتحقق المباشر منها (licenseValid/planCodeValid) والتفعيل نفسه (activate)
+     تبقى دوال داخلية في هذا الملف فقط ولا تُصدَّر — انظر التقرير النهائي لتفاصيل هذا التقليل ولماذا لا يزال هذا حماية من طرف العميل. */
   window.DPLicense = {
     getDeviceId: deviceId, isActivated: isActivated,
-    generateCode: licenseFor, validateCode: licenseValid,
-    generatePlanCode: planCodeFor, validatePlanCode: planCodeValid, getActivationInfo: activationInfo,
+    getActivationInfo: activationInfo,
     getAccessState: accessState, trialRemainingMs: trialRemainingMs, trialRemainingHours: trialRemainingHours,
     onActivated: null
   };
