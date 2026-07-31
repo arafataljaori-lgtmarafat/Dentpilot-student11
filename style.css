@@ -3,17 +3,21 @@
    هوية: أزرق كليّة + فيروزي. تصميم مبسّط للجوال أولاً.
    ============================================================ */
 :root{
-  /* ---- هوية Premium Medical — القيم المرجعية الرسمية للنسخة 1.12.1 ---- */
-  --dp-canvas:#F3F8FA; --dp-canvas-wash:#E8F4F5;
-  --dp-surface:#F9FCFC; --dp-surface-tint:#F4FAFB; --dp-surface-selected:#E8F4F5;
-  --dp-border:#D7E5E8; --dp-text:#173B56; --dp-text-muted:#6B7F8B; --dp-text-faint:#6B7F8B; --dp-placeholder:#9AACB6;
-  --dp-navy-deep:#062C40; --dp-navy:#073B55; --dp-navy-soft:#2C5570;
-  --dp-teal-deep:#00716D; --dp-teal:#008F8A; --dp-teal-soft:#DDF2F1; --dp-mint:#2CC7A5;
-  --dp-blue-action-soft:#E8F4F5; --dp-blue-action-border:#C9E2E6; --dp-blue-action-text:#00716D;
+  /* ---- هوية Premium Medical — القيم المرجعية الرسمية للنسخة 1.12.2 ---- */
+  --dp-canvas:#F2FAFB; --dp-canvas-wash:#E8F5F6;
+  --dp-surface:#F7FCFC; --dp-surface-tint:#F2FAFB; --dp-surface-selected:#E8F5F6;
+  --dp-border:rgba(13,115,119,.18); --dp-border-strong:rgba(13,115,119,.30);
+  --dp-text:#12394F; --dp-text-muted:#667E89; --dp-text-faint:#667E89; --dp-placeholder:#93A6B0;
+  --dp-navy-deep:#07384F; --dp-navy:#0A5168; --dp-navy-soft:#2C5570;
+  --dp-teal-deep:#00766F; --dp-teal:#00978D; --dp-teal-soft:#DDF2F1; --dp-mint:#2BC5A4;
+  --dp-blue-action-soft:#E8F5F6; --dp-blue-action-border:rgba(13,115,119,.22); --dp-blue-action-text:#00766F;
   --dp-success:#217755; --dp-success-soft:#e7f4ee; --dp-warning:#8f641f; --dp-warning-soft:#faf0dd; --dp-danger:#a84545; --dp-danger-soft:#f8e9e8;
-  /* ظل واحد ناعم معتمد في كل التطبيق — بلا ظلال ثقيلة */
-  --dp-shadow-sm:0 8px 24px rgba(23,59,86,.08); --dp-shadow-md:0 10px 26px rgba(23,59,86,.10);
-  --dp-hero-shadow:0 12px 28px rgba(7,59,85,.16); --dp-cta-shadow:0 8px 24px rgba(0,113,109,.16);
+  /* ظل بطاقات ملفات المرضى — متعدد الطبقات وناعم */
+  --dp-shadow-sm:0 8px 24px rgba(7,56,79,.08); --dp-shadow-md:0 14px 34px rgba(7,56,79,.13), 0 4px 10px rgba(0,118,111,.08);
+  --dp-pfile-shadow:0 12px 30px rgba(7,56,79,.10), 0 3px 8px rgba(0,118,111,.07);
+  --dp-hero-shadow:0 12px 28px rgba(7,56,79,.18); --dp-cta-shadow:0 8px 24px rgba(0,118,111,.18);
+  /* سطح لؤلؤي سماوي لبطاقة ملف المريض */
+  --dp-pfile-surface:linear-gradient(145deg, rgba(255,255,255,.96), rgba(234,247,248,.94));
 
   /* ---- ربط الأسماء القديمة بالنظام الجديد (يبقي بقية الملف يعمل دون إعادة كتابة كل قاعدة) ---- */
   --navy-900:var(--dp-navy-deep); --navy-800:var(--dp-navy); --navy-700:var(--dp-navy-soft);
@@ -26,14 +30,15 @@
   --wa:#25d366; --wa-soft:#e7faf0; --call:var(--dp-blue-action-text); --call-soft:var(--dp-blue-action-soft);
   --shadow-sm:var(--dp-shadow-sm);
   --shadow-md:var(--dp-shadow-md);
-  --shadow-lg:0 14px 32px rgba(7,59,85,.12);
+  --shadow-lg:0 14px 32px rgba(7,56,79,.14);
   --radius:16px; --radius-btn:13px;
 
-  /* ---- التدرج الكحلي–الفيروزي الفاخر: الـHero وأزرار الإجراء الرئيسية وبطاقة المريض ---- */
+  /* ---- التدرج الكحلي–الفيروزي: الـHero وأزرار الإجراء الرئيسية وزر فتح الملف ---- */
   --dp-elite-1:var(--dp-navy-deep); --dp-elite-2:var(--dp-teal);
   --dp-elite-gradient:linear-gradient(135deg, var(--dp-navy-deep) 0%, var(--dp-navy) 45%, var(--dp-teal) 100%);
+  --dp-open-gradient:linear-gradient(135deg, var(--dp-navy) 0%, var(--dp-teal-deep) 60%, var(--dp-teal) 100%);
   --dp-glass-bg:rgba(255,255,255,.10); --dp-glass-border:1px solid rgba(255,255,255,.16);
-  --dp-shadow-elite:0 8px 24px rgba(23,59,86,.14);
+  --dp-shadow-elite:0 12px 30px rgba(7,56,79,.14);
 }
 *{ box-sizing:border-box; }
 [hidden]{ display:none !important; }
@@ -141,27 +146,95 @@ img{ max-width:100%; }
 .search-box:focus-within{ border-color:var(--teal-500); box-shadow:0 0 0 3px rgba(10,157,181,.16); }
 .search-box input{ border:none; outline:none; background:none; width:100%; font-family:inherit; font-size:.92rem; color:var(--ink); }
 
+/* ============================================================
+   نظام بطاقة ملف المريض الموحّد (dp-pfile)
+   غلاف بصري واحد تستخدمه كل العناصر التي تفتح ملف مريض في كل أقسام
+   التطبيق: جميع المرضى، نتائج البحث، جميع الحالات والفلاتر، المكتملة،
+   التجميع حسب المادة، ملخص المريض، المواعيد، الكاسشيتات المحفوظة.
+   لا يغيّر أي بيانات أو حدث ضغط أو وجهة — الغلاف والهرمية البصرية فقط.
+   ============================================================ */
+.dp-pfile{
+  position:relative; overflow:hidden; isolation:isolate;
+  background:var(--dp-pfile-surface);
+  border:1px solid var(--dp-border);
+  border-radius:20px;
+  box-shadow:var(--dp-pfile-shadow);
+  transition:transform .18s ease, box-shadow .22s ease, border-color .22s ease;
+  cursor:pointer;
+}
+/* اللمسة اللونية الجانبية (حافة البداية في RTL) */
+.dp-pfile::before{
+  content:''; position:absolute; inset-inline-start:0; top:0; bottom:0; width:4px;
+  background:linear-gradient(180deg, var(--dp-teal) 0%, var(--dp-mint) 100%);
+  opacity:.9; pointer-events:none; z-index:1;
+}
+/* توهّج سماوي خفيف جداً في الزاوية العلوية — عمق بلا ثِقل */
+.dp-pfile::after{
+  content:''; position:absolute; inset-inline-end:-30px; top:-40px; width:120px; height:120px;
+  background:radial-gradient(circle, rgba(43,197,164,.10) 0%, rgba(43,197,164,0) 70%);
+  pointer-events:none; z-index:0;
+}
+.dp-pfile > *{ position:relative; z-index:2; }
+@media (hover:hover) and (pointer:fine){
+  .dp-pfile:hover{ box-shadow:var(--dp-shadow-md); border-color:var(--dp-border-strong); transform:translateY(-2px); }
+}
+.dp-pfile:active{ transform:scale(.988); box-shadow:0 6px 16px rgba(7,56,79,.10); }
+.dp-pfile:focus-visible{ outline:2px solid var(--dp-teal); outline-offset:2px; }
+.dp-pfile.is-done{ opacity:1; }
+.dp-pfile.is-done::before{ background:linear-gradient(180deg, var(--dp-success) 0%, var(--dp-mint) 100%); }
+
+/* زر فتح الملف الموجود — تدرج كحلي–فيروزي متزن (النص والحدث والوجهة بلا تغيير) */
+.dp-pfile-open{
+  flex:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  font-family:inherit; font-size:.75rem; font-weight:700; color:#fff;
+  background:var(--dp-open-gradient); border:none; border-radius:999px;
+  padding:8px 13px; white-space:nowrap; text-align:center; cursor:pointer;
+  box-shadow:0 4px 12px rgba(7,56,79,.20);
+  transition:transform .15s ease, box-shadow .2s ease, filter .2s ease;
+}
+.dp-pfile-open:active{ transform:scale(.96); filter:brightness(.96); box-shadow:0 2px 6px rgba(7,56,79,.18); }
+@media (hover:hover) and (pointer:fine){ .dp-pfile-open:hover{ filter:brightness(1.07); box-shadow:0 6px 16px rgba(7,56,79,.24); } }
+
+/* شارة رقم/أيقونة البطاقة الموجودة — مدمجة بدل أن تطفو في فراغ */
+.dp-pfile-badge{
+  flex:none; display:grid; place-items:center;
+  font-family:'Cairo',sans-serif; font-weight:800; color:#fff;
+  background:var(--dp-elite-gradient); box-shadow:0 4px 12px rgba(7,56,79,.18);
+}
+/* حقول ثانوية موجودة داخل البطاقة (هاتف/موعد/مادة/عدد الحالات) */
+.dp-pfile-chip{
+  display:inline-flex; align-items:center; gap:4px; min-width:0;
+  font-size:.7rem; font-weight:700; color:var(--dp-teal-deep);
+  background:rgba(255,255,255,.72); border:1px solid var(--dp-border);
+  border-radius:999px; padding:4px 10px; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:100%;
+}
+.dp-pfile-name{
+  font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy-deep);
+  font-size:.97rem; line-height:1.4; letter-spacing:-.1px;
+  min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.dp-pfile-sub{ font-size:.73rem; color:var(--dp-muted, var(--dp-text-muted)); line-height:1.45; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
 /* Compact rows */
 .rows{ display:flex; flex-direction:column; gap:12px; }
-.row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:18px; padding:15px 16px; box-shadow:var(--shadow-sm); transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; cursor:pointer; }
-.row:hover{ box-shadow:var(--shadow-md); border-color:var(--dp-blue-action-border); }
-.row:active{ transform:scale(.99); box-shadow:var(--shadow-sm); }
-.row:focus-visible{ outline:2px solid var(--dp-teal); outline-offset:2px; }
-.row-appt{ flex-basis:100%; font-size:.74rem; color:var(--dp-text-muted); margin-top:2px; }
-.row-no{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--navy-700); background:var(--teal-100); border-radius:8px; min-width:30px; height:30px; display:grid; place-items:center; font-size:.76rem; flex:none; }
-.row-main{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.row-name{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy); font-size:.94rem; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.row-dept{ font-size:.72rem; font-weight:700; color:var(--teal-700); background:var(--teal-50); border:1px solid var(--teal-100); border-radius:999px; padding:3px 10px; white-space:nowrap; }
-.row-status{ display:inline-block; font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+.row{ display:flex; flex-wrap:wrap; align-items:center; gap:7px 10px; padding:15px 16px 15px 16px; padding-inline-start:19px; }
+.row-appt{ flex-basis:100%; font-size:.73rem; color:var(--dp-text-muted); margin-top:1px; display:flex; align-items:center; gap:5px; }
+.row-no{ font-family:'Cairo',sans-serif; font-weight:800; color:#fff; background:var(--dp-elite-gradient); border-radius:10px; min-width:32px; height:32px; display:grid; place-items:center; font-size:.75rem; flex:none; box-shadow:0 4px 12px rgba(7,56,79,.18); }
+.row-main{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.row-name{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy-deep); font-size:.96rem; line-height:1.4; letter-spacing:-.1px; flex:1 1 100%; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.row-dept{ font-size:.7rem; font-weight:700; color:var(--dp-teal-deep); background:rgba(255,255,255,.72); border:1px solid var(--dp-border); border-radius:999px; padding:4px 10px; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+.row-status{ display:inline-block; font-size:.69rem; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap; }
 .st-wait{ background:#eef2f7; color:#556; } .st-work{ background:var(--amber-soft); color:var(--amber); }
 .st-done{ background:#e7f7ef; color:var(--green); } .st-review{ background:var(--call-soft); color:var(--call); } .st-cancel{ background:var(--red-soft); color:var(--red); }
-.row.is-done{ opacity:.8; }
-.row-open-btn{ flex:none; margin-inline-start:auto; display:inline-flex; align-items:center; gap:5px; font-family:inherit; font-size:.78rem; font-weight:700; padding:9px 14px; border-radius:999px; border:1px solid var(--dp-blue-action-border); background:var(--dp-blue-action-soft); color:var(--dp-blue-action-text); cursor:pointer; white-space:nowrap; transition:all .2s ease; }
-.row-open-btn:active{ transform:scale(.98); }
-@media (hover:hover) and (pointer:fine){ .row-open-btn:hover{ background:var(--dp-surface-selected); } }
-.row-open{ flex:none; width:44px; height:44px; border-radius:12px; border:1px solid var(--dp-blue-action-border); background:var(--dp-blue-action-soft); color:var(--dp-blue-action-text); cursor:pointer; font-size:1.2rem; display:grid; place-items:center; align-self:center; transition:all .2s ease; }
-.row-open:active{ transform:scale(.96); }
-@media (hover:hover) and (pointer:fine){ .row-open:hover{ background:var(--dp-surface-selected); box-shadow:var(--shadow-sm); } }
+.row.is-done{ opacity:1; }
+.row.is-done .row-name{ color:var(--dp-teal-deep); }
+.row-open-btn{ flex:none; margin-inline-start:auto; display:inline-flex; align-items:center; justify-content:center; gap:5px; font-family:inherit; font-size:.75rem; font-weight:700; padding:8px 13px; border-radius:999px; border:none; background:var(--dp-open-gradient); color:#fff; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(7,56,79,.20); transition:transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+.row-open-btn:active{ transform:scale(.96); filter:brightness(.96); box-shadow:0 2px 6px rgba(7,56,79,.18); }
+@media (hover:hover) and (pointer:fine){ .row-open-btn:hover{ filter:brightness(1.07); box-shadow:0 6px 16px rgba(7,56,79,.24); } }
+.row-open{ flex:none; width:44px; height:44px; border-radius:13px; border:none; background:var(--dp-open-gradient); color:#fff; cursor:pointer; font-size:1.1rem; display:grid; place-items:center; align-self:center; box-shadow:0 4px 12px rgba(7,56,79,.20); transition:transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+.row-open:active{ transform:scale(.96); filter:brightness(.96); }
+@media (hover:hover) and (pointer:fine){ .row-open:hover{ filter:brightness(1.07); box-shadow:0 6px 16px rgba(7,56,79,.24); } }
 
 /* Day groups */
 
@@ -508,13 +581,12 @@ html, body{ max-width:100%; overflow-x:hidden; }
 .today-section-title{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.98rem; color:var(--navy-900); }
 .today-viewall{ background:none; border:none; font-family:inherit; font-size:.75rem; font-weight:700; color:var(--teal-700); cursor:pointer; padding:2px 4px; }
 .today-list{ display:flex; flex-direction:column; gap:12px; }
-.today-card{ display:flex; align-items:center; gap:12px; width:100%; background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow-sm); font-family:inherit; text-align:start; cursor:pointer; box-sizing:border-box; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-.today-card:hover{ box-shadow:var(--shadow-md); border-color:var(--dp-blue-action-border); } .today-card:active{ transform:scale(.985); }
-.today-time{ flex:none; min-width:58px; text-align:center; font-family:'Cairo',sans-serif; font-weight:800; font-size:.92rem; color:var(--dp-teal-deep); background:var(--dp-canvas-wash); border:1px solid var(--dp-border); border-radius:12px; padding:9px 6px; }
+.today-card{ display:flex; align-items:center; gap:11px; width:100%; padding:15px 16px; padding-inline-start:19px; font-family:inherit; text-align:start; box-sizing:border-box; }
+.today-time{ flex:none; min-width:58px; text-align:center; font-family:'Cairo',sans-serif; font-weight:800; font-size:.86rem; color:#fff; background:var(--dp-elite-gradient); border-radius:12px; padding:9px 6px; box-shadow:0 4px 12px rgba(7,56,79,.18); }
 .today-info{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.today-type{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.86rem; color:var(--dp-navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.today-desc{ font-size:.7rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.today-tag{ flex:none; font-size:.66rem; font-weight:700; color:var(--teal-700); background:var(--teal-50); border-radius:999px; padding:4px 10px; white-space:nowrap; }
+.today-type{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.9rem; color:var(--dp-navy-deep); line-height:1.4; letter-spacing:-.1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.today-desc{ font-size:.7rem; color:var(--dp-text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.today-tag{ flex:none; font-size:.65rem; font-weight:700; color:var(--dp-teal-deep); background:rgba(255,255,255,.72); border:1px solid var(--dp-border); border-radius:999px; padding:4px 10px; white-space:nowrap; }
 .today-empty{ background:var(--card-surface); border:1px dashed var(--line); border-radius:16px; padding:20px 14px; text-align:center; color:var(--muted); font-size:.8rem; }
 
 .activate-cta{ text-align:center; border:1px solid var(--teal-100); background:var(--teal-50); }
@@ -933,35 +1005,31 @@ html, body{ max-width:100%; overflow-x:hidden; }
 .appt-toggle{ margin-bottom:16px; }
 .appt-toggle-count{ display:inline-block; margin-inline-start:5px; font-size:.7rem; opacity:.85; }
 .appt-list{ display:flex; flex-direction:column; gap:12px; }
-.appt-card{ display:flex; align-items:center; gap:12px; background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:18px; padding:15px 16px; box-shadow:var(--shadow-sm); cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-.appt-card:hover{ box-shadow:var(--shadow-md); border-color:var(--dp-blue-action-border); }
-.appt-card:active{ transform:scale(.99); }
-.appt-card:focus-visible{ outline:2px solid var(--dp-teal); outline-offset:2px; }
-.appt-time{ flex:none; min-width:64px; text-align:center; font-family:'Cairo',sans-serif; font-weight:800; font-size:.86rem; color:var(--dp-teal-deep); background:var(--dp-teal-soft); border-radius:10px; padding:8px 6px; line-height:1.25; }
-.appt-card-notime .appt-time{ color:var(--dp-text-muted); background:var(--dp-canvas-wash); font-size:.72rem; font-weight:700; }
-.appt-main{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
-.appt-name{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy); font-size:.94rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.appt-sub{ font-size:.76rem; color:var(--dp-text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.appt-status{ flex:none; font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
-.appt-chevron{ flex:none; color:var(--dp-text-muted); font-size:1.1rem; }
+.appt-card{ display:flex; align-items:center; gap:11px; padding:15px 16px; padding-inline-start:19px; }
+.appt-time{ flex:none; min-width:62px; text-align:center; font-family:'Cairo',sans-serif; font-weight:800; font-size:.84rem; color:#fff; background:var(--dp-elite-gradient); border-radius:12px; padding:9px 6px; line-height:1.25; box-shadow:0 4px 12px rgba(7,56,79,.18); }
+.appt-card-notime .appt-time{ color:var(--dp-teal-deep); background:rgba(255,255,255,.72); border:1px solid var(--dp-border); box-shadow:none; font-size:.7rem; font-weight:700; }
+.appt-main{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.appt-name{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy-deep); font-size:.96rem; line-height:1.4; letter-spacing:-.1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.appt-sub{ font-size:.73rem; color:var(--dp-text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.appt-status{ flex:none; font-size:.69rem; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+.appt-chevron{ flex:none; width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:rgba(255,255,255,.72); border:1px solid var(--dp-border); color:var(--dp-teal-deep); font-size:.95rem; font-weight:700; }
 
 /* ============================================================
    دليل جميع المرضى
    ============================================================ */
 .patients-list{ display:flex; flex-direction:column; gap:12px; }
-.patient-card{ display:flex; align-items:center; gap:12px; background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:18px; padding:15px 16px; box-shadow:var(--shadow-sm); cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-.patient-card:hover{ box-shadow:var(--shadow-md); border-color:var(--dp-blue-action-border); }
-.patient-card:active{ transform:scale(.99); }
-.patient-card:focus-visible{ outline:2px solid var(--dp-teal); outline-offset:2px; }
-.patient-avatar{ flex:none; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; background:var(--dp-elite-gradient); color:#fff; font-family:'Cairo',sans-serif; font-weight:800; font-size:1rem; letter-spacing:.3px; box-shadow:0 4px 12px rgba(7,59,85,.16); }
-.patient-main{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.patient-name{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy); font-size:.96rem; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.patient-fileno{ font-size:.71rem; color:var(--dp-text-muted); font-weight:700; }
-.patient-phone{ font-size:.74rem; color:var(--dp-text-muted); }
-.patient-meta{ font-size:.72rem; color:var(--dp-teal-deep); font-weight:700; }
-.patient-side{ flex:none; display:flex; flex-direction:column; align-items:stretch; gap:6px; max-width:118px; }
-.patient-next-panel{ font-size:.67rem; color:var(--dp-teal-deep); font-weight:700; text-align:center; background:var(--dp-canvas-wash); border:1px solid var(--dp-border); border-radius:10px; padding:5px 8px; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.patient-chevron{ flex:none; font-size:.74rem; font-weight:700; color:#fff; background:var(--dp-teal); border:none; border-radius:999px; padding:7px 12px; white-space:nowrap; text-align:center; box-shadow:0 3px 10px rgba(0,143,138,.18); }
+.patient-card{ display:flex; align-items:center; gap:11px; padding:15px 16px; padding-inline-start:19px; }
+.patient-avatar{ flex:none; width:42px; height:42px; border-radius:13px; display:grid; place-items:center; background:var(--dp-elite-gradient); color:#fff; font-family:'Cairo',sans-serif; font-weight:800; font-size:.95rem; letter-spacing:.3px; box-shadow:0 4px 12px rgba(7,56,79,.18); }
+.patient-main{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:4px; }
+.patient-name{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--dp-navy-deep); font-size:.97rem; line-height:1.4; letter-spacing:-.1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.patient-fileno{ font-size:.7rem; color:var(--dp-text-muted); font-weight:700; }
+.patient-phone{ font-size:.73rem; color:var(--dp-text-muted); direction:ltr; text-align:end; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.patient-meta{ display:inline-flex; align-self:flex-start; align-items:center; font-size:.68rem; font-weight:700; color:var(--dp-teal-deep); background:rgba(255,255,255,.72); border:1px solid var(--dp-border); border-radius:999px; padding:3px 9px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.patient-side{ flex:none; min-width:0; display:flex; flex-direction:column; align-items:stretch; gap:6px; max-width:112px; }
+.patient-next-panel{ font-size:.65rem; color:var(--dp-teal-deep); font-weight:700; text-align:center; background:rgba(255,255,255,.72); border:1px solid var(--dp-border); border-radius:10px; padding:5px 8px; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.patient-chevron{ flex:none; display:inline-flex; align-items:center; justify-content:center; font-size:.73rem; font-weight:700; color:#fff; background:var(--dp-open-gradient); border:none; border-radius:999px; padding:8px 12px; white-space:nowrap; text-align:center; box-shadow:0 4px 12px rgba(7,56,79,.20); transition:transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+.patient-card:active .patient-chevron{ filter:brightness(.96); }
+@media (hover:hover) and (pointer:fine){ .patient-card:hover .patient-chevron{ filter:brightness(1.07); box-shadow:0 6px 16px rgba(7,56,79,.24); } }
 
 /* ============================================================
    شارات Hero كأزرار حقيقية (بنفس الشكل السابق + استجابة لمس)
@@ -985,4 +1053,29 @@ body.dp-access-locked #dashBottomBar,
 body.dp-access-locked #menuBtn,
 body.dp-access-locked #backBtn{
   display:none !important;
+}
+
+/* ============================================================
+   استجابة بطاقات ملفات المرضى على الشاشات الضيقة (320–430px)
+   إعادة توزيع مرتبة بلا قص للاسم ولا خروج أي زر خارج البطاقة.
+   ============================================================ */
+@media (max-width:400px){
+  .patient-card{ flex-wrap:wrap; gap:9px 10px; }
+  .patient-side{ max-width:none; flex:1 1 100%; min-width:0; flex-direction:row; align-items:center; gap:8px; }
+  .patient-next-panel{ flex:1 1 auto; min-width:0; text-align:start; }
+  .patient-chevron{ flex:0 0 auto; }
+  .appt-card{ flex-wrap:wrap; gap:8px 10px; }
+  .appt-main{ flex:1 1 auto; min-width:0; }
+  .appt-status{ order:3; }
+  .appt-chevron{ order:4; margin-inline-start:auto; }
+}
+@media (max-width:340px){
+  .dp-pfile{ border-radius:18px; }
+  .patient-card, .appt-card, .row, .today-card{ padding:13px 13px; padding-inline-start:16px; }
+  .patient-avatar{ width:38px; height:38px; font-size:.88rem; border-radius:12px; }
+  .patient-name, .row-name, .appt-name, .today-type{ font-size:.9rem; }
+  .patient-chevron, .row-open-btn, .dp-pfile-open{ padding:7px 10px; font-size:.7rem; }
+  .appt-time{ min-width:54px; font-size:.78rem; }
+  .today-time{ min-width:52px; font-size:.8rem; }
+  .row-no{ min-width:28px; height:28px; font-size:.7rem; }
 }

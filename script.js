@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.12.1';
+  var APP_VERSION = '1.12.2';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -288,7 +288,7 @@
       var typeText = [deptText, c.caseType].filter(Boolean).join(' · ');
       var desc = c.notes ? c.notes : (isToday ? 'موعد متابعة الحالة السريرية' : 'موعد الحالة السريرية');
       var timeText = c.apptTime || '—';
-      return '<button type="button" class="today-card" data-act="open" data-id="' + c.id + '">' +
+      return '<button type="button" class="dp-pfile today-card" data-act="open" data-id="' + c.id + '">' +
         '<span class="today-time">' + esc(timeText) + '</span>' +
         '<span class="today-info">' +
           '<span class="today-type">' + esc(typeText || '—') + '</span>' +
@@ -329,7 +329,7 @@
     var apptText = c.apptDate ? (longDateAr(c.apptDate) + (c.apptTime ? ' — ' + timeLabel(c.apptTime) : '')) : 'لا يوجد موعد محدد';
     var restoreBtn = opts.showRestore ? '<button type="button" class="btn-restore" data-act="restore" data-id="' + c.id + '" title="إرجاع إلى الحالات الحالية">↩︎ إرجاع</button>' : '';
     var completeBtn = (c.status !== 'مكتملة') ? '<button type="button" class="row-complete-btn" data-act="complete" data-id="' + c.id + '" title="إنهاء الحالة">✅ إنهاء</button>' : '';
-    return '<div class="row ' + (c.status === 'مكتملة' ? 'is-done' : '') + '" data-act="open" data-id="' + c.id + '" role="button" tabindex="0" aria-label="عرض حالة ' + esc(c.name) + '">' +
+    return '<div class="dp-pfile row ' + (c.status === 'مكتملة' ? 'is-done' : '') + '" data-act="open" data-id="' + c.id + '" role="button" tabindex="0" aria-label="عرض حالة ' + esc(c.name) + '">' +
       '<span class="row-no">' + pad(index) + '</span>' +
       '<div class="row-main">' +
         '<span class="row-name">' + esc(c.name) + '</span>' +
@@ -396,7 +396,7 @@
     var procText = c.caseType || '';
     var subText = [deptText, procText].filter(Boolean).join(' · ');
     var timeText = c.apptTime ? timeLabel(c.apptTime) : 'الوقت غير محدد';
-    return '<div class="appt-card' + (!c.apptTime ? ' appt-card-notime' : '') + '" data-act="open" data-id="' + c.id + '" role="button" tabindex="0" aria-label="فتح حالة ' + esc(c.name) + '">' +
+    return '<div class="dp-pfile appt-card' + (!c.apptTime ? ' appt-card-notime' : '') + '" data-act="open" data-id="' + c.id + '" role="button" tabindex="0" aria-label="فتح حالة ' + esc(c.name) + '">' +
       '<span class="appt-time">' + esc(timeText) + '</span>' +
       '<span class="appt-main">' +
         '<span class="appt-name">' + esc(c.name) + '</span>' +
@@ -463,7 +463,7 @@
     var metaParts = [p.cases.length + (p.cases.length === 1 ? ' حالة' : ' حالات')];
     if (activeN) metaParts.push(activeN + ' نشطة');
     if (doneN) metaParts.push(doneN + ' مكتملة');
-    return '<div class="patient-card" data-act="patient-open" data-key="' + esc(p.key) + '" role="button" tabindex="0" aria-label="عرض ملفات ' + esc(p.name) + '">' +
+    return '<div class="dp-pfile patient-card" data-act="patient-open" data-key="' + esc(p.key) + '" role="button" tabindex="0" aria-label="عرض ملفات ' + esc(p.name) + '">' +
       '<span class="patient-avatar patient-num">' + pad(n) + '</span>' +
       '<span class="patient-main">' +
         '<span class="patient-name">' + esc(p.name) + '</span>' +
@@ -684,7 +684,7 @@
   }
   function csRow(sheet) {
     var d = sheet.data || {};
-    return '<div class="row">' +
+    return '<div class="dp-pfile row">' +
       '<span class="row-no">📄</span>' +
       '<div class="row-main">' +
         '<div class="row-name">' + esc(d.patientName || 'بدون اسم مريض') + '</div>' +
