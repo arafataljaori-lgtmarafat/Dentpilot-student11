@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.12.2';
+  var APP_VERSION = '1.12.4';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -550,7 +550,7 @@
   /* ============================================================
      الكاسشيتات (نظام مستقل تماماً عن نظام الحالات — لا يُغيّر أي منطق فيه)
      ============================================================ */
-  var CS_TEMPLATES = { 'jazeera-oral-surgery': { name: 'جامعة الجزيرة — Oral Surgery', sub: 'University of Al-Jazeera — Faculty of Oral and Dental Medicine' } };
+  var CS_TEMPLATES = { 'jazeera-oral-surgery': { name: 'Oral Surgery', sub: 'كاسشيت جراحة الفم — جاهز للتعبئة والطباعة' } };
   var CS_PHOTO_SLOTS = [
     { key: 'pre1', label: 'Preoperative Image 1' },
     { key: 'pre2', label: 'Preoperative Image 2' },
@@ -675,7 +675,8 @@
   function renderCasesheets() {
     var tpl = CS_TEMPLATES['jazeera-oral-surgery'];
     var tplCard = '<button type="button" class="dash-card accent" data-act="cs-new" data-template="jazeera-oral-surgery" style="width:100%">' +
-      '<span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-title">' + esc(tpl.name) + '</span><span class="dash-sub">' + esc(tpl.sub) + '</span></button>';
+      '<span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-title">' + esc(tpl.name) + '</span><span class="dash-sub">' + esc(tpl.sub) + '</span></button>' +
+      '<p class="cs-soon-note">📌 قوالب كاسشيت إضافية ستُضاف في تحديث قادم.</p>';
     var saved = casesheets.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
     var savedHtml = saved.length
       ? '<h3 class="sub-h" style="margin-top:18px">📁 الكاسشيتات المحفوظة</h3><div class="rows">' + saved.map(csRow).join('') + '</div>'
@@ -1227,17 +1228,17 @@
     var c = cases.find(function (x) { return x.id === id; });
     if (!c) { go(fileOrigin || 'all'); return; }
     var st = statusMeta(c.status);
-    var info = function (l, v) { return '<div class="info-card"><span class="info-label">' + l + '</span><span class="info-value">' + v + '</span></div>'; };
+    var info = function (l, v) { var empty = (v === '—'); return '<div class="info-card' + (empty ? ' is-empty' : '') + '"><span class="info-label">' + l + '</span><span class="info-value">' + v + '</span></div>'; };
     els.fileBody.innerHTML =
       '<div class="file-hero"><span class="file-avatar">' + esc(initial(c.name)) + '</span>' +
         '<div class="file-hero-main"><h2>' + esc(c.name) + '</h2><div class="file-hero-sub">' + (esc(c.department) || '—') + (c.caseType ? ' • ' + esc(c.caseType) : '') + '</div></div>' +
-        '<span class="file-status">' + esc(c.status || '—') + '</span></div>' +
+        '<span class="file-status ' + st.cls + '">' + esc(c.status || '—') + '</span></div>' +
       '<div class="file-actions">' +
         callLink(c.phone, '', ' اتصال') + waLink(c.phone, '', ' واتساب') +
         (c.status !== 'مكتملة' ? '<button type="button" class="card-btn complete" data-act="complete" data-id="' + c.id + '">✅ إنهاء الحالة</button>' : '') +
-        '<button type="button" class="card-btn" data-act="edit" data-id="' + c.id + '">✏️ تعديل</button>' +
+        '<button type="button" class="card-btn primary-action" data-act="edit" data-id="' + c.id + '">✏️ تعديل</button>' +
         '<button type="button" class="card-btn" data-act="print" data-id="' + c.id + '">🖨 طباعة</button>' +
-        '<button type="button" class="card-btn del" data-act="del" data-id="' + c.id + '">🗑️ حذف</button>' +
+        '<button type="button" class="card-btn del minor" data-act="del" data-id="' + c.id + '">🗑️ حذف</button>' +
       '</div>' +
       '<div class="file-block"><div class="fs-head"><span class="fs-ico">🧾</span><h3>بيانات الحالة</h3></div>' +
         '<div class="info-grid">' +

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Oral Surgery Casesheet — University of Al-Jazeera</title>
+<title>Oral Surgery Casesheet</title>
 <style>
 /* ============================================================
    case-sheet-print-template — قالب طباعة الكاسشيت المستقل
@@ -104,12 +104,7 @@ table.eval td.crit{ text-align:left; font-weight:700; }
     var photos = (payload && payload.photos) || {};
 
     var html =
-      /* ---------- الصفحة الأولى: الترويسة + بيانات الطالب والمريض والفحوصات ---------- */
-      '<div class="uni-head no-break">' +
-        '<div class="u1">UNIVERSITY OF AL-JAZEERA</div>' +
-        '<div class="u2">Faculty of Oral and Dental Medicine</div>' +
-        '<div class="u3">Department of Oral surgery</div>' +
-      '</div>' +
+      /* ---------- الصفحة الأولى: عنوان الكاسشيت + بيانات الطالب والمريض والفحوصات ---------- */
       '<div class="sheet-title">ORAL SURGERY</div>' +
       '<hr class="rule" />' +
 
@@ -190,8 +185,7 @@ table.eval td.crit{ text-align:left; font-weight:700; }
       /* ---------- صفحة جدول التقييم + التوقيع (تظهر في الطباعة فقط — ليست في شاشة التعبئة) ---------- */
       '<div class="page-break no-break">' +
         '<div class="uni-head" style="margin-top:4px">' +
-          '<div class="u1">UNIVERSITY OF AL-JAZEERA</div>' +
-          '<div class="u2">Department of Oral surgery — Supervisor Evaluation</div>' +
+          '<div class="u1">Department of Oral surgery — Supervisor Evaluation</div>' +
         '</div>' +
         '<table class="eval"><thead><tr><th style="width:55%">criteria</th><th>Mark /</th><th>Mark</th></tr></thead><tbody>' +
           ['History &amp; Diagnosis','Clinical &amp; Radio Exam','Surgical Skills','Documentation','Patients Mangement','Total'].map(function (c) {
