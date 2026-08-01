@@ -25,8 +25,8 @@
   <div id="splash" class="splash" aria-hidden="true">
     <div class="splash-logo">
       <img src="icon-192.png" alt="DentPilot Student" width="92" height="92" />
-      <h1>دينت بايلوت للطلاب</h1>
-      <p>متابِع الحالات السريرية</p>
+      <h1 data-i18n="دينت بايلوت للطلاب">دينت بايلوت للطلاب</h1>
+      <p data-i18n="متابِع الحالات السريرية">متابِع الحالات السريرية</p>
     </div>
   </div>
 
@@ -86,16 +86,16 @@
 
   <header class="topbar">
     <div class="topbar-actions">
-      <button type="button" id="menuBtn" class="icon-btn menu-btn" title="القائمة" aria-label="فتح القائمة">
+      <button type="button" id="menuBtn" class="icon-btn menu-btn" title="القائمة" aria-label="فتح القائمة" data-i18n-aria="فتح القائمة" data-i18n-title="القائمة">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
     <div class="brand">
-      <button type="button" id="backBtn" class="icon-btn back-btn" title="رجوع" aria-label="رجوع" hidden>
+      <button type="button" id="backBtn" class="icon-btn back-btn" title="رجوع" aria-label="رجوع" hidden data-i18n-aria="رجوع" data-i18n-title="رجوع">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
       </button>
       <span class="brand-mark">DP</span>
-      <div class="brand-text"><h1>DentPilot Student</h1><p>متابعتك السريرية والأكاديمية</p></div>
+      <div class="brand-text"><h1>DentPilot Student</h1><p data-i18n="متابعتك السريرية والأكاديمية">متابعتك السريرية والأكاديمية</p></div>
     </div>
   </header>
 
@@ -105,7 +105,7 @@
       <span id="trialText">الفترة التجريبية المجانية متاحة لمدة 24 ساعة.</span>
     </button>
     <button type="button" id="installBanner" class="install-banner" hidden>
-      <span class="install-banner-text">تثبيت التطبيق</span>
+      <span class="install-banner-text" data-i18n="تثبيت التطبيق">تثبيت التطبيق</span>
       <span class="install-banner-arrow">‹</span>
     </button>
   </div>
@@ -296,7 +296,7 @@
 
       <div class="cal-strip-wrap">
         <div class="cal-strip-head">
-          <span class="cal-strip-title">أسبوعك السريري</span>
+          <span class="cal-strip-title" data-i18n="أسبوعك السريري">أسبوعك السريري</span>
         </div>
         <div class="cal-strip" id="calStrip"></div>
         <div class="cal-note" id="calNote">—</div>
@@ -304,35 +304,35 @@
 
       <div class="dash-stats">
         <button type="button" class="dash-card dash-stat" data-go="patients">
-          <span class="dash-stat-label">جميع المرضى</span>
+          <span class="dash-stat-label" data-i18n="جميع المرضى">جميع المرضى</span>
           <span class="dash-stat-num" id="dcAll">0</span>
-          <span class="dash-stat-hint">إجمالي</span>
+          <span class="dash-stat-hint" data-i18n="إجمالي">إجمالي</span>
         </button>
         <button type="button" class="dash-card dash-stat dash-stat-mid" data-go="appointments">
-          <span class="dash-stat-label">حالات اليوم / الغد</span>
+          <span class="dash-stat-label" data-i18n="حالات اليوم / الغد">حالات اليوم / الغد</span>
           <span class="dash-stat-num" id="dcTodayTomorrow">0</span>
-          <span class="dash-stat-hint">قريبة</span>
+          <span class="dash-stat-hint" data-i18n="قريبة">قريبة</span>
         </button>
         <button type="button" class="dash-card dash-stat" data-go="completed">
-          <span class="dash-stat-label">المكتملة</span>
+          <span class="dash-stat-label" data-i18n="المكتملة">المكتملة</span>
           <span class="dash-ring" id="dcReqsRing" style="--pct:0"><span class="dash-ring-val" id="dcReqsVal">0%</span></span>
         </button>
       </div>
 
       <button type="button" class="add-case-bar accent" data-go="add">
         <span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></span>
-        <span class="dash-text"><span class="dash-title">إضافة حالة جديدة</span><span class="dash-sub">سجّل الحالة والموعد والمتابعة</span></span>
+        <span class="dash-text"><span class="dash-title" data-i18n="إضافة حالة جديدة">إضافة حالة جديدة</span><span class="dash-sub" data-i18n="سجّل الحالة والموعد والمتابعة">سجّل الحالة والموعد والمتابعة</span></span>
       </button>
 
       <div class="dash-grid dash-grid-2">
-        <button type="button" class="dash-card" data-go="casesheets"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-text"><span class="dash-title">إضافة كاسشيت</span></span></button>
-        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></span><span class="dash-text"><span class="dash-title">الحالات حسب المادة</span></span></button>
+        <button type="button" class="dash-card" data-go="universities"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-text"><span class="dash-title" data-i18n="إضافة كاسشيت">إضافة كاسشيت</span></span></button>
+        <button type="button" class="dash-card" data-go="bysubject"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"></path><path d="M3 13l9 5 9-5"></path></svg></span><span class="dash-text"><span class="dash-title" data-i18n="الحالات حسب المادة">الحالات حسب المادة</span></span></button>
       </div>
 
       <div class="today-section">
         <div class="today-section-head">
-          <button type="button" class="today-viewall" data-go="appointments">عرض الكل</button>
-          <span class="today-section-title">اليوم والغد</span>
+          <button type="button" class="today-viewall" data-go="appointments" data-i18n="عرض الكل">عرض الكل</button>
+          <span class="today-section-title" data-i18n="اليوم والغد">اليوم والغد</span>
         </div>
         <div id="todayList" class="today-list"></div>
         <div id="todayEmpty" class="today-empty" hidden>لا توجد مواعيد اليوم أو غداً.</div>
@@ -343,19 +343,19 @@
     <section class="view" id="view-all" data-view="all" hidden>
       <div class="page-head"><h2 id="allTitle">🩺 الحالات</h2></div>
       <div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="search" id="allSearch" placeholder="بحث بالاسم أو الهاتف أو القسم أو نوع الحالة…" autocomplete="off" /></div>
+        <input type="search" id="allSearch" placeholder="بحث بالاسم أو الهاتف أو القسم أو نوع الحالة…" data-i18n-ph="بحث بالاسم أو الهاتف أو القسم أو نوع الحالة…" autocomplete="off" /></div>
       <div id="allFilterBar" class="filter-bar"></div>
       <div id="allList" class="rows"></div>
-      <div id="allEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+      <div id="allEmpty" class="empty-state" hidden><p data-i18n="لا توجد حالات بعد.">لا توجد حالات بعد.</p><span data-i18n="اضغط «إضافة حالة» لتسجيل أول حالة.">اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
     </section>
 
     <!-- مواعيد اليوم والغد (صفحة مستقلة عن قائمة الحالات العامة) -->
     <section class="view" id="view-appointments" data-view="appointments" hidden>
-      <div class="page-head"><h2>📅 مواعيد اليوم والغد</h2></div>
+      <div class="page-head"><h2 data-i18n="📅 مواعيد اليوم والغد">📅 مواعيد اليوم والغد</h2></div>
       <div id="apptToggle" class="acc-tabs appt-toggle"></div>
       <div id="apptList" class="appt-list"></div>
-      <div id="apptEmpty" class="empty-state" hidden><p>لا توجد مواعيد اليوم</p><span>يمكنك إضافة حالة جديدة بموعد اليوم.</span>
-        <button type="button" class="btn btn-primary" data-go="add" style="margin-top:12px">+ إضافة حالة</button>
+      <div id="apptEmpty" class="empty-state" hidden><p data-i18n="لا توجد مواعيد اليوم">لا توجد مواعيد اليوم</p><span data-i18n="يمكنك إضافة حالة جديدة بموعد اليوم.">يمكنك إضافة حالة جديدة بموعد اليوم.</span>
+        <button type="button" class="btn btn-primary" data-go="add" style="margin-top:12px" data-i18n="+ إضافة حالة">+ إضافة حالة</button>
       </div>
     </section>
 
@@ -363,9 +363,9 @@
     <section class="view" id="view-patients" data-view="patients" hidden>
       <div class="page-head"><h2 id="patientsTitle">👥 جميع المرضى</h2></div>
       <div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="search" id="patientsSearch" placeholder="بحث بالاسم أو رقم الهاتف…" autocomplete="off" /></div>
+        <input type="search" id="patientsSearch" placeholder="بحث بالاسم أو رقم الهاتف…" data-i18n-ph="بحث بالاسم أو رقم الهاتف…" autocomplete="off" /></div>
       <div id="patientsList" class="patients-list"></div>
-      <div id="patientsEmpty" class="empty-state" hidden><p>لا يوجد مرضى بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+      <div id="patientsEmpty" class="empty-state" hidden><p data-i18n="لا يوجد مرضى بعد.">لا يوجد مرضى بعد.</p><span data-i18n="اضغط «إضافة حالة» لتسجيل أول حالة.">اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
     </section>
 
     <!-- ملخص مريض واحد (كل حالاته) -->
@@ -380,14 +380,14 @@
 
     <!-- متطلبات الكلية -->
     <section class="view" id="view-reqs" data-view="reqs" hidden>
-      <div class="page-head"><h2>📋 متطلبات الكلية</h2></div>
-      <p class="hint">أدخل العدد المطلوب لكل قسم، ويُحسب المكتمل تلقائياً من الحالات ذات الحالة «مكتملة».</p>
-      <div class="panel-actions"><button type="button" id="reqAddBtn" class="btn btn-primary" data-act="req-add-toggle">+ إضافة مادة</button></div>
+      <div class="page-head"><h2 data-i18n="📋 متطلبات الكلية">📋 متطلبات الكلية</h2></div>
+      <p class="hint" data-i18n="أدخل العدد المطلوب لكل قسم، ويُحسب المكتمل تلقائياً من الحالات ذات الحالة «مكتملة».">أدخل العدد المطلوب لكل قسم، ويُحسب المكتمل تلقائياً من الحالات ذات الحالة «مكتملة».</p>
+      <div class="panel-actions"><button type="button" id="reqAddBtn" class="btn btn-primary" data-act="req-add-toggle" data-i18n="+ إضافة مادة">+ إضافة مادة</button></div>
       <div id="reqAddForm" class="req-add-form" hidden>
-        <div class="field"><input type="text" id="reqNewName" placeholder="اسم المادة أو المتطلب (مثال: أطفال)" /></div>
+        <div class="field"><input type="text" id="reqNewName" placeholder="اسم المادة أو المتطلب (مثال: أطفال)" data-i18n-ph="اسم المادة أو المتطلب (مثال: أطفال)" /></div>
         <div class="form-actions">
-          <button type="button" class="btn btn-ghost" data-act="req-add-cancel">إلغاء</button>
-          <button type="button" class="btn btn-primary" data-act="req-add-save">حفظ</button>
+          <button type="button" class="btn btn-ghost" data-act="req-add-cancel" data-i18n="إلغاء">إلغاء</button>
+          <button type="button" class="btn btn-primary" data-act="req-add-save" data-i18n="حفظ">حفظ</button>
         </div>
       </div>
       <div id="reqsList" class="reqs"></div>
@@ -395,35 +395,35 @@
 
     <!-- الحالات المكتملة -->
     <section class="view" id="view-completed" data-view="completed" hidden>
-      <div class="page-head"><h2>✅ الحالات المكتملة</h2></div>
-      <p class="hint">الحالات ذات الحالة «مكتملة» تُؤرشَف هنا ولا تظهر في القوائم الحالية. بياناتها محفوظة كاملة، وتظل محسوبة ضمن متطلبات الكلية.</p>
+      <div class="page-head"><h2 data-i18n="✅ الحالات المكتملة">✅ الحالات المكتملة</h2></div>
+      <p class="hint" data-i18n="الحالات ذات الحالة «مكتملة» تُؤرشَف هنا ولا تظهر في القوائم الحالية. بياناتها محفوظة كاملة، وتظل محسوبة ضمن متطلبات الكلية.">الحالات ذات الحالة «مكتملة» تُؤرشَف هنا ولا تظهر في القوائم الحالية. بياناتها محفوظة كاملة، وتظل محسوبة ضمن متطلبات الكلية.</p>
       <div id="completedList" class="rows"></div>
-      <div id="completedEmpty" class="empty-state" hidden><p>لا توجد حالات مكتملة بعد.</p><span>عند تعيين حالة كـ «مكتملة» ستظهر هنا.</span></div>
+      <div id="completedEmpty" class="empty-state" hidden><p data-i18n="لا توجد حالات مكتملة بعد.">لا توجد حالات مكتملة بعد.</p><span data-i18n="عند تعيين حالة كـ «مكتملة» ستظهر هنا.">عند تعيين حالة كـ «مكتملة» ستظهر هنا.</span></div>
     </section>
 
     <!-- الحالات حسب المادة -->
     <section class="view" id="view-bysubject" data-view="bysubject" hidden>
-      <div class="page-head"><h2>📚 الحالات حسب المادة</h2></div>
-      <p class="hint">اختر مادة لعرض حالاتها فقط.</p>
+      <div class="page-head"><h2 data-i18n="📚 الحالات حسب المادة">📚 الحالات حسب المادة</h2></div>
+      <p class="hint" data-i18n="اختر مادة لعرض حالاتها فقط.">اختر مادة لعرض حالاتها فقط.</p>
       <div id="bySubjectList" class="subj-groups"></div>
-      <div id="bySubjectEmpty" class="empty-state" hidden><p>لا توجد حالات بعد.</p><span>اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
+      <div id="bySubjectEmpty" class="empty-state" hidden><p data-i18n="لا توجد حالات بعد.">لا توجد حالات بعد.</p><span data-i18n="اضغط «إضافة حالة» لتسجيل أول حالة.">اضغط «إضافة حالة» لتسجيل أول حالة.</span></div>
     </section>
 
     <!-- حالات مادة واحدة -->
     <section class="view" id="view-subject" data-view="subject" hidden>
       <div class="page-head"><h2 id="subjectTitle">حالات</h2></div>
       <div id="subjectList" class="rows"></div>
-      <div id="subjectEmpty" class="empty-state" hidden><p>لا توجد حالات في هذه المادة.</p></div>
+      <div id="subjectEmpty" class="empty-state" hidden><p data-i18n="لا توجد حالات في هذه المادة.">لا توجد حالات في هذه المادة.</p></div>
     </section>
 
     <!-- نسخة احتياطية -->
     <section class="view" id="view-backup" data-view="backup" hidden>
-      <div class="page-head"><h2>💾 نسخة احتياطية</h2></div>
+      <div class="page-head"><h2 data-i18n="💾 نسخة احتياطية">💾 نسخة احتياطية</h2></div>
       <div class="panel">
-        <p>احفظ نسخة من حالاتك وإعداداتك ومتطلباتك ومرفقاتك في ملف، أو استعدها لاحقاً. تبقى البيانات محلية على جهازك، ومنفصلة تماماً عن أي نسخة أخرى.</p>
+        <p data-i18n="احفظ نسخة من حالاتك وإعداداتك ومتطلباتك ومرفقاتك في ملف، أو استعدها لاحقاً. تبقى البيانات محلية على جهازك، ومنفصلة تماماً عن أي نسخة أخرى.">احفظ نسخة من حالاتك وإعداداتك ومتطلباتك ومرفقاتك في ملف، أو استعدها لاحقاً. تبقى البيانات محلية على جهازك، ومنفصلة تماماً عن أي نسخة أخرى.</p>
         <div class="panel-actions">
-          <button type="button" id="exportBtn" class="btn btn-primary">⬇ تصدير نسخة احتياطية</button>
-          <button type="button" id="importBtn" class="btn btn-ghost">⬆ استعادة نسخة احتياطية</button>
+          <button type="button" id="exportBtn" class="btn btn-primary" data-i18n="⬇ تصدير نسخة احتياطية">⬇ تصدير نسخة احتياطية</button>
+          <button type="button" id="importBtn" class="btn btn-ghost" data-i18n="⬆ استعادة نسخة احتياطية">⬆ استعادة نسخة احتياطية</button>
           <input type="file" id="importFile" accept="application/json" hidden />
         </div>
       </div>
@@ -431,37 +431,37 @@
 
     <!-- الإعدادات -->
     <section class="view" id="view-settings" data-view="settings" hidden>
-      <div class="page-head"><h2>⚙️ الإعدادات</h2></div>
+      <div class="page-head"><h2 data-i18n="⚙️ الإعدادات">⚙️ الإعدادات</h2></div>
       <div class="panel">
-        <h3 class="sub-h">👤 بيانات الطالب</h3>
+        <h3 class="sub-h" data-i18n="👤 بيانات الطالب">👤 بيانات الطالب</h3>
         <div class="field-display">
-          <div class="fd-row"><span class="fd-label">اسم الطالب</span><span class="fd-value" id="setNameDisplay">—</span></div>
-          <div class="fd-row"><span class="fd-label">المستوى الدراسي</span><span class="fd-value" id="setLevelDisplay">—</span></div>
-          <div class="fd-row"><span class="fd-label">الكلية</span><span class="fd-value" id="setCollegeDisplay">—</span></div>
+          <div class="fd-row"><span class="fd-label" data-i18n="اسم الطالب">اسم الطالب</span><span class="fd-value" id="setNameDisplay">—</span></div>
+          <div class="fd-row"><span class="fd-label" data-i18n="المستوى الدراسي">المستوى الدراسي</span><span class="fd-value" id="setLevelDisplay">—</span></div>
+          <div class="fd-row"><span class="fd-label" data-i18n="الكلية">الكلية</span><span class="fd-value" id="setCollegeDisplay">—</span></div>
         </div>
-        <div class="panel-actions"><button type="button" id="editStudentBtn" class="btn btn-primary">✏️ تعديل بيانات الطالب</button></div>
+        <div class="panel-actions"><button type="button" id="editStudentBtn" class="btn btn-primary" data-i18n="✏️ تعديل بيانات الطالب">✏️ تعديل بيانات الطالب</button></div>
 
         <div id="clinicalInsights" class="insights-panel"></div>
 
         <details class="dp-accordion" open>
-          <summary>⚙️ التفضيلات</summary>
+          <summary data-i18n="⚙️ التفضيلات">⚙️ التفضيلات</summary>
           <div class="dp-accordion-body">
-            <h3 class="sub-h">🔄 التحديثات</h3>
-            <p class="hint">الإصدار الحالي: <b id="appVersion">—</b></p>
-            <div class="panel-actions"><button type="button" id="checkUpdateBtn" class="btn btn-ghost">التحقق من التحديثات</button></div>
+            <h3 class="sub-h" data-i18n="🔄 التحديثات">🔄 التحديثات</h3>
+            <p class="hint"><span data-i18n="الإصدار الحالي:">الإصدار الحالي:</span> <b id="appVersion">—</b></p>
+            <div class="panel-actions"><button type="button" id="checkUpdateBtn" class="btn btn-ghost" data-i18n="التحقق من التحديثات">التحقق من التحديثات</button></div>
             <p id="updateStatus" class="hint" style="margin-top:8px"></p>
-            <p class="hint">الحالة: <b id="accessStatus">—</b></p>
-            <p class="hint" style="margin-top:6px">رمز التطبيق الخاص بهذا الهاتف: <b id="setDeviceId">—</b></p>
-            <h3 class="sub-h">📲 تثبيت التطبيق</h3>
+            <p class="hint"><span data-i18n="الحالة:">الحالة:</span> <b id="accessStatus">—</b></p>
+            <p class="hint" style="margin-top:6px"><span data-i18n="رمز التطبيق الخاص بهذا الهاتف:">رمز التطبيق الخاص بهذا الهاتف:</span> <b id="setDeviceId">—</b></p>
+            <h3 class="sub-h" data-i18n="📲 تثبيت التطبيق">📲 تثبيت التطبيق</h3>
             <p id="setInstallStatus" class="hint">—</p>
-            <div class="panel-actions"><button type="button" id="setInstallBtn" class="btn btn-ghost" hidden>تثبيت التطبيق على الشاشة الرئيسية</button></div>
+            <div class="panel-actions"><button type="button" id="setInstallBtn" class="btn btn-ghost" hidden data-i18n="تثبيت التطبيق على الشاشة الرئيسية">تثبيت التطبيق على الشاشة الرئيسية</button></div>
           </div>
         </details>
 
         <details class="dp-accordion">
-          <summary>🛟 الدعم</summary>
+          <summary data-i18n="🛟 الدعم">🛟 الدعم</summary>
           <div class="dp-accordion-body">
-            <div class="panel-actions"><button type="button" class="btn btn-primary" data-act="nav" data-go="support">فتح صفحة الدعم والتفعيل</button></div>
+            <div class="panel-actions"><button type="button" class="btn btn-primary" data-act="nav" data-go="support" data-i18n="فتح صفحة الدعم والتفعيل">فتح صفحة الدعم والتفعيل</button></div>
             <div class="dev-card">
               <div class="dev-title">👨‍⚕️ المطور والدعم</div>
               <div class="dev-name">تم تطوير التطبيق بواسطة:<br><b>د. عرفات الجعوري</b></div>
@@ -485,6 +485,19 @@
     <!-- ملف الحالة -->
     <section class="view" id="view-file" data-view="file" hidden>
       <div id="fileBody"></div>
+    </section>
+
+    <!-- الكاسشيتات — اختيار الجامعة أولاً -->
+    <section class="view" id="view-universities" data-view="universities" hidden>
+      <div class="page-head"><h2>📄 الكاسشيتات</h2></div>
+      <p class="hint">اختر جامعتك لعرض كاسشيتاتها.</p>
+      <div class="dash-grid dash-grid-2" id="uniList"></div>
+    </section>
+
+    <!-- كاسشيتات جامعة لم تُضف كاسشيتاتها بعد -->
+    <section class="view" id="view-uniEmpty" data-view="uniEmpty" hidden>
+      <div class="page-head"><h2 id="uniEmptyTitle">📄 كاسشيتات الجامعة</h2></div>
+      <div class="empty-state" id="uniEmptyBody"><p>سيتم إضافة كاسشيتات هذه الجامعة قريبًا</p></div>
     </section>
 
     <!-- اختيار قالب الكاسشيت + القائمة المحفوظة -->
@@ -511,19 +524,19 @@
     <div class="dash-bottombar" id="dashBottomBar" hidden>
       <button type="button" class="dash-card dbb-item" data-go="dashboard">
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"></path></svg></span>
-        <span class="dbb-label">الرئيسية</span>
+        <span class="dbb-label" data-i18n="الرئيسية">الرئيسية</span>
       </button>
       <button type="button" class="dash-card dbb-item" data-go="all">
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"></rect><path d="M3.5 9.5h17"></path></svg></span>
-        <span class="dbb-label">الحالات</span>
+        <span class="dbb-label" data-i18n="الحالات">الحالات</span>
       </button>
       <button type="button" class="dash-card dbb-item" data-go="appointments">
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>
-        <span class="dbb-label">المواعيد</span>
+        <span class="dbb-label" data-i18n="المواعيد">المواعيد</span>
       </button>
       <button type="button" class="dash-card dbb-item" data-go="account">
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5 20.5a7 7 0 0 1 14 0"></path></svg></span>
-        <span class="dbb-label">الحساب</span>
+        <span class="dbb-label" data-i18n="الحساب">الحساب</span>
       </button>
     </div>
 
@@ -535,9 +548,9 @@
       <div class="dept-sheet-head">
         <div class="dept-sheet-title-wrap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.1 2 5 5.1 5 9c0 3.1 1.8 5.8 4.4 7.1L8 22h8l-1.4-5.9C17.2 14.8 19 12.1 19 9c0-3.9-3.1-7-7-7z"/></svg>
-          <h3>اختر التخصص السريري</h3>
+          <h3 data-i18n="اختر التخصص السريري">اختر التخصص السريري</h3>
         </div>
-        <button type="button" id="deptClose" class="modal-close" aria-label="إغلاق">✕</button>
+        <button type="button" id="deptClose" class="modal-close" aria-label="إغلاق" data-i18n-aria="إغلاق">✕</button>
       </div>
       <div class="dept-cards">
 
@@ -551,7 +564,7 @@
             </svg>
           </span>
           <span class="dept-name">Operative</span>
-          <span class="dept-desc">حشوات تحفظية</span>
+          <span class="dept-desc" data-i18n="حشوات تحفظية">حشوات تحفظية</span>
         </button>
 
         <!-- Endo -->
@@ -565,7 +578,7 @@
             </svg>
           </span>
           <span class="dept-name">Endo</span>
-          <span class="dept-desc">علاج عصب وجذور</span>
+          <span class="dept-desc" data-i18n="علاج عصب وجذور">علاج عصب وجذور</span>
         </button>
 
         <!-- Periodontics (data-val stays "Cleaning" for backward compat) -->
@@ -581,7 +594,7 @@
             </svg>
           </span>
           <span class="dept-name">Periodontics</span>
-          <span class="dept-desc">علاج دواعم ولثة</span>
+          <span class="dept-desc" data-i18n="علاج دواعم ولثة">علاج دواعم ولثة</span>
         </button>
 
         <!-- Orthodontics -->
@@ -605,7 +618,7 @@
             </svg>
           </span>
           <span class="dept-name">Orthodontics</span>
-          <span class="dept-desc">تقويم أسنان</span>
+          <span class="dept-desc" data-i18n="تقويم أسنان">تقويم أسنان</span>
         </button>
 
         <!-- Surgery -->
@@ -629,7 +642,7 @@
             </svg>
           </span>
           <span class="dept-name">Surgery</span>
-          <span class="dept-desc">قلع وجراحة</span>
+          <span class="dept-desc" data-i18n="قلع وجراحة">قلع وجراحة</span>
         </button>
 
         <!-- Pediatric -->
@@ -645,7 +658,7 @@
             </svg>
           </span>
           <span class="dept-name">Pediatric</span>
-          <span class="dept-desc">طب أسنان أطفال</span>
+          <span class="dept-desc" data-i18n="طب أسنان أطفال">طب أسنان أطفال</span>
         </button>
 
         <!-- Prosthodontics -->
@@ -662,7 +675,7 @@
             </svg>
           </span>
           <span class="dept-name">Prosthodontics</span>
-          <span class="dept-desc">تركيبات ثابتة ومتحركة</span>
+          <span class="dept-desc" data-i18n="تركيبات ثابتة ومتحركة">تركيبات ثابتة ومتحركة</span>
         </button>
 
         <!-- Other -->
@@ -674,8 +687,8 @@
               <line x1="10" y1="16" x2="22" y2="16"/>
             </svg>
           </span>
-          <span class="dept-name">أخرى</span>
-          <span class="dept-desc">تخصصات أخرى</span>
+          <span class="dept-name" data-i18n="أخرى">أخرى</span>
+          <span class="dept-desc" data-i18n="تخصصات أخرى">تخصصات أخرى</span>
         </button>
 
       </div>
@@ -685,43 +698,43 @@
   <!-- نافذة إضافة/تعديل حالة -->
   <div id="caseOverlay" class="modal-overlay" hidden>
     <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head"><h2 id="caseTitle">إضافة حالة</h2><button type="button" id="caseClose" class="modal-close" aria-label="إغلاق">✕</button></div>
+      <div class="modal-head"><h2 id="caseTitle" data-i18n="إضافة حالة">إضافة حالة</h2><button type="button" id="caseClose" class="modal-close" aria-label="إغلاق" data-i18n-aria="إغلاق">✕</button></div>
       <form id="caseForm" class="form" novalidate>
         <input type="hidden" id="caseId" />
 
         <div class="form-group">
           <div class="form-group-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span>بيانات المريض</span>
+            <span data-i18n="بيانات المريض">بيانات المريض</span>
           </div>
-          <div class="field"><label for="cName">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" /></div>
-          <div class="field"><label for="cPhone">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." dir="ltr" style="text-align:end" /></div>
+          <div class="field"><label for="cName" data-i18n="اسم المريض">اسم المريض</label><input type="text" id="cName" required placeholder="الاسم" data-i18n-ph="الاسم" /></div>
+          <div class="field"><label for="cPhone" data-i18n="رقم الهاتف">رقم الهاتف</label><input type="tel" id="cPhone" inputmode="tel" placeholder="09..." dir="ltr" style="text-align:end" /></div>
         </div>
 
         <div class="form-group">
           <div class="form-group-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            <span>بيانات الحالة</span>
+            <span data-i18n="بيانات الحالة">بيانات الحالة</span>
           </div>
-          <div class="field"><label for="cStatus">الحالة</label><select id="cStatus"></select></div>
+          <div class="field"><label for="cStatus" data-i18n="الحالة">الحالة</label><select id="cStatus"></select></div>
           <div class="field">
-            <label>المادة / القسم</label>
+            <label data-i18n="المادة / القسم">المادة / القسم</label>
             <button type="button" id="cDeptBtn" class="dept-select-btn">اختر التخصص</button>
             <input type="hidden" id="cDept" />
           </div>
           <div class="field other-inline" id="cDeptOtherWrap" hidden>
-            <label for="cDeptOther">اسم التخصص (مخصّص)</label>
+            <label for="cDeptOther" data-i18n="اسم التخصص (مخصّص)">اسم التخصص (مخصّص)</label>
             <input type="text" id="cDeptOther" placeholder="مثلاً: تعويضات" />
           </div>
-          <div class="field" id="cToothWrap"><label for="cTooth">رقم السن</label><input type="text" id="cTooth" placeholder="مثال: 36" /></div>
+          <div class="field" id="cToothWrap"><label for="cTooth" data-i18n="رقم السن">رقم السن</label><input type="text" id="cTooth" placeholder="مثال: 36" data-i18n-ph="مثال: 36" /></div>
         </div>
 
         <div class="form-group">
           <div class="form-group-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-            <span>الموعد</span>
+            <span data-i18n="الموعد">الموعد</span>
           </div>
-          <div class="field"><label for="cDate">تاريخ الموعد</label><input type="date" id="cDate" dir="ltr" /></div>
+          <div class="field"><label for="cDate" data-i18n="تاريخ الموعد">تاريخ الموعد</label><input type="date" id="cDate" dir="ltr" /></div>
           <input type="hidden" id="cType" />
           <input type="hidden" id="cTime" />
           <input type="hidden" id="cWeekday" />
@@ -1000,7 +1013,7 @@
           </div>
         </div>
 
-        <div class="field"><label for="cNotes">ملاحظات عامة</label><textarea id="cNotes" rows="2" placeholder="أية ملاحظات أخرى..."></textarea></div>
+        <div class="field"><label for="cNotes" data-i18n="ملاحظات عامة">ملاحظات عامة</label><textarea id="cNotes" rows="2" placeholder="أية ملاحظات أخرى..." data-i18n-ph="أية ملاحظات أخرى...">أية ملاحظات أخرى...</textarea></div>
         <div class="form-actions"><button type="button" id="caseCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ</button></div>
       </form>
     </div>
@@ -1009,21 +1022,21 @@
   <!-- نافذة الجلسة -->
   <div id="sessionOverlay" class="modal-overlay" hidden>
     <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head"><h2 id="sessionTitle">إضافة جلسة</h2><button type="button" id="sessionClose" class="modal-close" aria-label="إغلاق">✕</button></div>
+      <div class="modal-head"><h2 id="sessionTitle" data-i18n="إضافة جلسة">إضافة جلسة</h2><button type="button" id="sessionClose" class="modal-close" aria-label="إغلاق" data-i18n-aria="إغلاق">✕</button></div>
       <form id="sessionForm" class="form" novalidate>
         <input type="hidden" id="sCaseId" /><input type="hidden" id="sId" />
         <div class="grid-2">
-          <div class="field"><label for="sNum">رقم الجلسة</label><input type="text" id="sNum" /></div>
-          <div class="field"><label for="sStatus">حالة الجلسة</label><select id="sStatus"><option value="مجدولة">مجدولة</option><option value="منجزة">منجزة</option><option value="ملغاة">ملغاة</option></select></div>
+          <div class="field"><label for="sNum" data-i18n="رقم الجلسة">رقم الجلسة</label><input type="text" id="sNum" /></div>
+          <div class="field"><label for="sStatus" data-i18n="حالة الجلسة">حالة الجلسة</label><select id="sStatus"><option value="مجدولة" data-i18n="مجدولة">مجدولة</option><option value="منجزة" data-i18n="منجزة">منجزة</option><option value="ملغاة" data-i18n="ملغاة">ملغاة</option></select></div>
         </div>
         <div class="grid-2">
-          <div class="field"><label for="sDate">التاريخ</label><input type="date" id="sDate" /></div>
-          <div class="field"><label for="sTime">الوقت</label><input type="time" id="sTime" /></div>
+          <div class="field"><label for="sDate" data-i18n="التاريخ">التاريخ</label><input type="date" id="sDate" /></div>
+          <div class="field"><label for="sTime" data-i18n="الوقت">الوقت</label><input type="time" id="sTime" /></div>
         </div>
-        <div class="field"><label for="sProc">الإجراء المنجَز</label><input type="text" id="sProc" placeholder="ما تم في الجلسة" /></div>
-        <div class="field"><label for="sNext">الموعد القادم</label><input type="datetime-local" id="sNext" /></div>
-        <div class="field"><label for="sNotes">ملاحظات الجلسة</label><textarea id="sNotes" rows="2"></textarea></div>
-        <div class="form-actions"><button type="button" id="sessionCancel" class="btn btn-ghost">إلغاء</button><button type="submit" class="btn btn-primary">حفظ الجلسة</button></div>
+        <div class="field"><label for="sProc" data-i18n="الإجراء المنجَز">الإجراء المنجَز</label><input type="text" id="sProc" placeholder="ما تم في الجلسة" data-i18n-ph="ما تم في الجلسة" /></div>
+        <div class="field"><label for="sNext" data-i18n="الموعد القادم">الموعد القادم</label><input type="datetime-local" id="sNext" /></div>
+        <div class="field"><label for="sNotes" data-i18n="ملاحظات الجلسة">ملاحظات الجلسة</label><textarea id="sNotes" rows="2"></textarea></div>
+        <div class="form-actions"><button type="button" id="sessionCancel" class="btn btn-ghost" data-i18n="إلغاء">إلغاء</button><button type="submit" class="btn btn-primary" data-i18n="حفظ الجلسة">حفظ الجلسة</button></div>
       </form>
     </div>
   </div>
@@ -1031,13 +1044,13 @@
   <!-- بيانات الطالب: تظهر عند أول استخدام إن لم تكن محفوظة، وتُفتح لاحقاً من الإعدادات للتعديل -->
   <div id="studentSetupOverlay" class="modal-overlay" hidden>
     <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head"><h2 id="studentSetupTitle">مرحباً بك في DentPilot 👋</h2><button type="button" id="studentSetupSkip" class="modal-close" aria-label="لاحقاً" title="لاحقاً">✕</button></div>
+      <div class="modal-head"><h2 id="studentSetupTitle">مرحباً بك في DentPilot 👋</h2><button type="button" id="studentSetupSkip" class="modal-close" aria-label="لاحقاً" title="لاحقاً" data-i18n-aria="لاحقاً" data-i18n-title="لاحقاً">✕</button></div>
       <form id="studentSetupForm" class="form" novalidate>
-        <p class="hint" style="margin-top:0">أدخل بياناتك لتخصيص التطبيق — يمكنك تعديلها لاحقاً في أي وقت من الإعدادات.</p>
-        <div class="field"><label for="setupName">اسم الطالب</label><input type="text" id="setupName" required placeholder="اكتب اسمك" /></div>
-        <div class="field"><label for="setupLevel">المستوى الدراسي</label><input type="text" id="setupLevel" placeholder="مثال: السنة الخامسة" /></div>
-        <div class="field"><label for="setupCollege">اسم الكلية</label><input type="text" id="setupCollege" placeholder="مثال: كلية طب وجراحة الفم والأسنان" /></div>
-        <div class="form-actions"><button type="submit" class="btn btn-primary" style="width:100%">حفظ ومتابعة</button></div>
+        <p class="hint" style="margin-top:0" data-i18n="أدخل بياناتك لتخصيص التطبيق — يمكنك تعديلها لاحقاً في أي وقت من الإعدادات.">أدخل بياناتك لتخصيص التطبيق — يمكنك تعديلها لاحقاً في أي وقت من الإعدادات.</p>
+        <div class="field"><label for="setupName" data-i18n="اسم الطالب">اسم الطالب</label><input type="text" id="setupName" required placeholder="اكتب اسمك" data-i18n-ph="اكتب اسمك" /></div>
+        <div class="field"><label for="setupLevel" data-i18n="المستوى الدراسي">المستوى الدراسي</label><input type="text" id="setupLevel" placeholder="مثال: السنة الخامسة" data-i18n-ph="مثال: السنة الخامسة" /></div>
+        <div class="field"><label for="setupCollege" data-i18n="اسم الكلية">اسم الكلية</label><input type="text" id="setupCollege" placeholder="مثال: كلية طب وجراحة الفم والأسنان" data-i18n-ph="مثال: كلية طب وجراحة الفم والأسنان" /></div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary" style="width:100%" data-i18n="حفظ ومتابعة">حفظ ومتابعة</button></div>
       </form>
     </div>
   </div>
@@ -1092,47 +1105,47 @@
       <nav class="drawer-nav">
         <button type="button" class="drawer-item dash-card" data-go="dashboard" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg></span>
-          <span class="drawer-item-label">الرئيسية</span>
+          <span class="drawer-item-label" data-i18n="الرئيسية">الرئيسية</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="all" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5h17"/></svg></span>
-          <span class="drawer-item-label">جميع الحالات</span>
+          <span class="drawer-item-label" data-i18n="جميع الحالات">جميع الحالات</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="appointments" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
-          <span class="drawer-item-label">مواعيد اليوم والغد</span>
+          <span class="drawer-item-label" data-i18n="مواعيد اليوم والغد">مواعيد اليوم والغد</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="patients" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.7-4.7 5.5-4.7s4.9 1.7 5.5 4.7"/><circle cx="17.2" cy="9" r="2.4"/><path d="M15.3 14.8c1.9.4 3.4 1.8 3.9 4.2"/></svg></span>
-          <span class="drawer-item-label">جميع المرضى</span>
+          <span class="drawer-item-label" data-i18n="جميع المرضى">جميع المرضى</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="settings" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
-          <span class="drawer-item-label">الجدول والمواعيد</span>
+          <span class="drawer-item-label" data-i18n="الجدول والمواعيد">الجدول والمواعيد</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="reqs" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5 7 21l5-2.5 5 2.5-1.5-7.5"/></svg></span>
-          <span class="drawer-item-label">متطلبات الكلية</span>
+          <span class="drawer-item-label" data-i18n="متطلبات الكلية">متطلبات الكلية</span>
         </button>
-        <button type="button" class="drawer-item dash-card" data-go="casesheets" data-drawer-close="1">
+        <button type="button" class="drawer-item dash-card" data-go="universities" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg></span>
-          <span class="drawer-item-label">الكاسشيتات</span>
+          <span class="drawer-item-label" data-i18n="الكاسشيتات">الكاسشيتات</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="backup" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.7-8.9A5.5 5.5 0 0 1 17.4 8 4 4 0 0 1 17 18H7z"/><path d="M12 10.5v6M9.5 13l2.5-2.5 2.5 2.5"/></svg></span>
-          <span class="drawer-item-label">النسخة الاحتياطية</span>
+          <span class="drawer-item-label" data-i18n="النسخة الاحتياطية">النسخة الاحتياطية</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="support" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.6"/><path d="M6.3 6.3l3.6 3.6M17.7 6.3l-3.6 3.6M6.3 17.7l3.6-3.6M17.7 17.7l-3.6-3.6"/></svg></span>
-          <span class="drawer-item-label">الدعم والتفعيل</span>
+          <span class="drawer-item-label" data-i18n="الدعم والتفعيل">الدعم والتفعيل</span>
         </button>
         <a href="https://chat.whatsapp.com/EKtfbPF17PWKBXmrNPSMh3?s=cl&amp;p=a&amp;ilr=1&amp;amv=3" target="_blank" rel="noopener" class="drawer-item" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L4 20l1.05-4.55A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 10.5c.3 2.6 2.4 4.7 5 5"/></svg></span>
-          <span class="drawer-item-label">المجتمعات</span>
+          <span class="drawer-item-label" data-i18n="المجتمعات">المجتمعات</span>
         </a>
         <button type="button" class="drawer-item dash-card" data-go="settings" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6"/></svg></span>
-          <span class="drawer-item-label">الإعدادات</span>
+          <span class="drawer-item-label" data-i18n="الإعدادات">الإعدادات</span>
         </button>
       </nav>
     </div>

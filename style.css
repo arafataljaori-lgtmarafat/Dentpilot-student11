@@ -147,6 +147,7 @@ img{ max-width:100%; }
 .dash-card.accent .dash-title,.dash-card.accent .dash-sub,.dash-card.accent .dash-emoji{ color:#fff; } .dash-card.accent .dash-emoji{ background:rgba(255,255,255,.22); }
 .dash-card.accent2{ background:linear-gradient(135deg,var(--navy-800) 0%,var(--navy-700) 55%,#5b64c9 100%); border-color:transparent; box-shadow:0 5px 14px rgba(45,55,140,.22); }
 .dash-card.accent2 .dash-title,.dash-card.accent2 .dash-sub,.dash-card.accent2 .dash-emoji{ color:#fff; } .dash-card.accent2 .dash-emoji{ background:rgba(255,255,255,.2); }
+.dash-card.uni-card-soon{ opacity:.78; }
 .cs-soon-note{ margin:9px 2px 0; font-size:.76rem; color:var(--dp-text-muted); text-align:center; }
 
 /* Search */
@@ -650,6 +651,8 @@ html, body{ max-width:100%; overflow-x:hidden; }
   box-shadow:-12px 0 32px rgba(0,0,0,.28); display:flex; flex-direction:column;
   transform:translateX(100%); transition:transform .24s cubic-bezier(.22,.61,.36,1);
   padding:calc(16px + env(safe-area-inset-top)) 0 calc(12px + env(safe-area-inset-bottom)); overflow-y:auto; }
+body.dp-lang-en .side-drawer{ right:auto; left:0; box-shadow:12px 0 32px rgba(0,0,0,.28); transform:translateX(-100%); }
+body.dp-lang-en .drawer-overlay.drawer-open .side-drawer{ transform:translateX(0); }
 .drawer-overlay.drawer-open .side-drawer{ transform:translateX(0); }
 .drawer-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:6px 18px 16px; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:12px; }
 .drawer-student{ display:flex; align-items:center; gap:11px; min-width:0; flex-direction:row-reverse; }
@@ -1106,3 +1109,42 @@ body.dp-access-locked #backBtn{
   .today-time{ min-width:52px; font-size:.8rem; }
   .row-no{ min-width:28px; height:28px; font-size:.7rem; }
 }
+
+/* ============================================================
+   تحسين ألوان الصفحة الرئيسية فقط (الخلفية/المسافات الفارغة بين الكروت)
+   ملاحظة إصلاح: كانت النسخة السابقة تعتمد على هامش سالب لجعل الخلفية تمتد
+   لحواف الشاشة، وهذا تسبب في إزاحة ظاهرة على بعض الأجهزة (متصفحات لا تدعم
+   margin-inline/padding-inline المنطقية بنفس الطريقة). الحل الآن: تبديل خلفية
+   body نفسها عبر class يُفعَّله الراوتر — بلا أي حساب أبعاد أو هوامش سالبة إطلاقاً. */
+body.dp-dashboard-bg{
+  background:
+    radial-gradient(900px 380px at 100% -6%, rgba(43,197,164,.16) 0%, transparent 58%),
+    linear-gradient(180deg, #E4F2F4 0%, #ECF6F7 55%, #F2FAFB 100%);
+}
+/* حدّ أوضح لكل الكروت البيضاء في هذه الصفحة تحديداً، حتى تنفصل بصرياً عن الخلفية الأعمق */
+#view-dashboard .dash-card{ border-color:rgba(13,115,119,.26); }
+#view-dashboard .dash-card:hover{ border-color:rgba(13,115,119,.36); }
+/* لمسة لونية دلالية خفيفة جداً لكل بطاقة إحصائية — بلا أي تغيير في المحتوى أو الترتيب */
+#view-dashboard .dash-stats .dash-stat:nth-child(1){ background:linear-gradient(160deg, #EAF3FA 0%, #F7FCFC 62%); }
+#view-dashboard .dash-stats .dash-stat:nth-child(2){ background:linear-gradient(160deg, #E6F5F4 0%, #F7FCFC 62%); }
+#view-dashboard .dash-stats .dash-stat:nth-child(3){ background:linear-gradient(160deg, #E7F7EE 0%, #F7FCFC 62%); }
+/* توحيد سطح أيام الأسبوع غير النشطة مع بقية الكروت المُحسَّنة بدل الأبيض المسطّح */
+#view-dashboard .cal-day{ background:#F1F9FA; border-color:rgba(13,115,119,.22); }
+#view-dashboard .cal-day-active:not(.cal-day-today){ background:#EAF6F5; }
+
+/* ============================================================
+   لغة الواجهة: خط إنجليزي أنظف عند appLang='en' + مربع اختيار اللغة
+   ============================================================ */
+body.dp-lang-en{ font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+body.dp-lang-en .hero-name, body.dp-lang-en .patient-name, body.dp-lang-en .row-name, body.dp-lang-en .appt-name,
+body.dp-lang-en .today-type, body.dp-lang-en h1, body.dp-lang-en h2, body.dp-lang-en h3,
+body.dp-lang-en .file-hero-main h2, body.dp-lang-en .drawer-student-name, body.dp-lang-en .brand-text h1{
+  font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.lang-box{ background:var(--dp-surface); border:1px solid var(--dp-border); border-radius:16px; padding:14px 16px; margin-bottom:16px; box-shadow:var(--shadow-sm); }
+.lang-box-title{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.92rem; color:var(--dp-navy, var(--ink)); margin-bottom:10px; }
+.lang-box-options{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.lang-opt{ font-family:inherit; font-size:.86rem; font-weight:700; padding:10px 8px; border-radius:11px; border:1px solid var(--dp-border); background:var(--dp-surface-tint); color:var(--dp-text-muted, var(--muted)); cursor:pointer; transition:background .18s ease, border-color .18s ease, color .18s ease, transform .12s ease; }
+.lang-opt:active{ transform:scale(.97); }
+.lang-opt-active{ background:var(--dp-open-gradient, linear-gradient(120deg,var(--dp-navy,#0A5168),var(--dp-teal,#00978D))); color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(7,56,79,.18); }
