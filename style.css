@@ -290,6 +290,28 @@ img{ max-width:100%; }
 .cs-eval-input{ width:100%; min-height:36px; text-align:center; padding:6px 4px; border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:.86rem; background:var(--card-surface); }
 .cs-eval-input:focus{ border-color:var(--dp-teal); box-shadow:0 0 0 3px rgba(11,146,148,.15); outline:none; }
 
+/* ============================================================
+   كاسشيت Genius — Endodontic case sheet: عارض تفاعلي فوق صورة الورقة الأصلية
+   ============================================================ */
+.ge-toolbar{ position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; background:var(--card-surface); border:1px solid var(--line); border-radius:14px; padding:8px; margin-bottom:10px; box-shadow:var(--shadow-sm); }
+.ge-toolbar .card-btn{ padding:8px 10px; font-size:.78rem; min-height:38px; }
+.ge-toolbar .ge-pageind{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.8rem; color:var(--navy-800); padding:0 4px; min-width:54px; text-align:center; }
+.ge-wrap{ position:relative; width:100%; height:64vh; min-height:420px; overflow:hidden; border-radius:16px; border:1px solid var(--line); background:var(--dp-canvas-deep, #dfe6e6); touch-action:none; }
+.ge-stage{ position:absolute; top:0; left:0; width:100%; height:100%; transform-origin:50% 0; will-change:transform; }
+.ge-page{ position:relative; height:100%; margin:0 auto; aspect-ratio:595.25 / 842; background-size:100% 100%; background-repeat:no-repeat; box-shadow:0 2px 10px rgba(0,0,0,.18); font-size:1.35vh; }
+.ge-page[hidden]{ display:none; }
+.ge-field{ position:absolute; box-sizing:border-box; margin:0; }
+.ge-field.text{ background:rgba(255,255,255,.01); border:none; border-radius:2px; font:inherit; font-family:"Times New Roman", Georgia, serif; color:#111; padding:0 2px; outline:none; }
+.ge-field.text:focus{ background:rgba(11,151,141,.16); box-shadow:0 0 0 1.5px var(--dp-teal) inset; }
+.ge-field.tap{ appearance:none; -webkit-appearance:none; border-radius:50%; background:transparent; border:none; padding:0; cursor:pointer; display:block; }
+.ge-field.tap:checked{ background:radial-gradient(circle, var(--dp-teal) 50%, transparent 52%); }
+.ge-field.tap.cell{ border-radius:4px; }
+.ge-field.tap.cell:checked{ background:rgba(11,151,141,.24); border:1.5px solid var(--dp-teal); }
+.ge-field.tap.tooth{ border-radius:3px; }
+.ge-field.tap.tooth:checked{ background:rgba(198,40,40,.26); border:1.5px solid #c62828; }
+.ge-hint{ text-align:center; font-size:.74rem; color:var(--muted); margin:8px 2px 0; line-height:1.5; }
+
+
 /* Panels */
 .panel{ background:var(--card-surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-sm); }
 .panel p{ color:var(--muted); margin-top:0; line-height:1.6; } .panel-actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }

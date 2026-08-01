@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.15.0';
+  var APP_VERSION = '1.16.0';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -884,7 +884,7 @@
      ============================================================ */
   var UNIVERSITIES = [
     { key: 'dhamar',  name: 'جامعة ذمار',    available: false },
-    { key: 'genius',  name: 'جامعة جينيس',   available: false },
+    { key: 'genius',  name: 'جامعة جينيس',   available: true },
     { key: 'saeeda',  name: 'جامعة السعيدة', available: false },
     { key: 'sanaa',   name: 'جامعة صنعاء',   available: false },
     { key: 'jazeera', name: 'جامعة الجزيرة', available: true },
@@ -902,10 +902,12 @@
       '</button>';
     }).join('');
   }
+  // آخر جامعة دخل المستخدم عبرها إلى صفحة الكاسشيتات — تُستخدم لتصفية القوالب المعروضة (كل جامعة ترى كاسشيتاتها فقط)
+  var currentCsUni = 'jazeera';
   function openUniversity(key) {
     if (isAccessLocked()) { enforceAccessLock(); return; }
     var u = uniByKey(key); if (!u) return;
-    if (u.available) go('casesheets'); else go('uniEmpty', key);
+    if (u.available) go('casesheets', key); else go('uniEmpty', key);
   }
   function renderUniEmpty(key) {
     var u = uniByKey(key);
@@ -919,9 +921,11 @@
      ============================================================ */
   var CS_ICON_SURGERY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg>';
   var CS_ICON_OPERATIVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c-1.9 0-3.1 1.15-4.6 1.15C5.9 4.35 4.3 5.6 4.3 8c0 2.45.95 4.4 1.55 6.4.5 1.75 1 4.4 2.35 4.4.95 0 1.05-2.35 1.5-3.7.3-.95.7-1.85 1.6-1.85s1.3.9 1.6 1.85c.45 1.35.55 3.7 1.5 3.7 1.35 0 1.85-2.65 2.35-4.4.6-2 1.55-3.95 1.55-6.4 0-2.4-1.6-3.65-3.1-3.65-1.2 0-2.4 1.15-4.6 1.15z"></path></svg>';
+  var CS_ICON_ENDO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4 0-7 2-7 5.5C5 12 7 15 8 19c.4 1.6 1 3 2 3s1.2-2 1.3-3.4c.1-1.3.3-2.6 1-2.6"></path><path d="M12 3c4 0 7 2 7 5.5 0 3.5-2 6.5-3 10.5-.4 1.6-1 3-2 3"></path><circle cx="12" cy="9" r="1.6"></circle></svg>';
   var CS_TEMPLATES = {
-    'jazeera-oral-surgery': { name: 'Oral Surgery', sub: 'كاسشيت جراحة الفم — جاهز للتعبئة والطباعة', icon: CS_ICON_SURGERY },
-    'operative-dentistry': { name: 'Operative Dentistry', sub: 'كاسشيت الترميمية — جاهز للتعبئة والطباعة', icon: CS_ICON_OPERATIVE }
+    'jazeera-oral-surgery': { name: 'Oral Surgery', sub: 'كاسشيت جراحة الفم — جاهز للتعبئة والطباعة', icon: CS_ICON_SURGERY, universities: ['jazeera', 'ib'] },
+    'operative-dentistry': { name: 'Operative Dentistry', sub: 'كاسشيت الترميمية — جاهز للتعبئة والطباعة', icon: CS_ICON_OPERATIVE, universities: ['jazeera', 'ib'] },
+    'genius-endodontic': { name: 'Endodontic Case Sheet', sub: 'النموذج الرسمي لجامعة جينيس — صفحتان تفاعليتان', icon: CS_ICON_ENDO, mode: 'overlay', universities: ['genius'] }
   };
   var CS_PHOTO_SLOTS = [
     { key: 'pre1', label: 'Preoperative Image 1' },
@@ -936,7 +940,206 @@
     { key: 'preOp2', label: 'Pre operative Image' },
     { key: 'xray', label: 'X-ray Image' }
   ];
-  function csPhotoSlotsFor(tplKey) { return tplKey === 'operative-dentistry' ? CS_PHOTO_SLOTS_OPERATIVE : CS_PHOTO_SLOTS; }
+  function csPhotoSlotsFor(tplKey) {
+    if (tplKey === 'operative-dentistry') return CS_PHOTO_SLOTS_OPERATIVE;
+    if (tplKey === 'jazeera-oral-surgery') return CS_PHOTO_SLOTS;
+    return []; // القوالب التي لا تحتوي قسم صور (مثل genius-endodontic) — بلا صور بدل توريث صور Oral Surgery خطأً
+  }
+
+  /* ============================================================
+     كاسشيت Genius — Endodontic case sheet (عارض overlay فوق صورتَي الصفحتين الأصليتين)
+     كل عنصر في GE_FIELDS: k=مفتاح الحقل، t=النوع (text/radio/check)، p=رقم الصفحة (1/2)،
+     x/y/w/h = الموضع والحجم كنسبة % من أبعاد صفحة A4 الأصلية (595.25×842pt) — نفس الإحداثيات
+     المستخرجة من ملف PDF المرجعي، تُستخدم هنا وفي case-sheet-print.html لضمان تطابق تام.
+     ============================================================ */
+  var GE_FIELDS = [
+  {k:'patientName',t:'text',p:1,x:19.908,y:16.568,w:27.232,h:1.96},
+  {k:'date',t:'text',p:1,x:59.656,y:16.568,w:33.7,h:1.96},
+  {k:'education',t:'text',p:1,x:19.908,y:18.527,w:27.232,h:1.96},
+  {k:'sex',t:'text',p:1,x:59.656,y:18.527,w:33.7,h:1.96},
+  {k:'address',t:'text',p:1,x:19.908,y:20.487,w:27.232,h:2.019},
+  {k:'occupation',t:'text',p:1,x:59.656,y:20.487,w:33.7,h:2.019},
+  {k:'age',t:'text',p:1,x:19.908,y:22.506,w:27.232,h:1.698},
+  {k:'phoneNu',t:'text',p:1,x:59.656,y:22.506,w:33.7,h:1.698},
+  {k:'caseNo',t:'text',p:1,x:67.703,y:13.052,w:10.029,h:1.425},
+  {k:'chiefComplaint',t:'text',p:1,x:20.546,y:23.99,w:73.112,h:1.9},
+  {k:'pastDentalHistory',t:'text',p:1,x:29.668,y:26.936,w:64.662,h:2.708},
+  {k:'mhAnemia',t:'cell',p:1,x:7.19,y:32.28,w:21.302,h:1.425},
+  {k:'mhBleeding',t:'cell',p:1,x:28.492,y:32.28,w:21.42,h:1.425},
+  {k:'mhKidney',t:'cell',p:1,x:49.912,y:32.28,w:21.47,h:1.425},
+  {k:'mhRheumatic',t:'cell',p:1,x:71.382,y:32.28,w:21.47,h:1.425},
+  {k:'mhArtificialOrgan',t:'cell',p:1,x:7.19,y:33.705,w:21.302,h:1.425},
+  {k:'mhDiabetes',t:'cell',p:1,x:28.492,y:33.705,w:21.42,h:1.425},
+  {k:'mhLiver',t:'cell',p:1,x:49.912,y:33.705,w:21.47,h:1.425},
+  {k:'mhStroke',t:'cell',p:1,x:71.382,y:33.705,w:21.47,h:1.425},
+  {k:'mhAsthma',t:'cell',p:1,x:7.19,y:35.131,w:21.302,h:1.437},
+  {k:'mhFainting',t:'cell',p:1,x:28.492,y:35.131,w:21.42,h:1.437},
+  {k:'mhRespiratory',t:'cell',p:1,x:49.912,y:35.131,w:21.47,h:1.437},
+  {k:'mhDrugIntake',t:'cell',p:1,x:71.382,y:35.131,w:21.47,h:1.437},
+  {k:'mhBloodDisease',t:'cell',p:1,x:7.19,y:36.568,w:21.302,h:1.425},
+  {k:'mhHeartDisease',t:'cell',p:1,x:28.492,y:36.568,w:21.42,h:1.425},
+  {k:'mhAllergy',t:'cell',p:1,x:49.912,y:36.568,w:21.47,h:1.425},
+  {k:'mhOther',t:'cell',p:1,x:71.382,y:36.568,w:21.47,h:1.425},
+  {k:'mhCancer',t:'cell',p:1,x:7.19,y:37.993,w:21.302,h:1.425},
+  {k:'mhHepatitis',t:'cell',p:1,x:28.492,y:37.993,w:21.42,h:1.425},
+  {k:'mhPregnancy',t:'cell',p:1,x:49.912,y:37.993,w:21.47,h:1.425},
+  {k:'mhEpilepsy',t:'cell',p:1,x:7.19,y:39.418,w:21.302,h:1.425},
+  {k:'mhHypertension',t:'cell',p:1,x:28.492,y:39.418,w:21.42,h:1.425},
+  {k:'mhGIT',t:'cell',p:1,x:49.912,y:39.418,w:21.47,h:1.425},
+  {k:'mhOtherDetail',t:'text',p:1,x:80.118,y:36.223,w:11.726,h:3.195},
+  {k:'painIntensity_none',t:'radio',p:1,x:22.142,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'none'},
+  {k:'painIntensity_mild',t:'radio',p:1,x:34.876,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'mild'},
+  {k:'painIntensity_moderate',t:'radio',p:1,x:48.349,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'moderate'},
+  {k:'painIntensity_sever',t:'radio',p:1,x:61.705,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'sever'},
+  {k:'painCharacter_dull',t:'radio',p:1,x:22.142,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'dull'},
+  {k:'painCharacter_sharp',t:'radio',p:1,x:34.876,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'sharp'},
+  {k:'painCharacter_throbbing',t:'radio',p:1,x:48.215,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'throbbing'},
+  {k:'painCharacter_constant',t:'radio',p:1,x:61.823,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'constant'},
+  {k:'painOnset_stimulated',t:'radio',p:1,x:22.142,y:47.969,w:2.755,h:1.948,g:'painOnset',v:'stimulated'},
+  {k:'painOnset_intermittent',t:'radio',p:1,x:34.876,y:47.969,w:2.755,h:1.948,g:'painOnset',v:'intermittent'},
+  {k:'painOnset_spontaneous',t:'radio',p:1,x:48.215,y:47.969,w:2.755,h:1.948,g:'painOnset',v:'spontaneous'},
+  {k:'painLocation_localized',t:'radio',p:1,x:22.142,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'localized'},
+  {k:'painLocation_diffuse',t:'radio',p:1,x:34.876,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'diffuse'},
+  {k:'painLocation_referred',t:'radio',p:1,x:48.215,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'referred'},
+  {k:'painLocation_radiating',t:'radio',p:1,x:60.815,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'radiating'},
+  {k:'painLocationRadiatingDetail',t:'text',p:1,x:73.566,y:50.356,w:6.72,h:1.354},
+  {k:'painDuration_second',t:'radio',p:1,x:22.142,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'second'},
+  {k:'painDuration_minute',t:'radio',p:1,x:34.876,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'minute'},
+  {k:'painDuration_hour',t:'radio',p:1,x:48.215,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'hour'},
+  {k:'painDuration_constant',t:'radio',p:1,x:60.815,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'constant'},
+  {k:'initCold',t:'check',p:1,x:22.142,y:54.964,w:2.755,h:1.948},
+  {k:'initHeat',t:'check',p:1,x:34.876,y:54.964,w:2.755,h:1.948},
+  {k:'initSweat',t:'check',p:1,x:48.215,y:54.964,w:2.755,h:1.948},
+  {k:'initMastication',t:'check',p:1,x:60.815,y:54.964,w:2.755,h:1.948},
+  {k:'initPalpation',t:'check',p:1,x:22.142,y:57.162,w:2.755,h:1.948},
+  {k:'initAwakeNight',t:'check',p:1,x:34.876,y:57.162,w:2.755,h:1.948},
+  {k:'painRelieved_cold',t:'radio',p:1,x:22.142,y:59.477,w:2.755,h:1.948,g:'painRelieved',v:'cold'},
+  {k:'painRelieved_heat',t:'radio',p:1,x:34.876,y:59.477,w:2.755,h:1.948,g:'painRelieved',v:'heat'},
+  {k:'painRelieved_analgesics',t:'radio',p:1,x:47.829,y:59.477,w:2.755,h:1.948,g:'painRelieved',v:'analgesics'},
+  {k:'facialSwelling_yes',t:'radio',p:1,x:27.686,y:67.233,w:2.755,h:1.948,g:'facialSwelling',v:'yes'},
+  {k:'facialSwelling_no',t:'radio',p:1,x:36.254,y:67.233,w:2.755,h:1.948,g:'facialSwelling',v:'no'},
+  {k:'facialSwellingType_fluctuant',t:'radio',p:1,x:56.279,y:67.233,w:2.755,h:1.948,g:'facialSwellingType',v:'fluctuant'},
+  {k:'facialSwellingType_semihard',t:'radio',p:1,x:69.651,y:67.233,w:2.755,h:1.948,g:'facialSwellingType',v:'semihard'},
+  {k:'facialSwellingType_hard',t:'radio',p:1,x:84.889,y:67.233,w:2.755,h:1.948,g:'facialSwellingType',v:'hard'},
+  {k:'lymphNode_yes',t:'radio',p:1,x:27.686,y:69.81,w:2.755,h:1.948,g:'lymphNode',v:'yes'},
+  {k:'lymphNode_no',t:'radio',p:1,x:36.254,y:69.81,w:2.755,h:1.948,g:'lymphNode',v:'no'},
+  {k:'sinusOpening_yes',t:'radio',p:1,x:65.233,y:69.81,w:2.755,h:1.948,g:'sinusOpening',v:'yes'},
+  {k:'sinusOpening_no',t:'radio',p:1,x:76.438,y:69.81,w:2.755,h:1.948,g:'sinusOpening',v:'no'},
+  {k:'swelling_yes',t:'radio',p:1,x:23.688,y:75.249,w:2.755,h:1.948,g:'swelling',v:'yes'},
+  {k:'swelling_no',t:'radio',p:1,x:36.674,y:75.249,w:2.755,h:1.948,g:'swelling',v:'no'},
+  {k:'swellingLocation',t:'text',p:1,x:62.243,y:75.273,w:18.48,h:1.33},
+  {k:'sinusTract_yes',t:'radio',p:1,x:23.688,y:77.518,w:2.755,h:1.948,g:'sinusTract',v:'yes'},
+  {k:'sinusTract_no',t:'radio',p:1,x:36.674,y:77.518,w:2.755,h:1.948,g:'sinusTract',v:'no'},
+  {k:'sinusTractLocation',t:'text',p:1,x:62.293,y:77.708,w:18.933,h:1.33},
+  {k:'discoloration_gray',t:'radio',p:1,x:18.984,y:82.506,w:2.755,h:1.948,g:'discoloration',v:'gray'},
+  {k:'discoloration_yellow',t:'radio',p:1,x:29.702,y:82.506,w:2.755,h:1.948,g:'discoloration',v:'yellow'},
+  {k:'discoloration_pink',t:'radio',p:1,x:41.042,y:82.506,w:2.755,h:1.948,g:'discoloration',v:'pink'},
+  {k:'crownStatus_restorable',t:'radio',p:1,x:68.139,y:82.506,w:2.755,h:1.948,g:'crownStatus',v:'restorable'},
+  {k:'crownStatus_norestorable',t:'radio',p:1,x:81.982,y:82.506,w:2.755,h:1.948,g:'crownStatus',v:'norestorable'},
+  {k:'restoration_minimum',t:'radio',p:1,x:18.984,y:85.071,w:2.755,h:1.948,g:'restoration',v:'minimum'},
+  {k:'restoration_large',t:'radio',p:1,x:33.23,y:85.071,w:2.755,h:1.948,g:'restoration',v:'large'},
+  {k:'investigation',t:'text',p:2,x:18.362,y:16.627,w:71.432,h:1.663},
+  {k:'dtToothNumber',t:'text',p:2,x:5.712,y:25.629,w:16.43,h:2.708},
+  {k:'dtPocketDepth',t:'text',p:2,x:22.226,y:25.629,w:8.148,h:2.708},
+  {k:'dtMobilityGrade',t:'text',p:2,x:30.458,y:25.629,w:8.786,h:2.708},
+  {k:'dtCold',t:'text',p:2,x:39.328,y:25.629,w:8.232,h:2.708},
+  {k:'dtHot',t:'text',p:2,x:47.644,y:25.629,w:10.5,h:2.708},
+  {k:'dtPercussion',t:'text',p:2,x:58.228,y:25.629,w:11.81,h:2.708},
+  {k:'dtPalpation',t:'text',p:2,x:70.122,y:25.629,w:11.81,h:2.708},
+  {k:'dtCavityTest',t:'text',p:2,x:82.016,y:25.629,w:12.314,h:2.708},
+  {k:'radiographicFinding',t:'text',p:2,x:25.082,y:28.029,w:68.055,h:1.663},
+  {k:'pulpal_normal',t:'radio',p:2,x:16.262,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'normal'},
+  {k:'pulpal_reversible',t:'radio',p:2,x:31.634,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'reversible'},
+  {k:'pulpal_irreversible',t:'radio',p:2,x:49.693,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'irreversible'},
+  {k:'pulpal_necrosis',t:'radio',p:2,x:69.937,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'necrosis'},
+  {k:'pulpal_previousrct',t:'radio',p:2,x:81.109,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'previousrct'},
+  {k:'periapical_normal',t:'radio',p:2,x:18.614,y:36.295,w:2.755,h:1.948,g:'periapical',v:'normal'},
+  {k:'periapical_symptomatic',t:'radio',p:2,x:35.548,y:36.295,w:2.755,h:1.948,g:'periapical',v:'symptomatic'},
+  {k:'periapical_asymptomatic',t:'radio',p:2,x:56.296,y:36.295,w:2.755,h:1.948,g:'periapical',v:'asymptomatic'},
+  {k:'periapical_acute',t:'radio',p:2,x:77.984,y:36.295,w:2.755,h:1.948,g:'periapical',v:'acute'},
+  {k:'periapical2_chronic',t:'radio',p:2,x:14.532,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'chronic'},
+  {k:'periapical2_periodontitis1',t:'radio',p:2,x:33.986,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'periodontitis1'},
+  {k:'periapical2_periodontitis2',t:'radio',p:2,x:56.38,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'periodontitis2'},
+  {k:'periapical2_abscess1',t:'radio',p:2,x:72.625,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'abscess1'},
+  {k:'periapical2_abscess2',t:'radio',p:2,x:84.704,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'abscess2'},
+  {k:'treatmentPlan',t:'text',p:2,x:19.958,y:40.974,w:71.835,h:1.663},
+  {k:'stepPreopDate',t:'text',p:2,x:44.452,y:48.587,w:11.642,h:2.078},
+  {k:'stepPreopSig',t:'text',p:2,x:56.178,y:48.587,w:33.28,h:2.078},
+  {k:'stepCariesRemovalDate',t:'text',p:2,x:44.452,y:50.665,w:11.642,h:2.078},
+  {k:'stepCariesRemovalSig',t:'text',p:2,x:56.178,y:50.665,w:33.28,h:2.078},
+  {k:'stepAccessOpeningDate',t:'text',p:2,x:44.452,y:52.743,w:11.642,h:2.078},
+  {k:'stepAccessOpeningSig',t:'text',p:2,x:56.178,y:52.743,w:33.28,h:2.078},
+  {k:'stepToothIsolationDate',t:'text',p:2,x:44.452,y:54.822,w:11.642,h:2.078},
+  {k:'stepToothIsolationSig',t:'text',p:2,x:56.178,y:54.822,w:33.28,h:2.078},
+  {k:'stepLocatingCanalDate',t:'text',p:2,x:44.452,y:56.9,w:11.642,h:2.078},
+  {k:'stepLocatingCanalSig',t:'text',p:2,x:56.178,y:56.9,w:33.28,h:2.078},
+  {k:'stepWorkingLengthDate',t:'text',p:2,x:44.452,y:58.979,w:11.642,h:2.078},
+  {k:'stepWorkingLengthSig',t:'text',p:2,x:56.178,y:58.979,w:33.28,h:2.078},
+  {k:'stepMasterConeDate',t:'text',p:2,x:44.452,y:61.057,w:11.642,h:2.078},
+  {k:'stepMasterConeSig',t:'text',p:2,x:56.178,y:61.057,w:33.28,h:2.078},
+  {k:'stepSealerMixDate',t:'text',p:2,x:44.452,y:63.135,w:11.642,h:2.078},
+  {k:'stepSealerMixSig',t:'text',p:2,x:56.178,y:63.135,w:33.28,h:2.078},
+  {k:'stepSpreaderDate',t:'text',p:2,x:44.452,y:65.214,w:11.642,h:2.09},
+  {k:'stepSpreaderSig',t:'text',p:2,x:56.178,y:65.214,w:33.28,h:2.09},
+  {k:'stepObturationDate',t:'text',p:2,x:44.452,y:67.304,w:11.642,h:2.078},
+  {k:'stepObturationSig',t:'text',p:2,x:56.178,y:67.304,w:33.28,h:2.078},
+  {k:'stepPostObturationDate',t:'text',p:2,x:44.452,y:69.382,w:11.642,h:2.078},
+  {k:'stepPostObturationSig',t:'text',p:2,x:56.178,y:69.382,w:33.28,h:2.078},
+  {k:'stepCoronalRestDate',t:'text',p:2,x:44.452,y:71.461,w:11.642,h:2.078},
+  {k:'stepCoronalRestSig',t:'text',p:2,x:56.178,y:71.461,w:33.28,h:2.078},
+  {k:'stepTotalDate',t:'text',p:2,x:44.452,y:73.539,w:11.642,h:2.078},
+  {k:'stepTotalSig',t:'text',p:2,x:56.178,y:73.539,w:33.28,h:2.078},
+  {k:'canal1Est',t:'text',p:2,x:23.486,y:78.527,w:22.78,h:1.722},
+  {k:'canal1Corrected',t:'text',p:2,x:46.35,y:78.527,w:22.764,h:1.722},
+  {k:'canal1MasterFile',t:'text',p:2,x:69.198,y:78.527,w:23.788,h:1.722},
+  {k:'canal2Est',t:'text',p:2,x:23.486,y:80.249,w:22.78,h:1.758},
+  {k:'canal2Corrected',t:'text',p:2,x:46.35,y:80.249,w:22.764,h:1.758},
+  {k:'canal2MasterFile',t:'text',p:2,x:69.198,y:80.249,w:23.788,h:1.758},
+  {k:'canal3Est',t:'text',p:2,x:23.486,y:82.007,w:22.78,h:1.722},
+  {k:'canal3Corrected',t:'text',p:2,x:46.35,y:82.007,w:22.764,h:1.722},
+  {k:'canal3MasterFile',t:'text',p:2,x:69.198,y:82.007,w:23.788,h:1.722},
+  {k:'canal4Est',t:'text',p:2,x:23.486,y:83.729,w:22.78,h:1.746},
+  {k:'canal4Corrected',t:'text',p:2,x:46.35,y:83.729,w:22.764,h:1.746},
+  {k:'canal4MasterFile',t:'text',p:2,x:69.198,y:83.729,w:23.788,h:1.746},
+  {k:'startingDate',t:'text',p:2,x:31.919,y:86.105,w:15.792,h:1.781},
+  {k:'drName',t:'text',p:2,x:10.08,y:88.955,w:37.631,h:1.663},
+  {k:'studentName',t:'text',p:2,x:63.268,y:86.342,w:28.559,h:1.663},
+  {k:'group',t:'text',p:2,x:56.682,y:89.311,w:15.54,h:1.663},
+  {k:'level',t:'text',p:2,x:63.604,y:91.093,w:28.123,h:1.781},
+  {k:'tooth1',t:'check',p:2,x:6.048,y:7.435,w:5.493,h:4.757},
+  {k:'tooth2',t:'check',p:2,x:11.541,y:7.435,w:5.493,h:4.757},
+  {k:'tooth3',t:'check',p:2,x:17.035,y:7.435,w:5.493,h:4.757},
+  {k:'tooth4',t:'check',p:2,x:22.528,y:7.435,w:5.493,h:4.757},
+  {k:'tooth5',t:'check',p:2,x:28.022,y:7.435,w:5.493,h:4.757},
+  {k:'tooth6',t:'check',p:2,x:33.515,y:7.435,w:5.493,h:4.757},
+  {k:'tooth7',t:'check',p:2,x:39.009,y:7.435,w:5.493,h:4.757},
+  {k:'tooth8',t:'check',p:2,x:44.502,y:7.435,w:5.493,h:4.757},
+  {k:'tooth9',t:'check',p:2,x:49.996,y:7.435,w:5.493,h:4.757},
+  {k:'tooth10',t:'check',p:2,x:55.489,y:7.435,w:5.493,h:4.757},
+  {k:'tooth11',t:'check',p:2,x:60.983,y:7.435,w:5.493,h:4.757},
+  {k:'tooth12',t:'check',p:2,x:66.476,y:7.435,w:5.493,h:4.757},
+  {k:'tooth13',t:'check',p:2,x:71.97,y:7.435,w:5.493,h:4.757},
+  {k:'tooth14',t:'check',p:2,x:77.463,y:7.435,w:5.493,h:4.757},
+  {k:'tooth15',t:'check',p:2,x:82.957,y:7.435,w:5.493,h:4.757},
+  {k:'tooth16',t:'check',p:2,x:88.45,y:7.435,w:5.493,h:4.757},
+  {k:'tooth17',t:'check',p:2,x:6.048,y:12.191,w:5.493,h:4.757},
+  {k:'tooth18',t:'check',p:2,x:11.541,y:12.191,w:5.493,h:4.757},
+  {k:'tooth19',t:'check',p:2,x:17.035,y:12.191,w:5.493,h:4.757},
+  {k:'tooth20',t:'check',p:2,x:22.528,y:12.191,w:5.493,h:4.757},
+  {k:'tooth21',t:'check',p:2,x:28.022,y:12.191,w:5.493,h:4.757},
+  {k:'tooth22',t:'check',p:2,x:33.515,y:12.191,w:5.493,h:4.757},
+  {k:'tooth23',t:'check',p:2,x:39.009,y:12.191,w:5.493,h:4.757},
+  {k:'tooth24',t:'check',p:2,x:44.502,y:12.191,w:5.493,h:4.757},
+  {k:'tooth25',t:'check',p:2,x:49.996,y:12.191,w:5.493,h:4.757},
+  {k:'tooth26',t:'check',p:2,x:55.489,y:12.191,w:5.493,h:4.757},
+  {k:'tooth27',t:'check',p:2,x:60.983,y:12.191,w:5.493,h:4.757},
+  {k:'tooth28',t:'check',p:2,x:66.476,y:12.191,w:5.493,h:4.757},
+  {k:'tooth29',t:'check',p:2,x:71.97,y:12.191,w:5.493,h:4.757},
+  {k:'tooth30',t:'check',p:2,x:77.463,y:12.191,w:5.493,h:4.757},
+  {k:'tooth31',t:'check',p:2,x:82.957,y:12.191,w:5.493,h:4.757},
+  {k:'tooth32',t:'check',p:2,x:88.45,y:12.191,w:5.493,h:4.757}
+  ];
+
 
   function csField(label, inputHtml) { return '<div class="field"><label>' + esc(label) + '</label>' + inputHtml + '</div>'; }
   function csSelect(fieldKey, options, placeholder) {
@@ -1127,6 +1330,97 @@
     );
   }
 
+  /* ============================================================
+     كاسشيت Genius — Endodontic case sheet: عارض overlay
+     صورتا الصفحتين الأصليتين هما القالب البصري الثابت (لا يُعاد تصميمه)،
+     وفوقهما حقول إدخال/دوائر اختيار حقيقية (input) بمواضع دقيقة % مأخوذة من GE_FIELDS،
+     لذا يعمل معها نظام الحفظ/الاسترجاع العام (collectCasesheetForm/fillCasesheetForm) دون أي كود إضافي.
+     ============================================================ */
+  function geFieldHTML(f) {
+    var style = 'left:' + f.x + '%;top:' + f.y + '%;width:' + f.w + '%;height:' + f.h + '%;';
+    if (f.t === 'text') {
+      return '<input type="text" class="ge-field text" data-field="' + f.k + '" autocomplete="off" autocapitalize="off" spellcheck="false" style="' + style + '" />';
+    }
+    var extraCls = (f.t === 'cell') ? ' cell' : (f.k.indexOf('tooth') === 0 ? ' tooth' : '');
+    if (f.t === 'radio') {
+      return '<input type="radio" class="ge-field tap' + extraCls + '" name="' + f.g + '" data-field="' + f.g + '" value="' + esc(f.v) + '" style="' + style + '" />';
+    }
+    return '<input type="checkbox" class="ge-field tap' + extraCls + '" data-field="' + f.k + '" style="' + style + '" />';
+  }
+  function buildGeniusEndodonticFormHTML() {
+    var p1 = GE_FIELDS.filter(function (f) { return f.p === 1; }).map(geFieldHTML).join('');
+    var p2 = GE_FIELDS.filter(function (f) { return f.p === 2; }).map(geFieldHTML).join('');
+    return (
+      '<div class="ge-toolbar">' +
+        '<button type="button" class="card-btn" data-act="ge-prev">‹ السابقة</button>' +
+        '<span class="ge-pageind" id="gePageInd">صفحة 1 / 2</span>' +
+        '<button type="button" class="card-btn" data-act="ge-next">التالية ›</button>' +
+        '<button type="button" class="card-btn" data-act="ge-zoomreset">↺ إعادة الضبط</button>' +
+      '</div>' +
+      '<div class="ge-wrap" id="geWrap">' +
+        '<div class="ge-stage" id="geStage">' +
+          '<div class="ge-page" id="gePage1" data-page="1" style="background-image:url(genius-endo-p1.jpg)">' + p1 + '</div>' +
+          '<div class="ge-page" id="gePage2" data-page="2" hidden style="background-image:url(genius-endo-p2.jpg)">' + p2 + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="ge-hint">اضغط داخل أي خانة للكتابة، أو على الدائرة/المربع للتحديد — استخدم إصبعين للتكبير والتحريك.</p>'
+    );
+  }
+  var geZoom = { scale: 1, tx: 0, ty: 0, page: 1 };
+  function geApplyTransform() {
+    var stage = document.getElementById('geStage');
+    if (stage) stage.style.transform = 'translate(' + geZoom.tx + 'px,' + geZoom.ty + 'px) scale(' + geZoom.scale + ')';
+  }
+  function geResetZoom() { geZoom.scale = 1; geZoom.tx = 0; geZoom.ty = 0; geApplyTransform(); }
+  function geShowPage(n) {
+    geZoom.page = n;
+    var p1 = document.getElementById('gePage1'), p2 = document.getElementById('gePage2');
+    if (p1) p1.hidden = (n !== 1);
+    if (p2) p2.hidden = (n !== 2);
+    var ind = document.getElementById('gePageInd'); if (ind) ind.textContent = 'صفحة ' + n + ' / 2';
+    geResetZoom();
+  }
+  function geNextPage() { if (geZoom.page < 2) geShowPage(geZoom.page + 1); }
+  function gePrevPage() { if (geZoom.page > 1) geShowPage(geZoom.page - 1); }
+  function initGeGestures() {
+    var wrap = document.getElementById('geWrap');
+    if (!wrap) return;
+    var pts = {}, startDist = 0, startScale = 1, panLast = null;
+    function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    wrap.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('.ge-field')) return; // اترك حقول الكتابة/الاختيار تعمل بسلوكها الطبيعي دون التقاط المؤشر
+      try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pts);
+      if (ids.length === 2) { startDist = dist(pts[ids[0]], pts[ids[1]]); startScale = geZoom.scale; }
+      else if (ids.length === 1) { panLast = { x: e.clientX, y: e.clientY }; }
+    });
+    wrap.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pts);
+      if (ids.length === 2) {
+        var d = dist(pts[ids[0]], pts[ids[1]]);
+        if (startDist > 0) { geZoom.scale = Math.min(4, Math.max(1, startScale * (d / startDist))); geApplyTransform(); }
+      } else if (ids.length === 1 && panLast && geZoom.scale > 1.02) {
+        var dx = e.clientX - panLast.x, dy = e.clientY - panLast.y;
+        geZoom.tx += dx; geZoom.ty += dy; panLast = { x: e.clientX, y: e.clientY };
+        geApplyTransform();
+      }
+    });
+    function endPt(e) { delete pts[e.pointerId]; var ids = Object.keys(pts); if (ids.length < 2) startDist = 0; if (ids.length === 0) panLast = null; }
+    wrap.addEventListener('pointerup', endPt);
+    wrap.addEventListener('pointercancel', endPt);
+    wrap.addEventListener('pointerleave', endPt);
+    // عجلة الفأرة (سطح المكتب فقط) لتسهيل الاختبار خارج الجوال
+    wrap.addEventListener('wheel', function (e) {
+      if (!e.ctrlKey && Math.abs(e.deltaY) < 2) return;
+      e.preventDefault();
+      geZoom.scale = Math.min(4, Math.max(1, geZoom.scale - e.deltaY * 0.0015));
+      geApplyTransform();
+    }, { passive: false });
+  }
+
   function collectCasesheetForm() {
     var data = {};
     document.querySelectorAll('#csFormBody [data-field]').forEach(function (el) {
@@ -1166,12 +1460,15 @@
   function removeCasesheetPhoto(slot) { delete currentCsPhotos[slot]; refreshCasesheetPhotos(); }
 
   function renderCasesheets() {
-    var tplCards = Object.keys(CS_TEMPLATES).map(function (key) {
+    var uniKey = currentCsUni || 'jazeera';
+    var visibleKeys = Object.keys(CS_TEMPLATES).filter(function (k) { return CS_TEMPLATES[k].universities.indexOf(uniKey) >= 0; });
+    var tplCards = visibleKeys.map(function (key) {
       var tpl = CS_TEMPLATES[key];
       return '<button type="button" class="dash-card accent' + (key === 'operative-dentistry' ? '2' : '') + '" data-act="cs-new" data-template="' + key + '" style="width:100%">' +
         '<span class="dash-emoji icon-svg">' + tpl.icon + '</span><span class="dash-title">' + esc(tpl.name) + '</span><span class="dash-sub">' + esc(tpl.sub) + '</span></button>';
     }).join('<div style="height:10px"></div>');
-    var saved = casesheets.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
+    var saved = casesheets.filter(function (s) { return visibleKeys.indexOf(s.template) >= 0; })
+      .sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
     var savedHtml = saved.length
       ? '<h3 class="sub-h" style="margin-top:18px">📁 الكاسشيتات المحفوظة</h3><div class="rows">' + saved.map(csRow).join('') + '</div>'
       : '';
@@ -1207,7 +1504,9 @@
     currentCsPhotos = sheet && sheet.photos ? Object.assign({}, sheet.photos) : {};
     if (els.csTitle) els.csTitle.textContent = sheet ? 'تعديل الكاسشيت' : 'كاسشيت جديد — ' + (CS_TEMPLATES[tplKey].name);
     if (els.csFormBody) {
-      els.csFormBody.innerHTML = (tplKey === 'operative-dentistry') ? buildOperativeFormHTML() : buildCasesheetFormHTML();
+      els.csFormBody.innerHTML =
+        (tplKey === 'genius-endodontic') ? buildGeniusEndodonticFormHTML() :
+        (tplKey === 'operative-dentistry') ? buildOperativeFormHTML() : buildCasesheetFormHTML();
       fillCasesheetForm(sheet ? sheet.data : {});
       refreshCasesheetPhotos();
       // مستمعات ملفات الصور (خاصة بهذا الرسم فقط، لا تتراكم لأن innerHTML يُستبدل بالكامل في كل مرة)
@@ -1215,6 +1514,7 @@
         var inp = document.getElementById('csPhotoInput_' + s.key);
         if (inp) inp.addEventListener('change', function (e) { handleCasesheetPhotoChange(s.key, e.target.files && e.target.files[0]); e.target.value = ''; });
       });
+      if (tplKey === 'genius-endodontic') { geShowPage(1); initGeGestures(); }
     }
   }
   function saveCasesheetFromForm() {
@@ -1882,7 +2182,7 @@
     else if (currentView === 'file') renderFile(currentParam);
     else if (currentView === 'universities') renderUniversities();
     else if (currentView === 'uniEmpty') renderUniEmpty(currentParam);
-    else if (currentView === 'casesheets') renderCasesheets();
+    else if (currentView === 'casesheets') { if (currentParam && uniByKey(currentParam)) currentCsUni = currentParam; renderCasesheets(); }
     else if (currentView === 'csform') renderCasesheetForm(currentParam);
   }
   function refresh() { renderActiveView(); }
@@ -2485,6 +2785,9 @@
       else if (act === 'cs-print') printCasesheetLive();
       else if (act === 'cs-photo-add') triggerCasesheetPhoto(btn.dataset.slot);
       else if (act === 'cs-photo-del') removeCasesheetPhoto(btn.dataset.slot);
+      else if (act === 'ge-prev') gePrevPage();
+      else if (act === 'ge-next') geNextPage();
+      else if (act === 'ge-zoomreset') geResetZoom();
       else if (act === 'endo-canal-add') addEndoCanal();
       else if (act === 'endo-canal-del') delEndoCanal(parseInt(btn.dataset.idx, 10));
     }

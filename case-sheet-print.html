@@ -333,11 +333,242 @@ table.eval td.crit{ text-align:left; font-weight:700; }
     document.getElementById('sheet').innerHTML = html;
   }
 
+  /* ---------- Genius — Endodontic case sheet: نفس الإحداثيات المستخدمة داخل التطبيق (GE_FIELDS) ----------
+     القالب هنا هو صورتا الصفحتين الأصليتين كخلفية ثابتة بحجم A4 كامل بلا هامش،
+     والبيانات المُدخلة تُرسم فوق مواضعها الدقيقة (نفس % المستخدمة في عارض التطبيق). ---------- */
+  var GE_FIELDS = [
+  {k:'patientName',t:'text',p:1,x:19.908,y:16.568,w:27.232,h:1.96},
+  {k:'date',t:'text',p:1,x:59.656,y:16.568,w:33.7,h:1.96},
+  {k:'education',t:'text',p:1,x:19.908,y:18.527,w:27.232,h:1.96},
+  {k:'sex',t:'text',p:1,x:59.656,y:18.527,w:33.7,h:1.96},
+  {k:'address',t:'text',p:1,x:19.908,y:20.487,w:27.232,h:2.019},
+  {k:'occupation',t:'text',p:1,x:59.656,y:20.487,w:33.7,h:2.019},
+  {k:'age',t:'text',p:1,x:19.908,y:22.506,w:27.232,h:1.698},
+  {k:'phoneNu',t:'text',p:1,x:59.656,y:22.506,w:33.7,h:1.698},
+  {k:'caseNo',t:'text',p:1,x:67.703,y:13.052,w:10.029,h:1.425},
+  {k:'chiefComplaint',t:'text',p:1,x:20.546,y:23.99,w:73.112,h:1.9},
+  {k:'pastDentalHistory',t:'text',p:1,x:29.668,y:26.936,w:64.662,h:2.708},
+  {k:'mhAnemia',t:'cell',p:1,x:7.19,y:32.28,w:21.302,h:1.425},
+  {k:'mhBleeding',t:'cell',p:1,x:28.492,y:32.28,w:21.42,h:1.425},
+  {k:'mhKidney',t:'cell',p:1,x:49.912,y:32.28,w:21.47,h:1.425},
+  {k:'mhRheumatic',t:'cell',p:1,x:71.382,y:32.28,w:21.47,h:1.425},
+  {k:'mhArtificialOrgan',t:'cell',p:1,x:7.19,y:33.705,w:21.302,h:1.425},
+  {k:'mhDiabetes',t:'cell',p:1,x:28.492,y:33.705,w:21.42,h:1.425},
+  {k:'mhLiver',t:'cell',p:1,x:49.912,y:33.705,w:21.47,h:1.425},
+  {k:'mhStroke',t:'cell',p:1,x:71.382,y:33.705,w:21.47,h:1.425},
+  {k:'mhAsthma',t:'cell',p:1,x:7.19,y:35.131,w:21.302,h:1.437},
+  {k:'mhFainting',t:'cell',p:1,x:28.492,y:35.131,w:21.42,h:1.437},
+  {k:'mhRespiratory',t:'cell',p:1,x:49.912,y:35.131,w:21.47,h:1.437},
+  {k:'mhDrugIntake',t:'cell',p:1,x:71.382,y:35.131,w:21.47,h:1.437},
+  {k:'mhBloodDisease',t:'cell',p:1,x:7.19,y:36.568,w:21.302,h:1.425},
+  {k:'mhHeartDisease',t:'cell',p:1,x:28.492,y:36.568,w:21.42,h:1.425},
+  {k:'mhAllergy',t:'cell',p:1,x:49.912,y:36.568,w:21.47,h:1.425},
+  {k:'mhOther',t:'cell',p:1,x:71.382,y:36.568,w:21.47,h:1.425},
+  {k:'mhCancer',t:'cell',p:1,x:7.19,y:37.993,w:21.302,h:1.425},
+  {k:'mhHepatitis',t:'cell',p:1,x:28.492,y:37.993,w:21.42,h:1.425},
+  {k:'mhPregnancy',t:'cell',p:1,x:49.912,y:37.993,w:21.47,h:1.425},
+  {k:'mhEpilepsy',t:'cell',p:1,x:7.19,y:39.418,w:21.302,h:1.425},
+  {k:'mhHypertension',t:'cell',p:1,x:28.492,y:39.418,w:21.42,h:1.425},
+  {k:'mhGIT',t:'cell',p:1,x:49.912,y:39.418,w:21.47,h:1.425},
+  {k:'mhOtherDetail',t:'text',p:1,x:80.118,y:36.223,w:11.726,h:3.195},
+  {k:'painIntensity_none',t:'radio',p:1,x:22.142,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'none'},
+  {k:'painIntensity_mild',t:'radio',p:1,x:34.876,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'mild'},
+  {k:'painIntensity_moderate',t:'radio',p:1,x:48.349,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'moderate'},
+  {k:'painIntensity_sever',t:'radio',p:1,x:61.705,y:43.147,w:2.755,h:1.948,g:'painIntensity',v:'sever'},
+  {k:'painCharacter_dull',t:'radio',p:1,x:22.142,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'dull'},
+  {k:'painCharacter_sharp',t:'radio',p:1,x:34.876,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'sharp'},
+  {k:'painCharacter_throbbing',t:'radio',p:1,x:48.215,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'throbbing'},
+  {k:'painCharacter_constant',t:'radio',p:1,x:61.823,y:45.618,w:2.755,h:1.948,g:'painCharacter',v:'constant'},
+  {k:'painOnset_stimulated',t:'radio',p:1,x:22.142,y:47.969,w:2.755,h:1.948,g:'painOnset',v:'stimulated'},
+  {k:'painOnset_intermittent',t:'radio',p:1,x:34.876,y:47.969,w:2.755,h:1.948,g:'painOnset',v:'intermittent'},
+  {k:'painOnset_spontaneous',t:'radio',p:1,x:48.215,y:47.969,w:2.755,h:1.948,g:'painOnset',v:'spontaneous'},
+  {k:'painLocation_localized',t:'radio',p:1,x:22.142,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'localized'},
+  {k:'painLocation_diffuse',t:'radio',p:1,x:34.876,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'diffuse'},
+  {k:'painLocation_referred',t:'radio',p:1,x:48.215,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'referred'},
+  {k:'painLocation_radiating',t:'radio',p:1,x:60.815,y:50.273,w:2.755,h:1.948,g:'painLocation',v:'radiating'},
+  {k:'painLocationRadiatingDetail',t:'text',p:1,x:73.566,y:50.356,w:6.72,h:1.354},
+  {k:'painDuration_second',t:'radio',p:1,x:22.142,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'second'},
+  {k:'painDuration_minute',t:'radio',p:1,x:34.876,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'minute'},
+  {k:'painDuration_hour',t:'radio',p:1,x:48.215,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'hour'},
+  {k:'painDuration_constant',t:'radio',p:1,x:60.815,y:52.696,w:2.755,h:1.948,g:'painDuration',v:'constant'},
+  {k:'initCold',t:'check',p:1,x:22.142,y:54.964,w:2.755,h:1.948},
+  {k:'initHeat',t:'check',p:1,x:34.876,y:54.964,w:2.755,h:1.948},
+  {k:'initSweat',t:'check',p:1,x:48.215,y:54.964,w:2.755,h:1.948},
+  {k:'initMastication',t:'check',p:1,x:60.815,y:54.964,w:2.755,h:1.948},
+  {k:'initPalpation',t:'check',p:1,x:22.142,y:57.162,w:2.755,h:1.948},
+  {k:'initAwakeNight',t:'check',p:1,x:34.876,y:57.162,w:2.755,h:1.948},
+  {k:'painRelieved_cold',t:'radio',p:1,x:22.142,y:59.477,w:2.755,h:1.948,g:'painRelieved',v:'cold'},
+  {k:'painRelieved_heat',t:'radio',p:1,x:34.876,y:59.477,w:2.755,h:1.948,g:'painRelieved',v:'heat'},
+  {k:'painRelieved_analgesics',t:'radio',p:1,x:47.829,y:59.477,w:2.755,h:1.948,g:'painRelieved',v:'analgesics'},
+  {k:'facialSwelling_yes',t:'radio',p:1,x:27.686,y:67.233,w:2.755,h:1.948,g:'facialSwelling',v:'yes'},
+  {k:'facialSwelling_no',t:'radio',p:1,x:36.254,y:67.233,w:2.755,h:1.948,g:'facialSwelling',v:'no'},
+  {k:'facialSwellingType_fluctuant',t:'radio',p:1,x:56.279,y:67.233,w:2.755,h:1.948,g:'facialSwellingType',v:'fluctuant'},
+  {k:'facialSwellingType_semihard',t:'radio',p:1,x:69.651,y:67.233,w:2.755,h:1.948,g:'facialSwellingType',v:'semihard'},
+  {k:'facialSwellingType_hard',t:'radio',p:1,x:84.889,y:67.233,w:2.755,h:1.948,g:'facialSwellingType',v:'hard'},
+  {k:'lymphNode_yes',t:'radio',p:1,x:27.686,y:69.81,w:2.755,h:1.948,g:'lymphNode',v:'yes'},
+  {k:'lymphNode_no',t:'radio',p:1,x:36.254,y:69.81,w:2.755,h:1.948,g:'lymphNode',v:'no'},
+  {k:'sinusOpening_yes',t:'radio',p:1,x:65.233,y:69.81,w:2.755,h:1.948,g:'sinusOpening',v:'yes'},
+  {k:'sinusOpening_no',t:'radio',p:1,x:76.438,y:69.81,w:2.755,h:1.948,g:'sinusOpening',v:'no'},
+  {k:'swelling_yes',t:'radio',p:1,x:23.688,y:75.249,w:2.755,h:1.948,g:'swelling',v:'yes'},
+  {k:'swelling_no',t:'radio',p:1,x:36.674,y:75.249,w:2.755,h:1.948,g:'swelling',v:'no'},
+  {k:'swellingLocation',t:'text',p:1,x:62.243,y:75.273,w:18.48,h:1.33},
+  {k:'sinusTract_yes',t:'radio',p:1,x:23.688,y:77.518,w:2.755,h:1.948,g:'sinusTract',v:'yes'},
+  {k:'sinusTract_no',t:'radio',p:1,x:36.674,y:77.518,w:2.755,h:1.948,g:'sinusTract',v:'no'},
+  {k:'sinusTractLocation',t:'text',p:1,x:62.293,y:77.708,w:18.933,h:1.33},
+  {k:'discoloration_gray',t:'radio',p:1,x:18.984,y:82.506,w:2.755,h:1.948,g:'discoloration',v:'gray'},
+  {k:'discoloration_yellow',t:'radio',p:1,x:29.702,y:82.506,w:2.755,h:1.948,g:'discoloration',v:'yellow'},
+  {k:'discoloration_pink',t:'radio',p:1,x:41.042,y:82.506,w:2.755,h:1.948,g:'discoloration',v:'pink'},
+  {k:'crownStatus_restorable',t:'radio',p:1,x:68.139,y:82.506,w:2.755,h:1.948,g:'crownStatus',v:'restorable'},
+  {k:'crownStatus_norestorable',t:'radio',p:1,x:81.982,y:82.506,w:2.755,h:1.948,g:'crownStatus',v:'norestorable'},
+  {k:'restoration_minimum',t:'radio',p:1,x:18.984,y:85.071,w:2.755,h:1.948,g:'restoration',v:'minimum'},
+  {k:'restoration_large',t:'radio',p:1,x:33.23,y:85.071,w:2.755,h:1.948,g:'restoration',v:'large'},
+  {k:'investigation',t:'text',p:2,x:18.362,y:16.627,w:71.432,h:1.663},
+  {k:'dtToothNumber',t:'text',p:2,x:5.712,y:25.629,w:16.43,h:2.708},
+  {k:'dtPocketDepth',t:'text',p:2,x:22.226,y:25.629,w:8.148,h:2.708},
+  {k:'dtMobilityGrade',t:'text',p:2,x:30.458,y:25.629,w:8.786,h:2.708},
+  {k:'dtCold',t:'text',p:2,x:39.328,y:25.629,w:8.232,h:2.708},
+  {k:'dtHot',t:'text',p:2,x:47.644,y:25.629,w:10.5,h:2.708},
+  {k:'dtPercussion',t:'text',p:2,x:58.228,y:25.629,w:11.81,h:2.708},
+  {k:'dtPalpation',t:'text',p:2,x:70.122,y:25.629,w:11.81,h:2.708},
+  {k:'dtCavityTest',t:'text',p:2,x:82.016,y:25.629,w:12.314,h:2.708},
+  {k:'radiographicFinding',t:'text',p:2,x:25.082,y:28.029,w:68.055,h:1.663},
+  {k:'pulpal_normal',t:'radio',p:2,x:16.262,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'normal'},
+  {k:'pulpal_reversible',t:'radio',p:2,x:31.634,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'reversible'},
+  {k:'pulpal_irreversible',t:'radio',p:2,x:49.693,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'irreversible'},
+  {k:'pulpal_necrosis',t:'radio',p:2,x:69.937,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'necrosis'},
+  {k:'pulpal_previousrct',t:'radio',p:2,x:81.109,y:33.705,w:2.755,h:1.948,g:'pulpal',v:'previousrct'},
+  {k:'periapical_normal',t:'radio',p:2,x:18.614,y:36.295,w:2.755,h:1.948,g:'periapical',v:'normal'},
+  {k:'periapical_symptomatic',t:'radio',p:2,x:35.548,y:36.295,w:2.755,h:1.948,g:'periapical',v:'symptomatic'},
+  {k:'periapical_asymptomatic',t:'radio',p:2,x:56.296,y:36.295,w:2.755,h:1.948,g:'periapical',v:'asymptomatic'},
+  {k:'periapical_acute',t:'radio',p:2,x:77.984,y:36.295,w:2.755,h:1.948,g:'periapical',v:'acute'},
+  {k:'periapical2_chronic',t:'radio',p:2,x:14.532,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'chronic'},
+  {k:'periapical2_periodontitis1',t:'radio',p:2,x:33.986,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'periodontitis1'},
+  {k:'periapical2_periodontitis2',t:'radio',p:2,x:56.38,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'periodontitis2'},
+  {k:'periapical2_abscess1',t:'radio',p:2,x:72.625,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'abscess1'},
+  {k:'periapical2_abscess2',t:'radio',p:2,x:84.704,y:38.872,w:2.755,h:1.948,g:'periapical2',v:'abscess2'},
+  {k:'treatmentPlan',t:'text',p:2,x:19.958,y:40.974,w:71.835,h:1.663},
+  {k:'stepPreopDate',t:'text',p:2,x:44.452,y:48.587,w:11.642,h:2.078},
+  {k:'stepPreopSig',t:'text',p:2,x:56.178,y:48.587,w:33.28,h:2.078},
+  {k:'stepCariesRemovalDate',t:'text',p:2,x:44.452,y:50.665,w:11.642,h:2.078},
+  {k:'stepCariesRemovalSig',t:'text',p:2,x:56.178,y:50.665,w:33.28,h:2.078},
+  {k:'stepAccessOpeningDate',t:'text',p:2,x:44.452,y:52.743,w:11.642,h:2.078},
+  {k:'stepAccessOpeningSig',t:'text',p:2,x:56.178,y:52.743,w:33.28,h:2.078},
+  {k:'stepToothIsolationDate',t:'text',p:2,x:44.452,y:54.822,w:11.642,h:2.078},
+  {k:'stepToothIsolationSig',t:'text',p:2,x:56.178,y:54.822,w:33.28,h:2.078},
+  {k:'stepLocatingCanalDate',t:'text',p:2,x:44.452,y:56.9,w:11.642,h:2.078},
+  {k:'stepLocatingCanalSig',t:'text',p:2,x:56.178,y:56.9,w:33.28,h:2.078},
+  {k:'stepWorkingLengthDate',t:'text',p:2,x:44.452,y:58.979,w:11.642,h:2.078},
+  {k:'stepWorkingLengthSig',t:'text',p:2,x:56.178,y:58.979,w:33.28,h:2.078},
+  {k:'stepMasterConeDate',t:'text',p:2,x:44.452,y:61.057,w:11.642,h:2.078},
+  {k:'stepMasterConeSig',t:'text',p:2,x:56.178,y:61.057,w:33.28,h:2.078},
+  {k:'stepSealerMixDate',t:'text',p:2,x:44.452,y:63.135,w:11.642,h:2.078},
+  {k:'stepSealerMixSig',t:'text',p:2,x:56.178,y:63.135,w:33.28,h:2.078},
+  {k:'stepSpreaderDate',t:'text',p:2,x:44.452,y:65.214,w:11.642,h:2.09},
+  {k:'stepSpreaderSig',t:'text',p:2,x:56.178,y:65.214,w:33.28,h:2.09},
+  {k:'stepObturationDate',t:'text',p:2,x:44.452,y:67.304,w:11.642,h:2.078},
+  {k:'stepObturationSig',t:'text',p:2,x:56.178,y:67.304,w:33.28,h:2.078},
+  {k:'stepPostObturationDate',t:'text',p:2,x:44.452,y:69.382,w:11.642,h:2.078},
+  {k:'stepPostObturationSig',t:'text',p:2,x:56.178,y:69.382,w:33.28,h:2.078},
+  {k:'stepCoronalRestDate',t:'text',p:2,x:44.452,y:71.461,w:11.642,h:2.078},
+  {k:'stepCoronalRestSig',t:'text',p:2,x:56.178,y:71.461,w:33.28,h:2.078},
+  {k:'stepTotalDate',t:'text',p:2,x:44.452,y:73.539,w:11.642,h:2.078},
+  {k:'stepTotalSig',t:'text',p:2,x:56.178,y:73.539,w:33.28,h:2.078},
+  {k:'canal1Est',t:'text',p:2,x:23.486,y:78.527,w:22.78,h:1.722},
+  {k:'canal1Corrected',t:'text',p:2,x:46.35,y:78.527,w:22.764,h:1.722},
+  {k:'canal1MasterFile',t:'text',p:2,x:69.198,y:78.527,w:23.788,h:1.722},
+  {k:'canal2Est',t:'text',p:2,x:23.486,y:80.249,w:22.78,h:1.758},
+  {k:'canal2Corrected',t:'text',p:2,x:46.35,y:80.249,w:22.764,h:1.758},
+  {k:'canal2MasterFile',t:'text',p:2,x:69.198,y:80.249,w:23.788,h:1.758},
+  {k:'canal3Est',t:'text',p:2,x:23.486,y:82.007,w:22.78,h:1.722},
+  {k:'canal3Corrected',t:'text',p:2,x:46.35,y:82.007,w:22.764,h:1.722},
+  {k:'canal3MasterFile',t:'text',p:2,x:69.198,y:82.007,w:23.788,h:1.722},
+  {k:'canal4Est',t:'text',p:2,x:23.486,y:83.729,w:22.78,h:1.746},
+  {k:'canal4Corrected',t:'text',p:2,x:46.35,y:83.729,w:22.764,h:1.746},
+  {k:'canal4MasterFile',t:'text',p:2,x:69.198,y:83.729,w:23.788,h:1.746},
+  {k:'startingDate',t:'text',p:2,x:31.919,y:86.105,w:15.792,h:1.781},
+  {k:'drName',t:'text',p:2,x:10.08,y:88.955,w:37.631,h:1.663},
+  {k:'studentName',t:'text',p:2,x:63.268,y:86.342,w:28.559,h:1.663},
+  {k:'group',t:'text',p:2,x:56.682,y:89.311,w:15.54,h:1.663},
+  {k:'level',t:'text',p:2,x:63.604,y:91.093,w:28.123,h:1.781},
+  {k:'tooth1',t:'check',p:2,x:6.048,y:7.435,w:5.493,h:4.757},
+  {k:'tooth2',t:'check',p:2,x:11.541,y:7.435,w:5.493,h:4.757},
+  {k:'tooth3',t:'check',p:2,x:17.035,y:7.435,w:5.493,h:4.757},
+  {k:'tooth4',t:'check',p:2,x:22.528,y:7.435,w:5.493,h:4.757},
+  {k:'tooth5',t:'check',p:2,x:28.022,y:7.435,w:5.493,h:4.757},
+  {k:'tooth6',t:'check',p:2,x:33.515,y:7.435,w:5.493,h:4.757},
+  {k:'tooth7',t:'check',p:2,x:39.009,y:7.435,w:5.493,h:4.757},
+  {k:'tooth8',t:'check',p:2,x:44.502,y:7.435,w:5.493,h:4.757},
+  {k:'tooth9',t:'check',p:2,x:49.996,y:7.435,w:5.493,h:4.757},
+  {k:'tooth10',t:'check',p:2,x:55.489,y:7.435,w:5.493,h:4.757},
+  {k:'tooth11',t:'check',p:2,x:60.983,y:7.435,w:5.493,h:4.757},
+  {k:'tooth12',t:'check',p:2,x:66.476,y:7.435,w:5.493,h:4.757},
+  {k:'tooth13',t:'check',p:2,x:71.97,y:7.435,w:5.493,h:4.757},
+  {k:'tooth14',t:'check',p:2,x:77.463,y:7.435,w:5.493,h:4.757},
+  {k:'tooth15',t:'check',p:2,x:82.957,y:7.435,w:5.493,h:4.757},
+  {k:'tooth16',t:'check',p:2,x:88.45,y:7.435,w:5.493,h:4.757},
+  {k:'tooth17',t:'check',p:2,x:6.048,y:12.191,w:5.493,h:4.757},
+  {k:'tooth18',t:'check',p:2,x:11.541,y:12.191,w:5.493,h:4.757},
+  {k:'tooth19',t:'check',p:2,x:17.035,y:12.191,w:5.493,h:4.757},
+  {k:'tooth20',t:'check',p:2,x:22.528,y:12.191,w:5.493,h:4.757},
+  {k:'tooth21',t:'check',p:2,x:28.022,y:12.191,w:5.493,h:4.757},
+  {k:'tooth22',t:'check',p:2,x:33.515,y:12.191,w:5.493,h:4.757},
+  {k:'tooth23',t:'check',p:2,x:39.009,y:12.191,w:5.493,h:4.757},
+  {k:'tooth24',t:'check',p:2,x:44.502,y:12.191,w:5.493,h:4.757},
+  {k:'tooth25',t:'check',p:2,x:49.996,y:12.191,w:5.493,h:4.757},
+  {k:'tooth26',t:'check',p:2,x:55.489,y:12.191,w:5.493,h:4.757},
+  {k:'tooth27',t:'check',p:2,x:60.983,y:12.191,w:5.493,h:4.757},
+  {k:'tooth28',t:'check',p:2,x:66.476,y:12.191,w:5.493,h:4.757},
+  {k:'tooth29',t:'check',p:2,x:71.97,y:12.191,w:5.493,h:4.757},
+  {k:'tooth30',t:'check',p:2,x:77.463,y:12.191,w:5.493,h:4.757},
+  {k:'tooth31',t:'check',p:2,x:82.957,y:12.191,w:5.493,h:4.757},
+  {k:'tooth32',t:'check',p:2,x:88.45,y:12.191,w:5.493,h:4.757}
+  ];
+
+  function geFieldMark(f, d) {
+    if (f.t === 'text') {
+      var v = esc(d[f.k]);
+      if (!v) return '';
+      return '<div class="ge-print-field" style="left:' + f.x + '%;top:' + f.y + '%;width:' + f.w + '%;height:' + f.h + '%;">' + v + '</div>';
+    }
+    var checked = (f.t === 'radio') ? (d[f.g] === f.v) : !!d[f.k];
+    if (!checked) return '';
+    var cls = 'ge-print-mark' + (f.t === 'cell' ? ' cell' : (f.k.indexOf('tooth') === 0 ? ' tooth' : ''));
+    return '<div class="' + cls + '" style="left:' + f.x + '%;top:' + f.y + '%;width:' + f.w + '%;height:' + f.h + '%;"></div>';
+  }
+
+  function renderGeniusEndodontic(payload) {
+    var d = (payload && payload.data) || {};
+    // تجاوز هوامش @page المشتركة: هذا الكاسشيت يحتاج الصفحة الكاملة بلا هامش لأن القالب هو صورة الصفحة الأصلية نفسها،
+    // وهذا التجاوز مُقيَّد داخل هذه الدالة فقط (لا يُستدعى إلا لهذا القالب) فلا يمسّ Oral Surgery أو Operative Dentistry إطلاقاً.
+    var styleOverride = document.createElement('style');
+    styleOverride.textContent =
+      '@page{ size:A4; margin:0; } ' +
+      '.sheet{ max-width:none; padding:0; margin:0; } ' +
+      '.ge-print-page{ position:relative; width:210mm; height:297mm; overflow:hidden; background-size:100% 100%; background-repeat:no-repeat; page-break-after:always; } ' +
+      '.ge-print-page:last-child{ page-break-after:avoid; } ' +
+      '.ge-print-field{ position:absolute; font-family:"Times New Roman", Georgia, serif; font-size:2.6mm; line-height:1.15; color:#111; overflow:hidden; white-space:nowrap; } ' +
+      '.ge-print-mark{ position:absolute; border-radius:50%; background:radial-gradient(circle, #17403d 46%, transparent 48%); } ' +
+      '.ge-print-mark.cell{ border-radius:1mm; background:rgba(11,90,84,.22); border:0.4mm solid #17403d; } ' +
+      '.ge-print-mark.tooth{ border-radius:0.6mm; background:rgba(180,30,30,.28); border:0.4mm solid #b41e1e; }';
+    document.head.appendChild(styleOverride);
+
+    var p1Fields = GE_FIELDS.filter(function (f) { return f.p === 1; }).map(function (f) { return geFieldMark(f, d); }).join('');
+    var p2Fields = GE_FIELDS.filter(function (f) { return f.p === 2; }).map(function (f) { return geFieldMark(f, d); }).join('');
+
+    var html =
+      '<div class="ge-print-page" style="background-image:url(genius-endo-p1.jpg)">' + p1Fields + '</div>' +
+      '<div class="ge-print-page" style="background-image:url(genius-endo-p2.jpg)">' + p2Fields + '</div>';
+
+    document.getElementById('sheet').innerHTML = html;
+  }
+
   var payload = null;
   try { payload = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
   if (payload && payload.data) {
-    if (payload.template === 'operative-dentistry') renderOperative(payload); else render(payload);
-    document.title = 'Casesheet — ' + (payload.data.patientName || (payload.template === 'operative-dentistry' ? 'Operative Dentistry' : 'Oral Surgery'));
+    if (payload.template === 'genius-endodontic') renderGeniusEndodontic(payload);
+    else if (payload.template === 'operative-dentistry') renderOperative(payload);
+    else render(payload);
+    document.title = 'Casesheet — ' + (payload.data.patientName || (payload.template === 'genius-endodontic' ? 'Endodontic Case Sheet' : payload.template === 'operative-dentistry' ? 'Operative Dentistry' : 'Oral Surgery'));
   } else {
     document.getElementById('sheet').innerHTML = '<div class="err-msg">لا توجد بيانات كاسشيت للعرض.<br/>افتح الكاسشيت داخل التطبيق ثم اضغط «معاينة الكاسشيت للطباعة».</div>';
   }
