@@ -280,6 +280,15 @@ img{ max-width:100%; }
 .cs-photo-actions{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
 .cs-photo-actions .card-btn{ padding:6px 8px; font-size:.72rem; }
 .cs-form-actions{ position:sticky; bottom:0; background:linear-gradient(0deg,var(--bg) 65%,transparent); padding:10px 0 4px; flex-wrap:wrap; }
+.cs-eval-wrap{ background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+.cs-eval-row{ display:grid; grid-template-columns:1fr 56px 56px; gap:8px; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); }
+.cs-eval-row:last-child{ border-bottom:none; }
+.cs-eval-head{ padding-bottom:8px; }
+.cs-eval-head .cs-eval-crit{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.7rem; color:var(--teal-700); text-transform:uppercase; letter-spacing:.3px; }
+.cs-eval-cell{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.7rem; color:var(--teal-700); text-align:center; }
+.cs-eval-crit{ font-size:.82rem; color:var(--navy-800); font-weight:600; }
+.cs-eval-input{ width:100%; min-height:36px; text-align:center; padding:6px 4px; border:1px solid var(--line); border-radius:8px; font-family:inherit; font-size:.86rem; background:var(--card-surface); }
+.cs-eval-input:focus{ border-color:var(--dp-teal); box-shadow:0 0 0 3px rgba(11,146,148,.15); outline:none; }
 
 /* Panels */
 .panel{ background:var(--card-surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow-sm); }

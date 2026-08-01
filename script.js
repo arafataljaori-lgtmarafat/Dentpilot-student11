@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.14.0';
+  var APP_VERSION = '1.15.0';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -383,7 +383,7 @@
   ].forEach(function (k) { els[k] = $(k); });
 
   var cases = [], settings = { studentName: '', level: '', college: '', schedule: {} }, requirements = {}, attachments = {}, customReqs = [], casesheets = [];
-  var currentCsId = null, currentCsPhotos = {};   // حالة نموذج الكاسشيت المفتوح حالياً (غير محفوظة بعد إن كانت جديدة)
+  var currentCsId = null, currentCsPhotos = {}, currentCsTemplate = 'jazeera-oral-surgery';   // حالة نموذج الكاسشيت المفتوح حالياً (غير محفوظة بعد إن كانت جديدة)
   var adminConfig = {};
   var currentView = 'dashboard', currentParam = '', fileOrigin = 'all', pendingConfirm = null, deferredPrompt = null, toastTimer = null;
 
@@ -917,13 +917,26 @@
   /* ============================================================
      الكاسشيتات (نظام مستقل تماماً عن نظام الحالات — لا يُغيّر أي منطق فيه)
      ============================================================ */
-  var CS_TEMPLATES = { 'jazeera-oral-surgery': { name: 'Oral Surgery', sub: 'كاسشيت جراحة الفم — جاهز للتعبئة والطباعة' } };
+  var CS_ICON_SURGERY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg>';
+  var CS_ICON_OPERATIVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c-1.9 0-3.1 1.15-4.6 1.15C5.9 4.35 4.3 5.6 4.3 8c0 2.45.95 4.4 1.55 6.4.5 1.75 1 4.4 2.35 4.4.95 0 1.05-2.35 1.5-3.7.3-.95.7-1.85 1.6-1.85s1.3.9 1.6 1.85c.45 1.35.55 3.7 1.5 3.7 1.35 0 1.85-2.65 2.35-4.4.6-2 1.55-3.95 1.55-6.4 0-2.4-1.6-3.65-3.1-3.65-1.2 0-2.4 1.15-4.6 1.15z"></path></svg>';
+  var CS_TEMPLATES = {
+    'jazeera-oral-surgery': { name: 'Oral Surgery', sub: 'كاسشيت جراحة الفم — جاهز للتعبئة والطباعة', icon: CS_ICON_SURGERY },
+    'operative-dentistry': { name: 'Operative Dentistry', sub: 'كاسشيت الترميمية — جاهز للتعبئة والطباعة', icon: CS_ICON_OPERATIVE }
+  };
   var CS_PHOTO_SLOTS = [
     { key: 'pre1', label: 'Preoperative Image 1' },
     { key: 'pre2', label: 'Preoperative Image 2' },
     { key: 'during', label: 'During operative Image' },
     { key: 'xray', label: 'X-ray Image' }
   ];
+  // كاسشيت Operative Dentistry: نفس التسمية حرفياً كما في المرجع، بما فيها تكرار "Pre operative Image" مرتين — دون أي تعديل.
+  var CS_PHOTO_SLOTS_OPERATIVE = [
+    { key: 'preOp1', label: 'Pre operative Image' },
+    { key: 'duringOp', label: 'During operative Image' },
+    { key: 'preOp2', label: 'Pre operative Image' },
+    { key: 'xray', label: 'X-ray Image' }
+  ];
+  function csPhotoSlotsFor(tplKey) { return tplKey === 'operative-dentistry' ? CS_PHOTO_SLOTS_OPERATIVE : CS_PHOTO_SLOTS; }
 
   function csField(label, inputHtml) { return '<div class="field"><label>' + esc(label) + '</label>' + inputHtml + '</div>'; }
   function csSelect(fieldKey, options, placeholder) {
@@ -933,6 +946,47 @@
   var CS_YESNO = [['yes', 'Yes'], ['no', 'No']];
   function csCheck(fieldKey, label) { return '<label class="cs-check"><input type="checkbox" data-field="' + fieldKey + '" /> ' + esc(label) + '</label>'; }
   function csSection(title, bodyHtml) { return '<div class="cs-block"><h3 class="cs-sec-title">' + esc(title) + '</h3>' + bodyHtml + '</div>'; }
+  // خيار مفرد (Radio) لحقول يُختار فيها قيمة واحدة فقط — نفس مظهر csCheck تماماً (شكل موحّد)، بأزرار radio بدل checkbox.
+  function csRadioGroup(fieldKey, options) {
+    return '<div class="cs-check-row">' + options.map(function (o, i) {
+      var id = 'rb_' + fieldKey + '_' + i;
+      return '<label class="cs-check" for="' + esc(id) + '"><input type="radio" id="' + esc(id) + '" name="' + esc(fieldKey) + '" data-field="' + esc(fieldKey) + '" value="' + esc(o[0]) + '" /> ' + esc(o[1]) + '</label>';
+    }).join('') + '</div>';
+  }
+  // شبكة إضافة/معاينة الصور — معمَّمة على أي مصفوفة CS_PHOTO_SLOTS(_*) تُمرَّر لها، لإعادة استخدامها لأي قالب كاسشيت جديد.
+  function csPhotoGridHTML(slots) {
+    return '<div class="cs-photo-grid">' + slots.map(function (s) {
+      return '<div class="cs-photo-slot" data-slot-box="' + s.key + '">' +
+        '<div class="cs-photo-thumb" id="csThumb_' + s.key + '"></div>' +
+        '<div class="cs-photo-label">' + esc(s.label) + '</div>' +
+        '<div class="cs-photo-actions">' +
+          '<button type="button" class="card-btn" data-act="cs-photo-add" data-slot="' + s.key + '">📷 إضافة</button>' +
+          '<button type="button" class="card-btn del" data-act="cs-photo-del" data-slot="' + s.key + '">✕ إزالة</button>' +
+        '</div>' +
+        '<input type="file" accept="image/*" id="csPhotoInput_' + s.key + '" data-slot-input="' + s.key + '" hidden />' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+  // جدول التقييم الخاص بكاسشيت Operative Dentistry — بطاقات متجاوبة (لا جدول HTML) لتبقى مريحة على شاشة الهاتف.
+  var CS_EVAL_ROWS = [
+    ['diagPrep', 'Diagnosis & Preparation'],
+    ['restQuality', 'Restoration Quality'],
+    ['infectionControl', 'Infection Control'],
+    ['occlusionFinishing', 'Occlusion & Finishing'],
+    ['attitude', 'Attitude & Communication'],
+    ['total', 'Total']
+  ];
+  function csEvalTableHTML() {
+    return '<div class="cs-eval-wrap">' +
+      '<div class="cs-eval-row cs-eval-head"><span class="cs-eval-crit">criteria</span><span class="cs-eval-cell">Mark /</span><span class="cs-eval-cell">Mark</span></div>' +
+      CS_EVAL_ROWS.map(function (r) {
+        return '<div class="cs-eval-row"><span class="cs-eval-crit">' + esc(r[1]) + '</span>' +
+          '<input type="text" inputmode="decimal" class="cs-eval-input" data-field="eval_' + r[0] + '_of" placeholder="/" />' +
+          '<input type="text" inputmode="decimal" class="cs-eval-input" data-field="eval_' + r[0] + '_mark" placeholder="—" />' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
 
   function buildCasesheetFormHTML() {
     return (
@@ -1004,11 +1058,82 @@
     );
   }
 
+  // كاسشيت Operative Dentistry — نفس ترتيب وحقول الملف المرجعي حرفياً بدءاً من Student Name وحتى Photographs.
+  function buildOperativeFormHTML() {
+    return (
+      csSection('بيانات عامة (General)',
+        csField('Student Name', '<input type="text" data-field="studentName" />') +
+        csField('Level', csRadioGroup('level', [['4th', '4th Year'], ['5th', '5th Year']])) +
+        csField('Clinic Date', '<input type="date" data-field="clinicDate" />') +
+        csField('Supervisor of starting', '<input type="text" data-field="supervisorStart" />')
+      ) +
+      csSection('بيانات المريض (Patient Data)',
+        csField('Patient Name', '<input type="text" data-field="patientName" />') +
+        '<div class="grid-2">' + csField('Gender', csRadioGroup('gender', [['M', 'Male'], ['F', 'Female']])) + csField('Age', '<input type="number" min="0" data-field="age" />') + '</div>' +
+        csField('Occupation', '<input type="text" data-field="occupation" />') +
+        csField('Address', '<input type="text" data-field="address" />') +
+        '<div class="grid-2">' + csField('Marital status', '<input type="text" data-field="maritalStatus" />') + csField('Phone No', '<input type="tel" data-field="phone" />') + '</div>' +
+        csField('Chief Complaint', '<textarea data-field="chiefComplaint" rows="2"></textarea>')
+      ) +
+      csSection('Medical History',
+        '<div class="cs-check-row">' + csCheck('healthy', 'Healthy') + '</div>' +
+        csField('Chronic diseases', '<input type="text" data-field="chronic" />') +
+        csField('Current medications', '<input type="text" data-field="meds" />') +
+        csField('Allergies', csRadioGroup('allergies', CS_YESNO)) +
+        csField('If yes, details', '<input type="text" data-field="allergiesDetail" />')
+      ) +
+      csSection('Dental History',
+        csField('Previous restorations', csRadioGroup('prevRestorations', CS_YESNO)) +
+        csField('History of sensitivity/pain', csRadioGroup('sensitivityHistory', CS_YESNO)) +
+        csField('Oral hygiene', csRadioGroup('hygiene', [['good', 'Good'], ['fair', 'Fair'], ['poor', 'Poor']]))
+      ) +
+      csSection('Clinical Examination',
+        csField('Tooth involved', '<input type="text" data-field="toothInvolved" />') +
+        csField('Caries type', csRadioGroup('cariesType', [['I', 'Class I'], ['II', 'Class II'], ['III', 'Class III'], ['IV', 'Class IV'], ['V', 'Class V'], ['VI', 'Class VI']])) +
+        csField('Caries depth', csRadioGroup('cariesDepth', [['enamel', 'Enamel'], ['dentin', 'Dentin'], ['pulpal', 'Pulpal']])) +
+        csField('Cavity walls condition', csRadioGroup('cavityWalls', [['sound', 'Sound'], ['weak', 'Weak']])) +
+        csField('Presence of old restoration', csRadioGroup('oldRestoration', CS_YESNO)) +
+        csField('Fracture or marginal defects', csRadioGroup('fractureDefects', CS_YESNO)) +
+        csField('Pain on percussion', csRadioGroup('painPercussion', CS_YESNO)) +
+        csField('Pulp vitality', csRadioGroup('pulpVitality', [['normal', 'Normal'], ['reversible', 'Reversible pulpitis'], ['irreversible', 'Irreversible'], ['necrotic', 'Necrotic']]))
+      ) +
+      csSection('Radiographic Findings',
+        '<div class="cs-check-row">' + csCheck('rxPeriapical', 'Periapical') + csCheck('rxBitewing', 'Bitewing') + '</div>' +
+        csField('Findings', '<input type="text" data-field="rxFindings" />')
+      ) +
+      csSection('Final Diagnosis', csField('', '<textarea data-field="diagnosis" rows="2"></textarea>')) +
+      csSection('Planned Procedure',
+        '<div class="cs-check-row">' + csCheck('procComposite', 'Composite restoration') + csCheck('procGic', 'GIC filling') + csCheck('procAmalgam', 'Amalgam restoration') + '</div>' +
+        '<div class="cs-check-row">' + csCheck('procLinerBase', 'Liner / Base applied') + csCheck('procTemporary', 'Temporary filling') + csCheck('procReferral', 'Referral to endo / perio') + '</div>'
+      ) +
+      csSection('Final Restoration Details',
+        csField('Tooth #', '<input type="text" data-field="frTooth" />') +
+        csField('Material used', csRadioGroup('frMaterial', [['composite', 'Composite'], ['gic', 'GIC'], ['amalgam', 'Amalgam']])) +
+        csField('Isolation method', csRadioGroup('frIsolation', [['cotton', 'Cotton rolls'], ['rubberdam', 'Rubber dam']])) +
+        csField('Cavity liner/base', csRadioGroup('frLinerBase', CS_YESNO)) +
+        csField('Matrix band used', csRadioGroup('frMatrixBand', CS_YESNO)) +
+        csField('Occlusion checked', csRadioGroup('frOcclusion', CS_YESNO)) +
+        csField('Polishing done', csRadioGroup('frPolishing', CS_YESNO))
+      ) +
+      csSection('Supervisor Notes', csField('', '<textarea data-field="supervisorNotes" rows="2"></textarea>')) +
+      csSection('جدول التقييم (Evaluation)',
+        csEvalTableHTML() +
+        '<div class="grid-2" style="margin-top:14px">' +
+          csField('Supervisor\u2019s Name', '<input type="text" data-field="evalSupervisorName" />') +
+          csField('Supervisor\u2019s Signature', '<input type="text" data-field="evalSupervisorSignature" />') +
+        '</div>'
+      ) +
+      csSection('Photographs', csPhotoGridHTML(CS_PHOTO_SLOTS_OPERATIVE))
+    );
+  }
+
   function collectCasesheetForm() {
     var data = {};
     document.querySelectorAll('#csFormBody [data-field]').forEach(function (el) {
       var k = el.dataset.field;
-      data[k] = (el.type === 'checkbox') ? el.checked : el.value;
+      if (el.type === 'checkbox') data[k] = el.checked;
+      else if (el.type === 'radio') { if (el.checked) data[k] = el.value; else if (!(k in data)) data[k] = ''; }
+      else data[k] = el.value;
     });
     return data;
   }
@@ -1017,11 +1142,12 @@
     document.querySelectorAll('#csFormBody [data-field]').forEach(function (el) {
       var k = el.dataset.field, v = data[k];
       if (el.type === 'checkbox') el.checked = !!v;
+      else if (el.type === 'radio') el.checked = (v !== undefined && v !== null && String(v) === el.value);
       else el.value = (v === undefined || v === null) ? '' : v;
     });
   }
   function refreshCasesheetPhotos() {
-    CS_PHOTO_SLOTS.forEach(function (s) {
+    csPhotoSlotsFor(currentCsTemplate).forEach(function (s) {
       var box = document.getElementById('csThumb_' + s.key); if (!box) return;
       var p = currentCsPhotos[s.key];
       box.innerHTML = p ? '<img src="' + p.dataUrl + '" alt="" />' : '<span class="cs-photo-empty">لا توجد صورة</span>';
@@ -1040,15 +1166,16 @@
   function removeCasesheetPhoto(slot) { delete currentCsPhotos[slot]; refreshCasesheetPhotos(); }
 
   function renderCasesheets() {
-    var tpl = CS_TEMPLATES['jazeera-oral-surgery'];
-    var tplCard = '<button type="button" class="dash-card accent" data-act="cs-new" data-template="jazeera-oral-surgery" style="width:100%">' +
-      '<span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-title">' + esc(tpl.name) + '</span><span class="dash-sub">' + esc(tpl.sub) + '</span></button>' +
-      '<p class="cs-soon-note">📌 قوالب كاسشيت إضافية ستُضاف في تحديث قادم.</p>';
+    var tplCards = Object.keys(CS_TEMPLATES).map(function (key) {
+      var tpl = CS_TEMPLATES[key];
+      return '<button type="button" class="dash-card accent' + (key === 'operative-dentistry' ? '2' : '') + '" data-act="cs-new" data-template="' + key + '" style="width:100%">' +
+        '<span class="dash-emoji icon-svg">' + tpl.icon + '</span><span class="dash-title">' + esc(tpl.name) + '</span><span class="dash-sub">' + esc(tpl.sub) + '</span></button>';
+    }).join('<div style="height:10px"></div>');
     var saved = casesheets.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
     var savedHtml = saved.length
       ? '<h3 class="sub-h" style="margin-top:18px">📁 الكاسشيتات المحفوظة</h3><div class="rows">' + saved.map(csRow).join('') + '</div>'
       : '';
-    if (els.csTemplates) els.csTemplates.innerHTML = tplCard + savedHtml;
+    if (els.csTemplates) els.csTemplates.innerHTML = tplCards + savedHtml;
   }
   function csRow(sheet) {
     var d = sheet.data || {};
@@ -1063,18 +1190,28 @@
       '<button type="button" class="row-open" data-act="cs-open" data-id="' + sheet.id + '" title="فتح الكاسشيت">📂</button>' +
     '</div>';
   }
-  function openCasesheetForm(id) { if (isAccessLocked()) { enforceAccessLock(); return; } location.hash = 'csform/' + (id || 'new'); applyRoute(); }
+  // param id: معرّف كاسشيت محفوظ لفتحه للتعديل. عند إنشاء كاسشيت جديد id=null ويُستخدم template لتحديد القالب.
+  function openCasesheetForm(id, template) {
+    if (isAccessLocked()) { enforceAccessLock(); return; }
+    var hashParam = id ? id : ('new:' + (template || 'jazeera-oral-surgery'));
+    location.hash = 'csform/' + hashParam; applyRoute();
+  }
   function renderCasesheetForm(param) {
-    var sheet = (param && param !== 'new') ? casesheets.find(function (x) { return x.id === param; }) : null;
+    var isNew = !param || param === 'new' || param.indexOf('new:') === 0;
+    var newTemplate = isNew ? (param && param.indexOf('new:') === 0 ? param.slice(4) : 'jazeera-oral-surgery') : null;
+    var sheet = !isNew ? casesheets.find(function (x) { return x.id === param; }) : null;
+    var tplKey = sheet ? sheet.template : newTemplate;
+    if (!CS_TEMPLATES[tplKey]) tplKey = 'jazeera-oral-surgery';
     currentCsId = sheet ? sheet.id : null;
+    currentCsTemplate = tplKey;
     currentCsPhotos = sheet && sheet.photos ? Object.assign({}, sheet.photos) : {};
-    if (els.csTitle) els.csTitle.textContent = sheet ? 'تعديل الكاسشيت' : 'كاسشيت جديد — ' + (CS_TEMPLATES['jazeera-oral-surgery'].name);
+    if (els.csTitle) els.csTitle.textContent = sheet ? 'تعديل الكاسشيت' : 'كاسشيت جديد — ' + (CS_TEMPLATES[tplKey].name);
     if (els.csFormBody) {
-      els.csFormBody.innerHTML = buildCasesheetFormHTML();
+      els.csFormBody.innerHTML = (tplKey === 'operative-dentistry') ? buildOperativeFormHTML() : buildCasesheetFormHTML();
       fillCasesheetForm(sheet ? sheet.data : {});
       refreshCasesheetPhotos();
       // مستمعات ملفات الصور (خاصة بهذا الرسم فقط، لا تتراكم لأن innerHTML يُستبدل بالكامل في كل مرة)
-      CS_PHOTO_SLOTS.forEach(function (s) {
+      csPhotoSlotsFor(tplKey).forEach(function (s) {
         var inp = document.getElementById('csPhotoInput_' + s.key);
         if (inp) inp.addEventListener('change', function (e) { handleCasesheetPhotoChange(s.key, e.target.files && e.target.files[0]); e.target.value = ''; });
       });
@@ -1092,7 +1229,7 @@
       var i = casesheets.findIndex(function (x) { return x.id === currentCsId; });
       if (i >= 0) casesheets[i] = Object.assign({}, casesheets[i], { data: data, photos: currentCsPhotos, updatedAt: new Date().toISOString() });
     } else {
-      var sheet = { id: uid(), template: 'jazeera-oral-surgery', data: data, photos: currentCsPhotos, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      var sheet = { id: uid(), template: currentCsTemplate, data: data, photos: currentCsPhotos, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
       casesheets.unshift(sheet); currentCsId = sheet.id;
     }
     saveCasesheets(); toast('تم حفظ الكاسشيت');
@@ -1112,7 +1249,7 @@
   var CS_PRINT_HANDOFF_KEY = 'dentpilot_student_cs_print_v1';
   function openCasesheetPrintPage(autoprint) {
     try {
-      localStorage.setItem(CS_PRINT_HANDOFF_KEY, JSON.stringify({ template: 'jazeera-oral-surgery', data: collectCasesheetForm(), photos: currentCsPhotos }));
+      localStorage.setItem(CS_PRINT_HANDOFF_KEY, JSON.stringify({ template: currentCsTemplate, data: collectCasesheetForm(), photos: currentCsPhotos }));
     } catch (e) { toast('تعذر تجهيز بيانات الطباعة — قد تكون الصور كبيرة جداً'); return; }
     var w = null;
     try { w = window.open('case-sheet-print.html' + (autoprint ? '?print=1' : ''), '_blank'); } catch (e) {}
@@ -2340,7 +2477,7 @@
       else if (act === 'req-del-custom') { var reqName = btn.dataset.name; confirmAsk({ title: T('حذف المادة'), text: T('هل تريد حذف مادة') + ' «' + reqName + '» ' + T('من المتطلبات؟'), okLabel: T('حذف'), onOk: function () { deleteCustomReq(reqName); } }); }
       else if (act === 'install-app') triggerInstall();
       else if (act === 'uni-open') openUniversity(btn.dataset.uni);
-      else if (act === 'cs-new') openCasesheetForm(null);
+      else if (act === 'cs-new') openCasesheetForm(null, btn.dataset.template);
       else if (act === 'cs-open') openCasesheetForm(btn.dataset.id);
       else if (act === 'cs-del') deleteCasesheet(btn.dataset.id);
       else if (act === 'cs-save') saveCasesheetFromForm();

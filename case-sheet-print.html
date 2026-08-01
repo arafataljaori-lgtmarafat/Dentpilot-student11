@@ -215,11 +215,129 @@ table.eval td.crit{ text-align:left; font-weight:700; }
     document.getElementById('sheet').innerHTML = html;
   }
 
+  /* ---------- Operative Dentistry — يبدأ مباشرة من Student Name (بلا شعار/اسم جامعة/كلية/قسم/غلاف/عنوان كبير) ---------- */
+  var EVAL_ROWS = [
+    ['diagPrep', 'Diagnosis & Preparation'],
+    ['restQuality', 'Restoration Quality'],
+    ['infectionControl', 'Infection Control'],
+    ['occlusionFinishing', 'Occlusion & Finishing'],
+    ['attitude', 'Attitude & Communication'],
+    ['total', 'Total']
+  ];
+  var PHOTO_SLOTS_OPERATIVE = [
+    { key: 'preOp1', label: 'Pre operative Image' },
+    { key: 'duringOp', label: 'During operative Image' },
+    { key: 'preOp2', label: 'Pre operative Image' },
+    { key: 'xray', label: 'X-ray Image' }
+  ];
+
+  function renderOperative(payload) {
+    var d = (payload && payload.data) || {};
+    var photos = (payload && payload.photos) || {};
+
+    var html =
+      '<div class="no-break">' +
+        line('Student Name', d.studentName) +
+        '<div class="ck-row"><span class="inline-lbl">Level:</span> ' + ckOne(d.level === '4th', '4th Year') + ckOne(d.level === '5th', '5th Year') + '</div>' +
+        line('Clinic Date', d.clinicDate) +
+        line('Supervisor of starting', d.supervisorStart) +
+      '</div>' +
+      '<hr class="rule" />' +
+
+      '<div class="no-break">' +
+        line('Patient Name', d.patientName) +
+        '<div class="ck-row"><span class="inline-lbl">Gender:</span> ' + ckOne(d.gender === 'M', 'M') + ckOne(d.gender === 'F', 'F') +
+          ' &nbsp;&nbsp;<span class="inline-lbl">Age:</span> <span class="fill" style="display:inline-block;min-width:44px">' + (esc(d.age) || '&nbsp;') + '</span>' +
+          ' &nbsp;&nbsp;<span class="inline-lbl">Occupation:</span> <span class="fill" style="display:inline-block;min-width:120px">' + (esc(d.occupation) || '&nbsp;') + '</span></div>' +
+        line('Address', d.address) +
+        '<div class="ck-row"><span class="inline-lbl">Marital status:</span> <span class="fill" style="display:inline-block;min-width:60px">' + (esc(d.maritalStatus) || '&nbsp;') + '</span>' +
+          ' &nbsp;&nbsp;<span class="inline-lbl">Phone No:</span> <span class="fill" style="display:inline-block;min-width:110px">' + (esc(d.phone) || '&nbsp;') + '</span></div>' +
+        '<div class="sec" style="margin-top:9px">Chief Complaint:</div>' + fillBlock(d.chiefComplaint, 2) +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Medical History:</div>' +
+        '<div class="ck-row">' + ckOne(!!d.healthy, 'Healthy') + '</div>' +
+        line('Chronic diseases', d.chronic) +
+        line('Current medications', d.meds) +
+        '<div class="ck-row"><span class="inline-lbl">Allergies:</span> ' + yesNo(d.allergies) + ' &rarr; <span class="fill" style="display:inline-block;min-width:130px">' + (esc(d.allergiesDetail) || '&nbsp;') + '</span></div>' +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Dental History:</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Previous restorations:</span> ' + yesNo(d.prevRestorations) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">History of sensitivity/pain:</span> ' + yesNo(d.sensitivityHistory) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Oral hygiene:</span> ' + opts(d.hygiene, [['good','Good'],['fair','Fair'],['poor','Poor']]) + '</div>' +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Clinical Examination:</div>' +
+        line('Tooth involved', d.toothInvolved) +
+        '<div class="ck-row"><span class="inline-lbl">Caries type:</span> ' + opts(d.cariesType, [['I','Class I'],['II','Class II'],['III','Class III'],['IV','Class IV'],['V','Class V'],['VI','Class VI']]) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Caries depth:</span> ' + opts(d.cariesDepth, [['enamel','Enamel'],['dentin','Dentin'],['pulpal','Pulpal']]) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Cavity walls condition:</span> ' + opts(d.cavityWalls, [['sound','Sound'],['weak','Weak']]) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Presence of old restoration:</span> ' + yesNo(d.oldRestoration) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Fracture or marginal defects:</span> ' + yesNo(d.fractureDefects) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Pain on percussion:</span> ' + yesNo(d.painPercussion) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Pulp vitality:</span> ' + opts(d.pulpVitality, [['normal','Normal'],['reversible','Reversible pulpitis'],['irreversible','Irreversible'],['necrotic','Necrotic']]) + '</div>' +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Radiographic Findings:</div>' +
+        '<div class="ck-row">' + multi(d, [['rxPeriapical','Periapical'],['rxBitewing','Bitewing']]) + '</div>' +
+        line('Findings', d.rxFindings) +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Final Diagnosis:</div>' + fillBlock(d.diagnosis, 2) + '</div>' +
+
+      '<div class="no-break"><div class="sec">Planned Procedure:</div>' +
+        '<div class="ck-row">' + multi(d, [['procComposite','Composite restoration'],['procGic','GIC filling'],['procAmalgam','Amalgam restoration']]) + '</div>' +
+        '<div class="ck-row">' + multi(d, [['procLinerBase','Liner / Base applied'],['procTemporary','Temporary filling'],['procReferral','Referral to endo / perio']]) + '</div>' +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Final Restoration Details:</div>' +
+        line('Tooth #', d.frTooth) +
+        '<div class="ck-row"><span class="inline-lbl">Material used:</span> ' + opts(d.frMaterial, [['composite','Composite'],['gic','GIC'],['amalgam','Amalgam']]) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Isolation method:</span> ' + opts(d.frIsolation, [['cotton','Cotton rolls'],['rubberdam','Rubber dam']]) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Cavity liner/base:</span> ' + yesNo(d.frLinerBase) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Matrix band used:</span> ' + yesNo(d.frMatrixBand) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Occlusion checked:</span> ' + yesNo(d.frOcclusion) + '</div>' +
+        '<div class="ck-row"><span class="inline-lbl">Polishing done:</span> ' + yesNo(d.frPolishing) + '</div>' +
+      '</div>' +
+
+      '<div class="no-break"><div class="sec">Supervisor Notes:</div>' + fillBlock(d.supervisorNotes, 2) + '</div>' +
+
+      /* ---------- جدول التقييم + التوقيع — صفحة مستقلة كما في المرجع ---------- */
+      '<div class="page-break no-break">' +
+        '<table class="eval"><thead><tr><th style="width:55%">criteria</th><th>Mark /</th><th>Mark</th></tr></thead><tbody>' +
+          EVAL_ROWS.map(function (r) {
+            return '<tr><td class="crit">' + r[1] + '</td><td>' + (esc(d['eval_' + r[0] + '_of']) || '&nbsp;') + '</td><td>' + (esc(d['eval_' + r[0] + '_mark']) || '&nbsp;') + '</td></tr>';
+          }).join('') +
+        '</tbody></table>' +
+        '<div class="sig-row">' +
+          '<div class="line"><span class="lbl">Supervisor\u2019s Name:</span><span class="fill">' + (esc(d.evalSupervisorName) || '&nbsp;') + '</span></div>' +
+          '<div class="line"><span class="lbl">Supervisor\u2019s Signature:</span><span class="fill">' + (esc(d.evalSupervisorSignature) || '&nbsp;') + '</span></div>' +
+        '</div>' +
+      '</div>' +
+
+      /* ---------- الصور — صفحة مستقلة كما في المرجع ---------- */
+      '<div class="page-break">' +
+        '<div class="sec" style="font-size:15px;text-align:center;text-decoration:none;letter-spacing:4px;margin-bottom:2mm">P h o t o g r a p h s :</div>' +
+        '<div class="ph-grid">' +
+          PHOTO_SLOTS_OPERATIVE.map(function (s) {
+            var p = photos[s.key];
+            return '<div class="ph-box no-break"><div class="cap">' + s.label + '</div><div class="img-wrap">' +
+              (p && p.dataUrl ? '<img src="' + p.dataUrl + '" alt="" />' : '<span class="empty">&nbsp;</span>') +
+            '</div></div>';
+          }).join('') +
+        '</div>' +
+        '<div class="gen-note">Generated by DentPilot Student</div>' +
+      '</div>';
+
+    document.getElementById('sheet').innerHTML = html;
+  }
+
   var payload = null;
   try { payload = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
   if (payload && payload.data) {
-    render(payload);
-    document.title = 'Casesheet — ' + (payload.data.patientName || 'Oral Surgery');
+    if (payload.template === 'operative-dentistry') renderOperative(payload); else render(payload);
+    document.title = 'Casesheet — ' + (payload.data.patientName || (payload.template === 'operative-dentistry' ? 'Operative Dentistry' : 'Oral Surgery'));
   } else {
     document.getElementById('sheet').innerHTML = '<div class="err-msg">لا توجد بيانات كاسشيت للعرض.<br/>افتح الكاسشيت داخل التطبيق ثم اضغط «معاينة الكاسشيت للطباعة».</div>';
   }
