@@ -319,6 +319,11 @@
         </button>
       </div>
 
+      <button type="button" id="homeActBanner" class="act-banner" data-act="nav-activation" data-from="dashboard" hidden>
+        <span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 11a7 7 0 0 1-14 0M12 19v3"></path></svg></span>
+        <span class="dash-text"><span class="dash-title" data-i18n="الدعم والتفعيل">الدعم والتفعيل</span><span class="dash-sub" data-i18n="فعّل نسختك الكاملة من DentPilot الآن">فعّل نسختك الكاملة من DentPilot الآن</span></span>
+      </button>
+
       <button type="button" class="add-case-bar accent" data-go="add">
         <span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></span>
         <span class="dash-text"><span class="dash-title" data-i18n="إضافة حالة جديدة">إضافة حالة جديدة</span><span class="dash-sub" data-i18n="سجّل الحالة والموعد والمتابعة">سجّل الحالة والموعد والمتابعة</span></span>
@@ -480,6 +485,46 @@
       <div class="page-head"><h2>🛟 الدعم والتفعيل</h2></div>
       <p class="sup-sub" id="supSubtitle">اختر الخطة المناسبة ثم أكمل التفعيل بسهولة.</p>
       <div id="supportBody"></div>
+    </section>
+
+    <!-- صفحة تفعيل مخصصة (مسار مختصر: رمز التطبيق ← لصق الكود ← دعم مضغوط) -->
+    <section class="view" id="view-activation" data-view="activation" hidden>
+      <div class="act-page-hero">
+        <div class="act-page-icon">DP</div>
+        <h2>تفعيل التطبيق</h2>
+        <p>أدخل رمز التفعيل الذي حصلت عليه لتفعيل النسخة الكاملة من DentPilot Student</p>
+      </div>
+
+      <div id="apActivatedNotice" class="sup-card" hidden>
+        <div class="sup-ok">✅ التطبيق مفعل بنجاح</div>
+        <p>يمكنك الآن استخدام جميع مزايا التطبيق. عند تغيير الهاتف تواصل مع الدعم أدناه.</p>
+      </div>
+
+      <div id="apFormWrap">
+        <div class="sup-card act-page-section">
+          <div class="act-sec-head"><span class="act-sec-num">1</span><h3>رمز التطبيق</h3></div>
+          <p class="act-sec-hint">انسخ رمز التطبيق الخاص بهذا الجهاز وأرسله للدعم للحصول على كود التفعيل</p>
+          <div class="act-idrow">
+            <span class="act-id" id="apDeviceId">—</span>
+            <button type="button" class="btn btn-ghost act-copy" data-act="ap-copy-code">نسخ الرمز</button>
+          </div>
+        </div>
+
+        <div class="sup-card act-page-section">
+          <div class="act-sec-head"><span class="act-sec-num">2</span><h3>إدخال كود التفعيل</h3></div>
+          <p class="act-sec-hint">ألصق كود التفعيل الذي حصلت عليه من الدعم هنا</p>
+          <div class="field act-code-field">
+            <input type="text" id="apCode" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" dir="ltr" />
+          </div>
+          <p id="apError" class="act-error" hidden>⚠️ كود التفعيل غير صحيح لهذا الهاتف.</p>
+          <button type="button" class="btn btn-primary" data-act="ap-submit" style="width:100%">تفعيل التطبيق</button>
+        </div>
+      </div>
+
+      <div class="sup-card act-page-section">
+        <div class="act-sec-head"><h3>تحتاج مساعدة؟</h3></div>
+        <div class="act-compact-wa" id="apSupportRow"></div>
+      </div>
     </section>
 
     <!-- ملف الحالة -->
