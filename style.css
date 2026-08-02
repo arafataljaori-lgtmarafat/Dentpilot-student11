@@ -92,7 +92,7 @@ img{ max-width:100%; }
 .dash-emoji svg{ width:24px; height:24px; }
 .dash-title{ font-family:'Cairo',sans-serif; font-weight:700; font-size:.86rem; color:var(--ink); line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .dash-sub{ font-size:.68rem; color:var(--muted-light); line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .dash-count{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.98rem; color:var(--teal-700); line-height:1.2; }
-.hero-card{ position:relative; overflow:hidden; isolation:isolate; display:flex; align-items:center; gap:16px;
+.hero-card{ position:relative; overflow:hidden; isolation:isolate; display:flex; flex-direction:column; gap:10px;
   background:
     linear-gradient(100deg, transparent 22%, rgba(255,255,255,.14) 44%, rgba(255,255,255,.22) 50%, rgba(255,255,255,.14) 56%, transparent 78%),
     radial-gradient(circle at 88% 8%, rgba(44,199,165,.16) 0%, rgba(44,199,165,0) 42%),
@@ -101,6 +101,7 @@ img{ max-width:100%; }
   animation:dp-hero-sheen 8s ease-in-out infinite;
   color:#fff; border-radius:20px; padding:22px 20px; box-shadow:var(--dp-hero-shadow), inset 0 1px 0 rgba(255,255,255,.10);
   margin-bottom:16px; border:1px solid rgba(255,255,255,.10); min-height:120px; box-sizing:border-box; }
+.hero-top-row{ display:flex; align-items:center; gap:16px; min-width:0; }
 @keyframes dp-hero-sheen{ 0%,100%{ background-position:-70% 0%, 0 0, 0 0; } 50%{ background-position:170% 0%, 0 0, 0 0; } }
 @media (prefers-reduced-motion:reduce){ .hero-card, .file-hero{ animation:none !important; } }
 .hero-greet{ font-size:.76rem; font-weight:600; color:rgba(255,255,255,.76); margin-bottom:3px; }
@@ -117,6 +118,31 @@ img{ max-width:100%; }
 .hero-tooth::before{ content:''; position:absolute; inset:10% 2% 0; border-radius:50%; background:radial-gradient(ellipse, rgba(44,199,165,.16) 0%, rgba(0,143,138,.07) 46%, transparent 73%); filter:blur(5px); pointer-events:none; z-index:0; }
 .hero-chair-img{ position:relative; z-index:2; display:block; width:112%; height:112%; max-width:none; object-fit:contain; object-position:center; filter:drop-shadow(0 6px 10px rgba(6,44,64,.32)); transform:translateY(2px); }
 .hero-chair .hero-tooth-svg{ display:none; }
+
+/* ---------- مربع الفترة التجريبية داخل الـHero (يظهر فقط عند trial/غير مفعّل) ---------- */
+.hero-trial-box{ position:relative; z-index:2; align-self:flex-start; display:flex; align-items:center; gap:8px;
+  max-width:78%; padding:7px 12px; border-radius:12px; font-family:inherit; text-align:start; cursor:pointer;
+  background:linear-gradient(120deg,rgba(34,211,238,.94),rgba(6,182,212,.90)); border:1px solid rgba(255,255,255,.35);
+  box-shadow:0 3px 10px rgba(6,182,212,.35), inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .15s ease, box-shadow .15s ease; }
+.hero-trial-box:active{ transform:scale(.97); }
+.hero-trial-box .htb-ico{ flex:none; width:22px; height:22px; display:grid; place-items:center; color:#04303a; }
+.hero-trial-box .htb-ico svg{ width:16px; height:16px; }
+.hero-trial-box .htb-text{ display:flex; flex-direction:column; gap:0; min-width:0; }
+.hero-trial-box .htb-line1{ font-size:.74rem; font-weight:800; color:#04303a; line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hero-trial-box .htb-line2{ font-size:.66rem; font-weight:700; color:rgba(4,48,58,.78); line-height:1.2; }
+@media(max-width:400px){ .hero-trial-box{ max-width:84%; padding:6px 10px; } .hero-trial-box .htb-line1{ font-size:.7rem; } .hero-trial-box .htb-line2{ font-size:.62rem; } }
+
+/* ---------- بطاقة إرشاد المستخدم الجديد ---------- */
+.onboard-card{ position:relative; background:var(--card-surface); border:1px solid var(--line); border-radius:18px; padding:18px 18px 16px; box-shadow:var(--shadow-sm); margin-bottom:16px; }
+.onboard-card h3{ font-family:'Cairo',sans-serif; font-size:1.02rem; font-weight:800; color:var(--ink); margin:0 26px 4px 0; }
+.onboard-sub{ font-size:.82rem; color:var(--muted); margin:0 0 10px; }
+.onboard-steps{ margin:0 0 14px; padding-inline-start:20px; display:flex; flex-direction:column; gap:5px; }
+.onboard-steps li{ font-size:.84rem; color:var(--ink); line-height:1.5; }
+.onboard-actions{ display:flex; gap:10px; }
+.onboard-actions .btn{ flex:1 1 0; min-height:42px; padding:10px 14px; font-size:.86rem; }
+.onboard-close{ position:absolute; top:12px; inset-inline-end:12px; width:26px; height:26px; display:grid; place-items:center; border-radius:8px; border:1px solid var(--line); background:var(--surface-2,var(--bg)); color:var(--muted); font-size:.8rem; cursor:pointer; }
+@media(max-width:360px){ .onboard-actions{ flex-direction:column; } }
 
 /* شريط التقويم الأفقي */
 .cal-strip-wrap{ margin-bottom:16px; position:relative; max-width:100%; }
@@ -501,11 +527,6 @@ img{ max-width:100%; }
 .tb-merged{ display:flex; align-items:center; gap:8px; margin:10px 16px 0; }
 .tb-merged:empty{ display:none; }
 .tb-merged > *[hidden]{ display:none !important; }
-.trial-banner{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:7px; justify-content:flex-start; background:linear-gradient(120deg,var(--teal-50),#eaf7f6); color:var(--teal-700); border:1px solid var(--teal-100); border-bottom:1px solid var(--teal-100); border-radius:14px; padding:10px 14px; font-family:inherit; font-size:.78rem; font-weight:700; text-align:start; cursor:pointer; transition:transform .15s, box-shadow .15s; }
-.trial-banner:hover{ box-shadow:var(--shadow-sm); } .trial-banner:active{ transform:scale(.99); }
-.trial-banner .tb-ico{ display:flex; flex:none; color:var(--teal-600); } .trial-banner .tb-ico svg{ width:15px; height:15px; }
-#trialText{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.trial-banner .tb-ico{ font-size:1rem; }
 
 /* Install banner (capsule, appears only when the PWA isn't installed yet) */
 .install-banner{ flex:none; display:flex; align-items:center; gap:5px; justify-content:center; width:auto; max-width:46%; margin:0; background:var(--card-surface); color:var(--teal-700); border:1px solid var(--teal-100); border-radius:14px; padding:10px 13px; font-family:inherit; font-size:.75rem; font-weight:700; cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .15s, box-shadow .15s; white-space:nowrap; }

@@ -100,10 +100,6 @@
   </header>
 
   <div class="tb-merged">
-    <button type="button" id="trialBanner" class="trial-banner" hidden>
-      <span class="tb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
-      <span id="trialText">الفترة التجريبية المجانية متاحة لمدة 24 ساعة.</span>
-    </button>
     <button type="button" id="installBanner" class="install-banner" hidden>
       <span class="install-banner-text" data-i18n="تثبيت التطبيق">تثبيت التطبيق</span>
       <span class="install-banner-arrow">‹</span>
@@ -117,6 +113,11 @@
       <div class="hero-card">
         <div class="hero-glow hero-glow-1"></div>
         <div class="hero-glow hero-glow-2"></div>
+        <button type="button" id="heroTrialBox" class="hero-trial-box" hidden>
+          <span class="htb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
+          <span class="htb-text"><span id="heroTrialText" class="htb-line1">—</span><span class="htb-line2" data-i18n="انقر للتفعيل">انقر للتفعيل</span></span>
+        </button>
+        <div class="hero-top-row">
         <div class="hero-info">
           <div class="hero-greet" id="heroGreet">مرحباً بك</div>
           <div class="hero-name" id="heroName">طالب طب الأسنان</div>
@@ -292,6 +293,22 @@
             </g>
           </svg>
         </div>
+        </div>
+      </div>
+
+      <div class="onboard-card" id="onboardCard" hidden>
+        <button type="button" class="onboard-close" id="onboardCloseBtn" aria-label="إغلاق">✕</button>
+        <h3 data-i18n="مرحباً بك في DentPilot Student">مرحباً بك في DentPilot Student</h3>
+        <p class="onboard-sub" data-i18n="ابدأ بخطوات بسيطة:">ابدأ بخطوات بسيطة:</p>
+        <ol class="onboard-steps">
+          <li data-i18n="فعّل التطبيق">فعّل التطبيق</li>
+          <li data-i18n="أضف أول حالة">أضف أول حالة</li>
+          <li data-i18n="تابع مواعيدك">تابع مواعيدك</li>
+        </ol>
+        <div class="onboard-actions">
+          <button type="button" class="btn btn-primary" id="onboardActivateBtn" data-i18n="تفعيل التطبيق">تفعيل التطبيق</button>
+          <button type="button" class="btn btn-ghost" id="onboardAddBtn" data-i18n="إضافة حالة">إضافة حالة</button>
+        </div>
       </div>
 
       <div class="cal-strip-wrap">
@@ -319,10 +336,16 @@
         </button>
       </div>
 
-      <button type="button" class="add-case-bar accent" data-go="add">
-        <span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></span>
-        <span class="dash-text"><span class="dash-title" data-i18n="إضافة حالة جديدة">إضافة حالة جديدة</span><span class="dash-sub" data-i18n="سجّل الحالة والموعد والمتابعة">سجّل الحالة والموعد والمتابعة</span></span>
-      </button>
+      <div class="dash-grid dash-grid-2">
+        <button type="button" class="dash-card accent" data-go="add">
+          <span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg></span>
+          <span class="dash-text"><span class="dash-title" data-i18n="إضافة حالة جديدة">إضافة حالة جديدة</span><span class="dash-sub" data-i18n="سجّل الحالة والموعد والمتابعة">سجّل الحالة والموعد والمتابعة</span></span>
+        </button>
+        <button type="button" class="dash-card" data-go="reqs">
+          <span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"></circle><path d="M8.5 13.5 7 21l5-2.5 5 2.5-1.5-7.5"></path></svg></span>
+          <span class="dash-text"><span class="dash-title" data-i18n="متطلبات الكلية">متطلبات الكلية</span><span class="dash-sub" data-i18n="تابع متطلباتك الأكاديمية">تابع متطلباتك الأكاديمية</span></span>
+        </button>
+      </div>
 
       <div class="dash-grid dash-grid-2">
         <button type="button" class="dash-card" data-go="universities"><span class="dash-emoji icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M14 3v4h4"></path><path d="M9 12h6M9 16h6"></path></svg></span><span class="dash-text"><span class="dash-title" data-i18n="إضافة كاسشيت">إضافة كاسشيت</span></span></button>
@@ -534,9 +557,9 @@
         <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"></path><path d="M3 6h.01M3 12h.01M3 18h.01"></path></svg></span>
         <span class="dbb-label" data-i18n="المواعيد">المواعيد</span>
       </button>
-      <button type="button" class="dash-card dbb-item" data-go="account">
-        <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5 20.5a7 7 0 0 1 14 0"></path></svg></span>
-        <span class="dbb-label" data-i18n="الحساب">الحساب</span>
+      <button type="button" class="dash-card dbb-item" data-go="support">
+        <span class="dbb-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.6"></circle><path d="M6.3 6.3l3.6 3.6M17.7 6.3l-3.6 3.6M6.3 17.7l3.6-3.6M17.7 17.7l-3.6-3.6"></path></svg></span>
+        <span class="dbb-label" data-i18n="الدعم">الدعم</span>
       </button>
     </div>
 
@@ -1103,21 +1126,9 @@
         </button>
       </div>
       <nav class="drawer-nav">
-        <button type="button" class="drawer-item dash-card" data-go="dashboard" data-drawer-close="1">
-          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg></span>
-          <span class="drawer-item-label" data-i18n="الرئيسية">الرئيسية</span>
-        </button>
-        <button type="button" class="drawer-item dash-card" data-go="all" data-drawer-close="1">
-          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5h17"/></svg></span>
-          <span class="drawer-item-label" data-i18n="جميع الحالات">جميع الحالات</span>
-        </button>
-        <button type="button" class="drawer-item dash-card" data-go="appointments" data-drawer-close="1">
-          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
-          <span class="drawer-item-label" data-i18n="مواعيد اليوم والغد">مواعيد اليوم والغد</span>
-        </button>
-        <button type="button" class="drawer-item dash-card" data-go="patients" data-drawer-close="1">
-          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.7-4.7 5.5-4.7s4.9 1.7 5.5 4.7"/><circle cx="17.2" cy="9" r="2.4"/><path d="M15.3 14.8c1.9.4 3.4 1.8 3.9 4.2"/></svg></span>
-          <span class="drawer-item-label" data-i18n="جميع المرضى">جميع المرضى</span>
+        <button type="button" class="drawer-item dash-card" data-go="account" data-drawer-close="1">
+          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20.5a7 7 0 0 1 14 0"/></svg></span>
+          <span class="drawer-item-label" data-i18n="الحساب">الحساب</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="settings" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span>
@@ -1126,10 +1137,6 @@
         <button type="button" class="drawer-item dash-card" data-go="reqs" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5 7 21l5-2.5 5 2.5-1.5-7.5"/></svg></span>
           <span class="drawer-item-label" data-i18n="متطلبات الكلية">متطلبات الكلية</span>
-        </button>
-        <button type="button" class="drawer-item dash-card" data-go="universities" data-drawer-close="1">
-          <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg></span>
-          <span class="drawer-item-label" data-i18n="الكاسشيتات">الكاسشيتات</span>
         </button>
         <button type="button" class="drawer-item dash-card" data-go="backup" data-drawer-close="1">
           <span class="drawer-item-ico icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.7-8.9A5.5 5.5 0 0 1 17.4 8 4 4 0 0 1 17 18H7z"/><path d="M12 10.5v6M9.5 13l2.5-2.5 2.5 2.5"/></svg></span>

@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.16.1';
+  var APP_VERSION = '1.17.0';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -371,7 +371,8 @@
    'prosthoDetails','prosthoType','prosthoVisit','prosthoMaterial','prosthoShade',
    'sessionOverlay','sessionForm','sessionTitle','sessionClose','sessionCancel','sCaseId','sId','sNum','sDate','sTime','sProc','sNext','sNotes','sStatus',
    'confirmOverlay','confirmTitle','confirmText','confirmOk','confirmCancel','toast','splash','fileBody',
-   'trialBanner','trialText','accessStatus','supportBody',
+   'heroTrialBox','heroTrialText','accessStatus','supportBody',
+   'onboardCard','onboardCloseBtn','onboardActivateBtn','onboardAddBtn',
    'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus',
    'setInstallBtn','setInstallStatus',
    'csTemplates','csTitle','csFormBody','dashBottomBar',
@@ -525,7 +526,7 @@
     });
   }
   /* الشريط السفلي الثابت: ظاهر فقط في الصفحات الأساسية الأربع. كل تبويب له وجهة حقيقية مستقلة الآن. */
-  var BOTTOMBAR_VIEWS = { dashboard: 'dashboard', all: 'all', appointments: 'appointments', account: 'account' };
+  var BOTTOMBAR_VIEWS = { dashboard: 'dashboard', all: 'all', appointments: 'appointments', support: 'support' };
   function markBottomNavActive() {
     if (!els.dashBottomBar) return;
     var show = Object.prototype.hasOwnProperty.call(BOTTOMBAR_VIEWS, currentView);
@@ -625,6 +626,7 @@
   }
   function updateCounts() {
     renderCalStrip();
+    updateOnboardCard();
     var totalCount = cases.length, doneCount = completedCases().length;
     if (els.heroName) els.heroName.textContent = settings.studentName || T('طالب طب الأسنان');
     if (els.heroMeta) {
@@ -2634,6 +2636,10 @@
       else if (e.target.closest && e.target.closest('[data-drawer-close]')) closeDrawer();   // اختيار عنصر
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isDrawerOpen()) closeDrawer(); });
+    // بطاقة إرشاد المستخدم الجديد
+    if (els.onboardCloseBtn) els.onboardCloseBtn.addEventListener('click', dismissOnboardCard);
+    if (els.onboardActivateBtn) els.onboardActivateBtn.addEventListener('click', function () { dismissOnboardCard(); go('support'); });
+    if (els.onboardAddBtn) els.onboardAddBtn.addEventListener('click', function () { dismissOnboardCard(); openCase(null); });
     if (els.calStrip) els.calStrip.addEventListener('click', function (e) {
       var btn = e.target.closest('.cal-day'); if (!btn) return;
       els.calStrip.querySelectorAll('.cal-day').forEach(function (b) { b.classList.remove('cal-day-active'); });
@@ -2688,7 +2694,7 @@
     els.studentSetupSkip.addEventListener('click', closeStudentSetup);
 
     // نافذة التنبيه (اختيارية/إلزامية): أزرارها تُبنى ديناميكياً — تفويض نقر
-    if (els.trialBanner) els.trialBanner.addEventListener('click', openActivation);
+    if (els.heroTrialBox) els.heroTrialBox.addEventListener('click', function () { go('support'); });
     var actPromptButtons = document.getElementById('actPromptButtons');
     if (actPromptButtons) actPromptButtons.addEventListener('click', function (e) {
       var b = e.target.closest('[data-prompt-act]'); if (!b) return;
@@ -2901,17 +2907,35 @@
     });
   }
 
+  var ONBOARD_DISMISS_KEY = 'dentpilot_student_onboard_dismissed_v1';
+  function updateOnboardCard() {
+    if (!els.onboardCard) return;
+    var dismissed = false;
+    try { dismissed = localStorage.getItem(ONBOARD_DISMISS_KEY) === '1'; } catch (e) {}
+    var show = !dismissed && cases.length === 0 && accessStateSafe() !== 'activated';
+    els.onboardCard.hidden = !show;
+  }
+  function dismissOnboardCard() {
+    try { localStorage.setItem(ONBOARD_DISMISS_KEY, '1'); } catch (e) {}
+    if (els.onboardCard) els.onboardCard.hidden = true;
+  }
+  function _arHoursRemaining(h) {
+    if (h === 1) return T('ساعة واحدة متبقية');
+    if (h === 2) return T('ساعتان متبقيتان');
+    if (h >= 3 && h <= 10) return h + ' ' + T('ساعات متبقية');
+    return h + ' ' + T('ساعة متبقية');
+  }
   var _wasInTrial = false;   // لرصد لحظة انتقال الحالة من trial إلى expired أثناء بقاء التطبيق مفتوحاً
   function updateTrialBanner() {
-    if (!window.DPLicense || !els.trialBanner) return;
+    if (!window.DPLicense || !els.heroTrialBox) return;
     var st = window.DPLicense.getAccessState();
     if (st === 'trial') {
       var h = window.DPLicense.trialRemainingHours();
-      els.trialText.textContent = T('الفترة التجريبية المجانية — متبقٍ من التجربة:') + ' ' + h + ' ' + T('ساعة.');
-      els.trialBanner.hidden = false;
+      if (els.heroTrialText) els.heroTrialText.textContent = _arHoursRemaining(h);
+      els.heroTrialBox.hidden = false;
       _wasInTrial = true;
     } else {
-      els.trialBanner.hidden = true;   // مُفعّل (لا شريط) أو منتهية (شاشة تفعيل)
+      els.heroTrialBox.hidden = true;   // مُفعّل (لا مربع) أو منتهية (شاشة تفعيل)
     }
     if (st === 'expired') {
       var justExpired = _wasInTrial;   // كانت trial في آخر فحص والآن أصبحت expired: انتهت التجربة أثناء الاستخدام
@@ -2934,7 +2958,7 @@
     setTimeout(maybeShowStudentSetup, 700);  // إعداد أولي لبيانات الطالب إن لم تكن محفوظة (لا يتزاحم مع نافذة التفعيل)
     if (window.DPLicense) window.DPLicense.onActivated = function () {
       var wasLocked = document.body.classList.contains('dp-access-locked');
-      if (els.trialBanner) els.trialBanner.hidden = true;   // إخفاء الشريط نهائياً بعد التفعيل
+      if (els.heroTrialBox) els.heroTrialBox.hidden = true;   // إخفاء المربع نهائياً بعد التفعيل — بلا أي بديل مكانه
       showPlansOverride = false; selectedPlanId = null;     // إعادة ضبط تدفّق اختيار الخطة بعد نجاح التفعيل/التجديد
       hideOverlay(document.getElementById('actCodeOverlay'));
       hideOverlay(document.getElementById('paymentOverlay'));
