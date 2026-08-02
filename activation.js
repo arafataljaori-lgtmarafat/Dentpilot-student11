@@ -94,6 +94,62 @@ function parsePlanCode(id,code){
   return{type:'plan',plan:plan,planLabel:meta.label,expiresAt:expiresAt,nonce:nonce,scope:'device',code:String(code||'').toUpperCase()};
 }
 function planCodeValid(id,code){var info=parsePlanCode(id,code);return !!info&&(!info.expiresAt||_now()<info.expiresAt);}
+
+/* ============================================================
+   DP3 — يضاف بجانب legacy وDP2 أعلاه دون حذف أو تعديل أي منهما.
+   نفس sha256/_sx (السرّ) ونفس مواصفة DP3-<APP_KEY>-<DAYS36>-<NONCE8>-<SIG16>
+   المستخدمة في لوحة التحكم وPro. APP_KEY='S' وPRODUCT_ID=DENTPILOT_STUDENT هنا فقط. */
+var DP3_APP_KEY = 'S';
+function _dp3Sig(normalizedDevice, daysDecimal, nonce) {
+  var s = _sx();
+  var raw = s + '::DP3::' + PRODUCT_ID + '::' + DP3_APP_KEY + '::' + normalizedDevice + '::' + daysDecimal + '::' + nonce + '::' + s;
+  var h = sha256(raw);
+  for (var i = 0; i < 128; i++) h = sha256(h + normalizedDevice + PRODUCT_ID + DP3_APP_KEY + daysDecimal + nonce + s + i);
+  return h.substr(0, 16).toUpperCase();
+}
+function dp3Parse(code) {
+  var parts = String(code || '').toUpperCase().trim().split('-');
+  if (parts.length !== 5 || parts[0] !== 'DP3') return null;
+  var appKey = parts[1], days36 = parts[2], nonce = parts[3], sig = parts[4];
+  if (appKey.length !== 1) return null;
+  var days = parseInt(days36, 36);
+  if (isNaN(days) || days < 0 || days > 3650) return null;
+  if (!nonce || nonce.length !== 8) return null;
+  if (!/^[0-9A-F]{16}$/.test(sig)) return null;
+  return { appKey: appKey, days: days, nonce: nonce, sig: sig };
+}
+function dp3Verify(deviceIdVal, code) {
+  var parsed = dp3Parse(code);
+  if (!parsed || parsed.appKey !== DP3_APP_KEY) return null;   // يرفض كود Pro (APP_KEY='P') هنا مباشرة
+  var n = _nrm(deviceIdVal);
+  if (!n) return null;
+  var expectSig = _dp3Sig(n, String(parsed.days), parsed.nonce);
+  if (expectSig !== parsed.sig) return null;
+  return { days: parsed.days };
+}
+function _dp3PlanMeta(days) {
+  if (days === 0) return { key: 'lifetime', label: 'دائم' };
+  if (days === 30) return { key: 'monthly', label: 'شهري' };
+  if (days === 180) return { key: 'six_months', label: 'ستة أشهر' };
+  if (days === 365) return { key: 'annual', label: 'سنوي' };
+  return { key: 'custom', label: days + ' يوم' };
+}
+function _dp3StateSig(normalizedDevice, normalizedCode, startsAt, expiresAt) {
+  var s = _sx();
+  var raw = s + '::DP3STATE::' + PRODUCT_ID + '::' + normalizedDevice + '::' + normalizedCode + '::' + startsAt + '::' + expiresAt + '::' + s;
+  return sha256(raw).substr(0, 16).toUpperCase();
+}
+var USED_KEY = 'dentpilot_student_activation_used_v1';   // بصمات أكواد DP3 المُستخدَمة محلياً — لمنع إعادة الاستخدام لتمديد المدة
+function _dp3Fingerprint(normalizedCode) { return sha256(normalizedCode).substr(0, 16); }
+function _dp3LoadUsed() {
+  try { var raw = localStorage.getItem(USED_KEY); var arr = raw ? JSON.parse(raw) : []; return Array.isArray(arr) ? arr : []; } catch (e) { return []; }
+}
+function _dp3MarkUsed(normalizedCode) {
+  var list = _dp3LoadUsed(); var fp = _dp3Fingerprint(normalizedCode);
+  if (list.indexOf(fp) === -1) { list.push(fp); try { localStorage.setItem(USED_KEY, JSON.stringify(list)); } catch (e) {} }
+}
+function _dp3WasUsed(normalizedCode) { return _dp3LoadUsed().indexOf(_dp3Fingerprint(normalizedCode)) !== -1; }
+
   var DK = 'dentpilot_student_device_id', LK = 'dentpilot_student_activation_v1';
   var TKS = 'dentpilot_student_trial_start', TKE = 'dentpilot_student_trial_expires';
   var TRIAL_MS = 24 * 60 * 60 * 1000;
@@ -111,13 +167,59 @@ function planCodeValid(id,code){var info=parsePlanCode(id,code);return !!info&&(
     if (!id) { id = _gen(); try { localStorage.setItem(DK, id); } catch (e) {} }
     return id;
   }
+  // مقاومة تغيير ساعة الجهاز للخلف: نحتفظ بأكبر وقت رأيناه فعلياً، ونستخدمه كحدّ أدنى للوقت الحالي
+  // عند فحص انتهاء خطة DP3 — إرجاع الساعة للخلف لا يعيد اشتراكاً منتهياً بالفعل من منظور هذا الجهاز.
+  var LSK = 'dentpilot_student_lastseen_v1';
+  function _dp3TouchLastSeen() {
+    var now = Date.now(), last = 0;
+    try { var v = localStorage.getItem(LSK); last = v ? (parseInt(v, 10) || 0) : 0; } catch (e) {}
+    var eff = Math.max(now, last);
+    try { localStorage.setItem(LSK, String(eff)); } catch (e) {}
+    return eff;
+  }
+  function _dp3ReadState() {
+    try {
+      var raw = localStorage.getItem(LK); if (!raw || raw.charAt(0) !== '{') return null;
+      var saved = JSON.parse(raw);
+      if (saved.version !== 3) return null;
+      var n = _nrm(deviceId()), normalizedCode = _nrm(saved.code || '');
+      var expectSig = _dp3StateSig(n, normalizedCode, saved.startsAt || 0, saved.expiresAt || 0);
+      if (expectSig !== saved.stateSig) return null;      // بيانات محلية عُبث بها أو مأخوذة من جهاز آخر — تُرفض
+      if (!dp3Verify(deviceId(), saved.code)) return null; // إعادة التحقق من الكود نفسه عند كل قراءة
+      return saved;
+    } catch (e) { return null; }
+  }
+  function _dp3SaveState(code, planDays, startsAt, expiresAt, redeemedAt) {
+    var n = _nrm(deviceId()), normalizedCode = _nrm(code), meta = _dp3PlanMeta(planDays);
+    var state = {
+      version: 3, code: String(code || '').toUpperCase().trim(), planDays: planDays, planKey: meta.key, planLabel: meta.label,
+      redeemedAt: redeemedAt, startsAt: startsAt, expiresAt: expiresAt, lastSeenAt: Date.now(),
+      stateSig: _dp3StateSig(n, normalizedCode, startsAt, expiresAt)
+    };
+    try { localStorage.setItem(LK, JSON.stringify(state)); } catch (e) {}
+    _dp3MarkUsed(normalizedCode);
+    return state;
+  }
   function activationInfo() {
     try {
       var raw = localStorage.getItem(LK); if (!raw) return null;
       if (raw.charAt(0) === '{') {
-        var saved = JSON.parse(raw), parsed = parsePlanCode(deviceId(), saved.code || '');
+        var savedRaw = JSON.parse(raw);
+        if (savedRaw.version === 3) {
+          var state = _dp3ReadState();
+          if (!state) return null;
+          var effNow = _dp3TouchLastSeen();
+          var active = !state.expiresAt || effNow < state.expiresAt;
+          return {
+            type: 'dp3', version: 3, plan: state.planKey, planLabel: state.planLabel, planDays: state.planDays,
+            expiresAt: state.expiresAt, startsAt: state.startsAt, redeemedAt: state.redeemedAt,
+            activatedAt: state.redeemedAt, active: active, code: state.code
+          };
+        }
+        // DP2 (بلا حقل version) — دون أي تعديل في سلوكه الحالي
+        var parsed = parsePlanCode(deviceId(), savedRaw.code || '');
         if (!parsed) return null;
-        parsed.activatedAt = saved.activatedAt || '';
+        parsed.activatedAt = savedRaw.activatedAt || '';
         parsed.active = !parsed.expiresAt || _now() < parsed.expiresAt;
         return parsed;
       }
@@ -127,6 +229,29 @@ function planCodeValid(id,code){var info=parsePlanCode(id,code);return !!info&&(
   }
   function isActivated() { var info = activationInfo(); return !!info && info.active; }
   function activate(code) {
+    var trimmed = String(code || '').trim();
+    var normalized = _nrm(trimmed);
+    if (normalized.indexOf('DP3') === 0) {
+      var verified = dp3Verify(deviceId(), trimmed);
+      if (!verified) return false;                    // شكل خاطئ، توقيع باطل، أو APP_KEY لا يخص Student (يرفض كود Pro)
+      if (_dp3WasUsed(normalized)) return false;       // مُستخدَم سابقاً على هذا الجهاز — يُرفض لمنع تمديد المدة بإعادة إدخاله
+      var days = verified.days;
+      var current = activationInfo();
+      var currentIsLifetime = !!current && !current.expiresAt;
+      if (currentIsLifetime && days > 0) return false; // تفعيل دائم حالي لا يُستبدَل بخطة مؤقتة
+      var now = Date.now(), startsAt, expiresAt;
+      if (days === 0) {
+        startsAt = now; expiresAt = 0;                 // كود دائم جديد يحوّل الحالة إلى دائم دوماً
+      } else if (current && current.type === 'dp3' && current.active && current.expiresAt) {
+        startsAt = current.startsAt || now;            // تمديد: يبدأ من max(الآن، الانتهاء الحالي)، ويحافظ على بداية الاشتراك الأصلية
+        expiresAt = Math.max(now, current.expiresAt) + days * 86400000;
+      } else {
+        startsAt = now; expiresAt = now + days * 86400000;   // لا تفعيل حالي، أو منتهٍ، أو من صيغة غير DP3 — يبدأ من الآن
+      }
+      _dp3SaveState(trimmed, days, startsAt, expiresAt, new Date(now).toISOString());
+      return true;
+    }
+    // legacy وDP2 — تماماً كما كانا، بلا أي تعديل
     if (licenseValid(deviceId(), code)) { try { localStorage.setItem(LK, _nrm(code)); } catch (e) {} return true; }
     var info = parsePlanCode(deviceId(), code);
     if (info && (!info.expiresAt || _now() < info.expiresAt)) {

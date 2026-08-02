@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.17.0';
+  var APP_VERSION = '1.16.1';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -37,7 +37,7 @@
   var WEEKDAYS_SHORT_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
   var STATUSES = ['قيد الانتظار', 'قيد العمل', 'مكتملة', 'تحتاج مراجعة', 'ملغاة'];
-  var VIEWS = ['dashboard', 'all', 'appointments', 'patients', 'patient', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'activation', 'file', 'universities', 'uniEmpty', 'casesheets', 'csform', 'account'];
+  var VIEWS = ['dashboard', 'all', 'appointments', 'patients', 'patient', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'file', 'universities', 'uniEmpty', 'casesheets', 'csform', 'account'];
 
   /* ============================================================
      لغة الواجهة (عربي افتراضي / إنجليزي اختياري) — عرض فقط، لا تمسّ البيانات إطلاقاً
@@ -132,7 +132,6 @@
     "موعد الحالة السريرية": "Clinical case appointment",
     "القسم": "Department",
     "الدعم والتفعيل": "Support & Activation",
-    "فعّل نسختك الكاملة من DentPilot الآن": "Activate your full DentPilot version now",
     "الكاسشيتات": "Casesheets",
     "الكلية": "College",
     "اللغة": "Language",
@@ -373,7 +372,6 @@
    'sessionOverlay','sessionForm','sessionTitle','sessionClose','sessionCancel','sCaseId','sId','sNum','sDate','sTime','sProc','sNext','sNotes','sStatus',
    'confirmOverlay','confirmTitle','confirmText','confirmOk','confirmCancel','toast','splash','fileBody',
    'trialBanner','trialText','accessStatus','supportBody',
-   'homeActBanner','apDeviceId','apCode','apError','apActivatedNotice','apFormWrap',
    'updateOverlay','updateNowBtn','updateLaterBtn','appVersion','checkUpdateBtn','updateStatus',
    'setInstallBtn','setInstallStatus',
    'csTemplates','csTitle','csFormBody','dashBottomBar',
@@ -1893,8 +1891,11 @@
       var info = (window.DPLicense && window.DPLicense.getActivationInfo) ? window.DPLicense.getActivationInfo() : null;
       var planBlock;
       if (info && info.expiresAt) {
+        var remainMs = info.expiresAt - Date.now(), remainDays = Math.max(0, Math.ceil(remainMs / 86400000));
         planBlock = '<div class="plan-summary-row"><span>الخطة</span><b>' + esc(info.planLabel || '') + '</b></div>' +
+          (info.startsAt ? '<div class="plan-summary-row"><span>تاريخ التفعيل</span><b>' + esc(fmtDate(new Date(info.startsAt).toISOString().slice(0, 10))) + '</b></div>' : '') +
           '<div class="plan-summary-row"><span>تاريخ الانتهاء</span><b>' + esc(fmtDate(new Date(info.expiresAt).toISOString().slice(0, 10))) + '</b></div>' +
+          '<div class="plan-summary-row"><span>الأيام المتبقية</span><b>' + remainDays + ' يوم</b></div>' +
           '<button type="button" class="btn btn-ghost" data-act="renew-plan" style="width:100%;margin-top:10px">تجديد الخطة</button>';
       } else {
         planBlock = '<div class="plan-summary-row"><span>نوع التفعيل</span><b>تفعيل دائم</b></div>';
@@ -1925,8 +1926,7 @@
       '<div class="plan-summary">' +
         '<div class="plan-summary-row"><span>الخطة</span><b>' + esc(plan.label) + '</b></div>' +
         '<div class="plan-summary-row"><span>السعر</span><b>' + esc(plan.usd) + ' — ' + esc(plan.yer) + '</b></div>' +
-        '<button type="button" class="btn btn-primary" data-act="nav-activation" data-from="support" style="width:100%">تفعيل التطبيق</button>' +
-        '<button type="button" class="btn btn-ghost" data-act="pay-continue" style="width:100%;margin-top:8px">متابعة الدفع والتفعيل</button>' +
+        '<button type="button" class="btn btn-primary" data-act="pay-continue" style="width:100%">متابعة الدفع والتفعيل</button>' +
       '</div>'
     ) : '';
 
@@ -1934,47 +1934,8 @@
       statusBlock +
       '<div class="plan-grid">' + PLANS.map(planCardHtml).join('') + '</div>' +
       summaryBlock +
-      '<button type="button" class="btn btn-ghost sup-code-btn" data-act="nav-activation" data-from="support" style="width:100%">لدي كود تفعيل</button>' +
+      '<button type="button" class="btn btn-ghost sup-code-btn" data-act="have-code" style="width:100%">لدي كود تفعيل</button>' +
       contactSectionHtml();
-  }
-
-  /* ---------- صفحة تفعيل مخصصة (مسار مختصر يبدأ من صفحة الخطط أو من الرئيسية) ----------
-     لا تكرّر منطق التحقق من الكود إطلاقاً: زر "تفعيل التطبيق" هنا يمرّر القيمة إلى حقل actCode
-     الأصلي (المخفي، الذي تديره activation.js دون أي تعديل) ثم يُحاكي ضغط زرّه actActivateBtn،
-     فتُنفَّذ نفس دالة activate() ونفس التحقق تماماً كما في النافذة القديمة. */
-  var activationOrigin = 'dashboard';
-  function renderActivationPage() {
-    if (els.apDeviceId) els.apDeviceId.textContent = appCode();
-    var activated = accessStateSafe() === 'activated';
-    if (els.apActivatedNotice) els.apActivatedNotice.hidden = !activated;
-    if (els.apFormWrap) els.apFormWrap.hidden = activated;
-    var row = document.getElementById('apSupportRow');
-    if (row) {
-      var waNum1 = (SUPPORT.wa[0] || {}).num, waNum2 = (SUPPORT.wa[1] || {}).num;
-      row.innerHTML =
-        (waNum1 ? '<a class="btn btn-primary act-compact-btn" href="' + waSupportLink(waNum1) + '" target="_blank" rel="noopener">' + waIcon() + '<span>مراسلة الدعم والتفعيل</span></a>' : '') +
-        (waNum2 ? '<a class="btn btn-ghost act-compact-btn" href="' + waSupportLink(waNum2) + '" target="_blank" rel="noopener">' + waIcon() + '<span>مراسلة الدعم الفني</span></a>' : '');
-    }
-  }
-  function apCopyCode() { copyNumber(appCode()); }
-  function apSubmit() {
-    var apCodeEl = els.apCode, apErrorEl = els.apError;
-    var hiddenInp = document.getElementById('actCode'), hiddenBtn = document.getElementById('actActivateBtn'), hiddenErr = document.getElementById('actError');
-    if (!apCodeEl || !hiddenInp || !hiddenBtn || !hiddenErr) return;
-    hiddenInp.value = apCodeEl.value;
-    hiddenBtn.click();   // نفس دالة activate()/licenseValid() الأصلية في activation.js — بلا أي تعديل عليها
-    if (hiddenErr.hidden) {
-      apCodeEl.classList.remove('invalid');
-      if (apErrorEl) apErrorEl.hidden = true;
-      renderActivationPage();   // ينعكس فوراً كنجاح التفعيل عبر renderActivationPage نفسها (onActivated يستدعيها أيضاً إن بقيت الصفحة مفتوحة)
-    } else {
-      apCodeEl.classList.add('invalid');
-      if (apErrorEl) apErrorEl.hidden = false;
-    }
-  }
-  function updateHomeActBanner() {
-    if (!els.homeActBanner) return;
-    els.homeActBanner.hidden = (accessStateSafe() === 'activated');
   }
 
   /* ---------- Settings ---------- */
@@ -2189,7 +2150,6 @@
     else if (currentView === 'uniEmpty') go('universities');
     else if (currentView === 'subject') go('bysubject');
     else if (currentView === 'patient') go('patients');
-    else if (currentView === 'activation') go(activationOrigin || 'dashboard');
     else go('dashboard');
   }
   function applyRoute() {
@@ -2222,7 +2182,6 @@
     else if (currentView === 'subject') renderSubjectCases(currentParam);
     else if (currentView === 'settings') renderSettings();
     else if (currentView === 'support') renderSupport();
-    else if (currentView === 'activation') renderActivationPage();
     else if (currentView === 'file') renderFile(currentParam);
     else if (currentView === 'universities') renderUniversities();
     else if (currentView === 'uniEmpty') renderUniEmpty(currentParam);
@@ -2747,12 +2706,6 @@
     var actHaveCodeBtn = document.getElementById('actHaveCodeBtn');
     if (actHaveCodeBtn) actHaveCodeBtn.addEventListener('click', function () { setActCodeStep('code'); });
 
-    // صفحة التفعيل الجديدة (نفس فكرة actCode أعلاه، بعنصرها الخاص المستقل)
-    if (els.apCode) {
-      els.apCode.addEventListener('keydown', function (e) { if (e.key === 'Enter') apSubmit(); });
-      els.apCode.addEventListener('input', function () { els.apCode.classList.remove('invalid'); if (els.apError) els.apError.hidden = true; });
-    }
-
     // نافذة إتمام الدفع: إغلاق + أكورديون طرق الدفع + نسخ (تفويض نقر — المحتوى ديناميكي)
     var payClose = document.getElementById('payClose');
     if (payClose) payClose.addEventListener('click', function () { hideOverlay(document.getElementById('paymentOverlay')); enforceAccessLock(); });
@@ -2813,9 +2766,6 @@
       else if (act === 'plan-select') { selectedPlanId = (selectedPlanId === btn.dataset.plan) ? selectedPlanId : btn.dataset.plan; renderSupport(); }
       else if (act === 'pay-continue') openPayment();
       else if (act === 'have-code') openActCode('code', false);
-      else if (act === 'nav-activation') { activationOrigin = btn.dataset.from || 'dashboard'; go('activation'); }
-      else if (act === 'ap-copy-code') apCopyCode();
-      else if (act === 'ap-submit') apSubmit();
       else if (act === 'contact-support') { var w0 = SUPPORT.wa[0]; if (w0) window.open(waSupportLink(w0.num), '_blank', 'noopener'); }
       else if (act === 'contact-agent') window.open(agentWaLink(), '_blank', 'noopener');
       else if (act === 'renew-plan') { showPlansOverride = true; selectedPlanId = null; renderSupport(); }
@@ -2980,13 +2930,11 @@
     applyRoute(); setupPWA();
     renderActivationPrompt();                // يملأ محتوى نافذة التنبيه (اختيارية/إلزامية) قبل أول رسم — activation.js تتحكم بإظهارها فقط
     updateTrialBanner();
-    updateHomeActBanner();
     setInterval(updateTrialBanner, 60000);   // تحديث الوقت المتبقّي دورياً
     setTimeout(maybeShowStudentSetup, 700);  // إعداد أولي لبيانات الطالب إن لم تكن محفوظة (لا يتزاحم مع نافذة التفعيل)
     if (window.DPLicense) window.DPLicense.onActivated = function () {
       var wasLocked = document.body.classList.contains('dp-access-locked');
       if (els.trialBanner) els.trialBanner.hidden = true;   // إخفاء الشريط نهائياً بعد التفعيل
-      updateHomeActBanner();                                // يخفي بطاقة "الدعم والتفعيل" من الرئيسية بعد التفعيل
       showPlansOverride = false; selectedPlanId = null;     // إعادة ضبط تدفّق اختيار الخطة بعد نجاح التفعيل/التجديد
       hideOverlay(document.getElementById('actCodeOverlay'));
       hideOverlay(document.getElementById('paymentOverlay'));
@@ -2997,7 +2945,6 @@
       if (wasLocked) go('dashboard');                        // كان مقفلاً داخل support: انتقل الآن إلى dashboard
       else if (currentView === 'settings') renderSettings();
       else if (currentView === 'support') renderSupport();
-      else if (currentView === 'activation') renderActivationPage();
       setTimeout(maybeShowStudentSetup, 400);
     };
   }

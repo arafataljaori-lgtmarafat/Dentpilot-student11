@@ -487,31 +487,6 @@ img{ max-width:100%; }
 .act-copy{ flex:none; padding:7px 10px; font-size:.8rem; border-radius:9px; }
 .act-error{ color:var(--red); font-size:.8rem; font-weight:700; margin:7px 0 0; }
 #actCode{ text-align:center; letter-spacing:2px; font-family:'Courier New',monospace; text-transform:uppercase; }
-
-/* ============================================================
-   صفحة التفعيل الجديدة (activation) + بطاقة الدخول من الرئيسية
-   ============================================================ */
-.act-banner{ display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; text-align:start; cursor:pointer; font-family:inherit;
-  background:linear-gradient(135deg, var(--navy-800) 0%, var(--navy-700) 55%, var(--dp-teal-deep) 100%);
-  border:1px solid rgba(255,255,255,.10); border-radius:18px; padding:18px 20px; margin-bottom:14px;
-  box-shadow:0 6px 18px rgba(10,81,104,.24); color:#fff;
-  transition:transform 150ms ease, box-shadow 150ms ease, filter 150ms ease; }
-.act-banner:active{ transform:scale(.985); filter:brightness(.97); }
-@media (hover:hover) and (pointer:fine){ .act-banner:hover{ filter:brightness(1.06); box-shadow:0 10px 28px rgba(10,81,104,.3); } }
-.act-banner .dash-emoji{ width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.2); color:#fff; }
-.act-banner .dash-title{ color:#fff; }
-.act-banner .dash-sub{ color:rgba(255,255,255,.82); }
-.act-page-hero{ text-align:center; background:linear-gradient(165deg, var(--dp-surface) 0%, var(--dp-canvas-wash) 100%); border:1px solid var(--line); border-radius:18px; padding:22px 18px 20px; margin-bottom:16px; box-shadow:var(--shadow-sm); }
-.act-page-icon{ width:52px; height:52px; margin:0 auto 10px; border-radius:16px; display:grid; place-items:center; background:linear-gradient(135deg,var(--navy-800),var(--dp-teal-deep)); color:#fff; font-family:'Cairo',sans-serif; font-weight:800; font-size:1.15rem; letter-spacing:.5px; box-shadow:0 6px 14px rgba(10,81,104,.28); }
-.act-page-hero h2{ font-family:'Cairo',sans-serif; font-weight:800; color:var(--ink); font-size:1.3rem; margin:0 0 6px; }
-.act-page-hero p{ color:var(--muted); font-size:.86rem; line-height:1.55; margin:0; max-width:38ch; margin-inline:auto; }
-.act-page-section .act-sec-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-.act-sec-num{ flex:none; width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,var(--navy-800),var(--dp-teal-deep)); color:#fff; font-family:'Cairo',sans-serif; font-weight:800; font-size:.78rem; display:grid; place-items:center; }
-.act-page-section .act-sec-head h3{ font-family:'Cairo',sans-serif; font-weight:700; color:var(--ink); font-size:1rem; margin:0; }
-.act-sec-hint{ color:var(--muted); font-size:.82rem; line-height:1.5; margin:0 0 10px; }
-.act-compact-wa{ display:flex; flex-wrap:wrap; gap:8px; }
-.act-compact-btn{ flex:1 1 auto; min-width:0; padding:9px 12px; font-size:.8rem; gap:6px; }
-.act-compact-btn span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .form-hint{ color:var(--muted); font-size:.86rem; margin:0 0 8px; line-height:1.55; }
 
 /* Toast */
