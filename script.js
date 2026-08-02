@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.17.0';
+  var APP_VERSION = '1.18.0';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -927,7 +927,8 @@
   var CS_TEMPLATES = {
     'jazeera-oral-surgery': { name: 'Oral Surgery', sub: 'كاسشيت جراحة الفم — جاهز للتعبئة والطباعة', icon: CS_ICON_SURGERY, universities: ['jazeera', 'ib'] },
     'operative-dentistry': { name: 'Operative Dentistry', sub: 'كاسشيت الترميمية — جاهز للتعبئة والطباعة', icon: CS_ICON_OPERATIVE, universities: ['jazeera', 'ib'] },
-    'genius-endodontic': { name: 'Endodontic Case Sheet', sub: 'النموذج الرسمي لجامعة جينيس — صفحتان تفاعليتان', icon: CS_ICON_ENDO, mode: 'overlay', universities: ['genius'] }
+    'genius-endodontic': { name: 'Endodontic Case Sheet', sub: 'النموذج الرسمي لجامعة جينيس — صفحتان تفاعليتان', icon: CS_ICON_ENDO, mode: 'overlay', universities: ['genius'] },
+    'genius-oral-surgery': { name: 'Oral & Maxillofacial Surgery Case Sheet', sub: 'النموذج الرسمي لجامعة جينيس — صفحتان تفاعليتان', icon: CS_ICON_SURGERY, mode: 'overlay', universities: ['genius'] }
   };
   var CS_PHOTO_SLOTS = [
     { key: 'pre1', label: 'Preoperative Image 1' },
@@ -1140,6 +1141,106 @@
   {k:'tooth30',t:'check',p:2,x:77.463,y:12.191,w:5.493,h:4.757},
   {k:'tooth31',t:'check',p:2,x:82.957,y:12.191,w:5.493,h:4.757},
   {k:'tooth32',t:'check',p:2,x:88.45,y:12.191,w:5.493,h:4.757}
+  ];
+
+  /* ============================================================
+     كاسشيت Genius — Oral & Maxillofacial Surgery (نفس أسلوب Endodontic overlay تماماً)
+     ============================================================ */
+  var GOS_FIELDS = [
+  {k:'patientName',t:'text',p:1,x:23.164,y:20.489,w:25.398,h:1.9},
+  {k:'date1',t:'text',p:1,x:65.629,y:20.489,w:29.732,h:1.9},
+  {k:'education',t:'text',p:1,x:23.164,y:22.449,w:25.398,h:1.924},
+  {k:'sex',t:'text',p:1,x:65.629,y:22.449,w:29.732,h:1.924},
+  {k:'address',t:'text',p:1,x:23.164,y:24.432,w:25.398,h:1.912},
+  {k:'occupation',t:'text',p:1,x:65.629,y:24.432,w:29.732,h:1.912},
+  {k:'age',t:'text',p:1,x:23.164,y:26.404,w:25.398,h:1.924},
+  {k:'phoneNumber',t:'text',p:1,x:65.629,y:26.404,w:29.732,h:1.924},
+  {k:'caseNo',t:'text',p:1,x:76.597,y:17.223,w:18.645,h:1.782},
+  {k:'painCheck',t:'check',p:1,x:23.164,y:33.424,w:7.945,h:1.865},
+  {k:'swellingCheck',t:'check',p:1,x:38.299,y:33.293,w:7.929,h:1.877},
+  {k:'discomfortCheck',t:'check',p:1,x:55.029,y:33.388,w:7.945,h:1.865},
+  {k:'otherComplaint',t:'text',p:1,x:67.997,y:31.44,w:26.137,h:3.836},
+  {k:'onset',t:'text',p:1,x:26.456,y:38.4,w:22.694,h:1.912},
+  {k:'severity',t:'text',p:1,x:69.61,y:38.4,w:25.113,h:1.912},
+  {k:'duration',t:'text',p:1,x:26.456,y:40.372,w:22.694,h:1.924},
+  {k:'aggravatingFactor',t:'text',p:1,x:69.61,y:40.372,w:25.113,h:1.924},
+  {k:'frequency',t:'text',p:1,x:26.456,y:42.356,w:22.694,h:1.9},
+  {k:'relievingFactor',t:'text',p:1,x:69.61,y:42.356,w:25.113,h:1.9},
+  {k:'site',t:'text',p:1,x:26.456,y:44.315,w:22.694,h:1.912},
+  {k:'radiated',t:'text',p:1,x:69.61,y:44.315,w:25.113,h:1.912},
+  {k:'feature',t:'text',p:1,x:26.456,y:46.287,w:22.694,h:1.924},
+  {k:'otherHpi',t:'text',p:1,x:69.61,y:46.287,w:25.113,h:1.924},
+  {k:'pastDentalHistory',t:'text',p:1,x:30.051,y:49.15,w:64.671,h:4.43},
+  {k:'mhAnemia',t:'check',p:1,x:7.173,y:56.716,w:3.477,h:1.912},
+  {k:'mhBleeding',t:'check',p:1,x:28.573,y:56.716,w:3.477,h:1.912},
+  {k:'mhKidney',t:'check',p:1,x:50.007,y:56.716,w:2.301,h:1.912},
+  {k:'mhRheumatic',t:'check',p:1,x:71.457,y:56.716,w:3.477,h:1.912},
+  {k:'mhArtificialOrgan',t:'check',p:1,x:7.173,y:58.687,w:3.477,h:1.912},
+  {k:'mhDiabetes',t:'check',p:1,x:28.573,y:58.687,w:3.477,h:1.912},
+  {k:'mhLiver',t:'check',p:1,x:50.007,y:58.687,w:2.301,h:1.912},
+  {k:'mhStroke',t:'check',p:1,x:71.457,y:58.687,w:3.477,h:1.912},
+  {k:'mhAsthma',t:'check',p:1,x:7.173,y:60.659,w:3.477,h:3.825},
+  {k:'mhFainting',t:'check',p:1,x:28.573,y:60.659,w:3.477,h:3.825},
+  {k:'mhRespiratory',t:'check',p:1,x:50.007,y:60.659,w:2.301,h:3.825},
+  {k:'mhHospitalization',t:'check',p:1,x:71.457,y:60.659,w:3.477,h:3.825},
+  {k:'mhBloodDisease',t:'check',p:1,x:7.173,y:64.543,w:3.477,h:1.912},
+  {k:'mhHeartDisease',t:'check',p:1,x:28.573,y:64.543,w:3.477,h:1.912},
+  {k:'mhAllergy',t:'check',p:1,x:50.007,y:64.543,w:2.301,h:1.912},
+  {k:'mhDrugsIntake',t:'check',p:1,x:71.457,y:64.543,w:3.477,h:1.912},
+  {k:'mhCancer',t:'check',p:1,x:7.173,y:66.515,w:3.477,h:1.924},
+  {k:'mhHepatitis',t:'check',p:1,x:28.573,y:66.515,w:3.477,h:1.924},
+  {k:'mhPregnancy',t:'check',p:1,x:50.007,y:66.515,w:2.301,h:1.924},
+  {k:'mhEpilepsy',t:'check',p:1,x:7.173,y:68.498,w:3.477,h:1.912},
+  {k:'mhHypertension',t:'check',p:1,x:28.573,y:68.498,w:3.477,h:1.912},
+  {k:'mhGIT',t:'check',p:1,x:50.007,y:68.498,w:2.301,h:1.912},
+  {k:'familyHistory',t:'text',p:1,x:6.131,y:73.344,w:34.754,h:1.912},
+  {k:'socialHistory',t:'text',p:1,x:40.97,y:73.344,w:51.972,h:1.912},
+  {k:'tmj',t:'text',p:1,x:25.768,y:78.392,w:22.996,h:1.912},
+  {k:'faceSymmetry',t:'text',p:1,x:66.838,y:78.392,w:27.296,h:1.912},
+  {k:'ln',t:'text',p:1,x:25.768,y:80.352,w:22.996,h:1.924},
+  {k:'mouthOpening',t:'text',p:1,x:66.838,y:80.352,w:27.296,h:1.924},
+  {k:'eyes',t:'text',p:1,x:25.768,y:82.336,w:22.996,h:1.912},
+  {k:'extraOralOther',t:'text',p:1,x:66.838,y:82.336,w:27.296,h:1.912},
+  {k:'lips',t:'text',p:1,x:26.053,y:87.099,w:10.918,h:1.912},
+  {k:'floorsOfMouth',t:'text',p:1,x:58.49,y:87.099,w:10.616,h:1.912},
+  {k:'mucosa',t:'text',p:1,x:81.116,y:87.099,w:13.018,h:1.912},
+  {k:'tongue',t:'text',p:1,x:26.053,y:89.07,w:10.918,h:1.924},
+  {k:'palate',t:'text',p:1,x:58.49,y:89.07,w:10.616,h:1.924},
+  {k:'vestibules',t:'text',p:1,x:81.116,y:89.07,w:13.018,h:1.924},
+  {k:'periodontium',t:'text',p:2,x:21.787,y:5.856,w:14.698,h:1.912},
+  {k:'othersP2',t:'text',p:2,x:50.847,y:5.856,w:34.418,h:1.912},
+  {k:'teethMissing',t:'check',p:2,x:21.787,y:10.096,w:14.698,h:3.48},
+  {k:'teethCaries',t:'check',p:2,x:36.569,y:10.096,w:14.194,h:3.48},
+  {k:'teethFilling',t:'check',p:2,x:50.847,y:10.096,w:15.403,h:3.48},
+  {k:'teethMobile',t:'check',p:2,x:66.334,y:10.096,w:18.931,h:3.48},
+  {k:'targetTooth',t:'text',p:2,x:23.769,y:14.574,w:66.586,h:2.031},
+  {k:'inspection',t:'text',p:2,x:23.769,y:16.664,w:66.586,h:2.019},
+  {k:'periapicalPalpation',t:'text',p:2,x:23.769,y:18.743,w:17.537,h:4.133},
+  {k:'percussion',t:'text',p:2,x:59.01,y:18.743,w:31.344,h:4.133},
+  {k:'radiograph',t:'text',p:2,x:41.39,y:22.936,w:48.965,h:2.34},
+  {k:'thermal',t:'text',p:2,x:59.01,y:25.335,w:31.344,h:2.791},
+  {k:'electrical',t:'text',p:2,x:59.01,y:28.186,w:31.344,h:3.813},
+  {k:'mechanical',t:'text',p:2,x:59.01,y:32.058,w:31.344,h:3.836},
+  {k:'diagnosis',t:'text',p:2,x:23.769,y:35.954,w:66.586,h:2.019},
+  {k:'treatmentPlan',t:'text',p:2,x:23.769,y:38.032,w:66.586,h:4.074},
+  {k:'complication',t:'text',p:2,x:23.769,y:42.166,w:66.586,h:2.09},
+  {k:'medication',t:'text',p:2,x:23.769,y:44.315,w:66.586,h:4.074},
+  {k:'markCaseSheetData',t:'text',p:2,x:61.228,y:55.54,w:28.472,h:2.304},
+  {k:'markCaseSheetDiagnosis',t:'text',p:2,x:61.228,y:57.903,w:28.472,h:1.912},
+  {k:'markAnesthesia',t:'text',p:2,x:61.228,y:59.875,w:28.472,h:1.9},
+  {k:'markExtraction',t:'text',p:2,x:61.228,y:61.835,w:28.472,h:1.924},
+  {k:'markSterilization',t:'text',p:2,x:61.228,y:63.818,w:28.472,h:1.912},
+  {k:'markWoundCare',t:'text',p:2,x:61.228,y:65.79,w:28.472,h:1.9},
+  {k:'markPositionBehavior',t:'text',p:2,x:61.228,y:67.75,w:28.472,h:1.912},
+  {k:'markTotal',t:'text',p:2,x:61.228,y:69.722,w:28.472,h:3.836},
+  {k:'studentName',t:'text',p:2,x:20.443,y:76.492,w:23.483,h:1.663},
+  {k:'startingDate',t:'text',p:2,x:56.104,y:76.492,w:13.841,h:1.663},
+  {k:'date1P2',t:'text',p:2,x:83.451,y:76.492,w:10.028,h:1.663},
+  {k:'group',t:'text',p:2,x:14.883,y:79.461,w:12.162,h:1.544},
+  {k:'dr',t:'text',p:2,x:52.61,y:79.461,w:19.284,h:1.544},
+  {k:'level',t:'text',p:2,x:14.211,y:82.431,w:22.643,h:1.663},
+  {k:'finishingDate',t:'text',p:2,x:58.59,y:82.431,w:12.565,h:1.663},
+  {k:'date2P2',t:'text',p:2,x:82.897,y:82.431,w:10.465,h:1.663}
   ];
 
 
@@ -1368,6 +1469,25 @@
       '<p class="ge-hint">اضغط داخل أي خانة للكتابة، أو على الدائرة/المربع للتحديد — استخدم إصبعين للتكبير والتحريك.</p>'
     );
   }
+  function buildGeniusOralSurgeryFormHTML() {
+    var p1 = GOS_FIELDS.filter(function (f) { return f.p === 1; }).map(geFieldHTML).join('');
+    var p2 = GOS_FIELDS.filter(function (f) { return f.p === 2; }).map(geFieldHTML).join('');
+    return (
+      '<div class="ge-toolbar">' +
+        '<button type="button" class="card-btn" data-act="ge-prev">‹ السابقة</button>' +
+        '<span class="ge-pageind" id="gePageInd">صفحة 1 / 2</span>' +
+        '<button type="button" class="card-btn" data-act="ge-next">التالية ›</button>' +
+        '<button type="button" class="card-btn" data-act="ge-zoomreset">↺ إعادة الضبط</button>' +
+      '</div>' +
+      '<div class="ge-wrap" id="geWrap">' +
+        '<div class="ge-stage" id="geStage">' +
+          '<div class="ge-page" id="gePage1" data-page="1" style="background-image:url(genius-oralsurg-p1.jpg)">' + p1 + '</div>' +
+          '<div class="ge-page" id="gePage2" data-page="2" hidden style="background-image:url(genius-oralsurg-p2.jpg)">' + p2 + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="ge-hint">اضغط داخل أي خانة للكتابة، أو على المربع للتحديد — استخدم إصبعين للتكبير والتحريك.</p>'
+    );
+  }
   var geZoom = { scale: 1, tx: 0, ty: 0, page: 1 };
   function geApplyTransform() {
     var stage = document.getElementById('geStage');
@@ -1508,6 +1628,7 @@
     if (els.csFormBody) {
       els.csFormBody.innerHTML =
         (tplKey === 'genius-endodontic') ? buildGeniusEndodonticFormHTML() :
+        (tplKey === 'genius-oral-surgery') ? buildGeniusOralSurgeryFormHTML() :
         (tplKey === 'operative-dentistry') ? buildOperativeFormHTML() : buildCasesheetFormHTML();
       fillCasesheetForm(sheet ? sheet.data : {});
       refreshCasesheetPhotos();
@@ -1516,7 +1637,7 @@
         var inp = document.getElementById('csPhotoInput_' + s.key);
         if (inp) inp.addEventListener('change', function (e) { handleCasesheetPhotoChange(s.key, e.target.files && e.target.files[0]); e.target.value = ''; });
       });
-      if (tplKey === 'genius-endodontic') { geShowPage(1); initGeGestures(); }
+      if (tplKey === 'genius-endodontic' || tplKey === 'genius-oral-surgery') { geShowPage(1); initGeGestures(); }
     }
   }
   function saveCasesheetFromForm() {
