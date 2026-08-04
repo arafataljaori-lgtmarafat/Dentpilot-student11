@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.18.0';
+  var APP_VERSION = '1.19.1';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -37,7 +37,7 @@
   var WEEKDAYS_SHORT_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
   var STATUSES = ['قيد الانتظار', 'قيد العمل', 'مكتملة', 'تحتاج مراجعة', 'ملغاة'];
-  var VIEWS = ['dashboard', 'all', 'appointments', 'patients', 'patient', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'file', 'universities', 'uniEmpty', 'casesheets', 'csform', 'account'];
+  var VIEWS = ['dashboard', 'all', 'appointments', 'patients', 'patient', 'reqs', 'completed', 'bysubject', 'subject', 'backup', 'settings', 'support', 'activation', 'file', 'universities', 'uniEmpty', 'casesheets', 'csform', 'account'];
 
   /* ============================================================
      لغة الواجهة (عربي افتراضي / إنجليزي اختياري) — عرض فقط، لا تمسّ البيانات إطلاقاً
@@ -1854,10 +1854,10 @@
 
   /* الخطط — أسعار وعملات ثابتة كما طُلب حرفياً، لا تُنفَّذ زمنياً داخل الكود بعد (انظر التقرير) */
   var PLANS = [
-    { id: 'm1', label: 'شهر واحد', usd: '2$', yer: '1000 ريال يمني' },
-    { id: 'm6', label: 'ستة أشهر', usd: '5$', yer: '2500 ريال يمني' },
-    { id: 'y1', label: 'سنوي', usd: '10$', yer: '5000 ريال يمني', badge: 'الأكثر اختياراً' },
-    { id: 'lt', label: 'دائم', usd: '25$', yer: '13500 ريال يمني', badge: 'دفع مرة واحدة' }
+    { id: 'm1', label: 'شهر واحد', usd: '$2', yer: '1000 ريال يمني' },
+    { id: 'm6', label: 'ستة أشهر', usd: '$5', yerOld: '2500 ريال يمني', yer: '1500 ريال يمني', promo: true },
+    { id: 'y1', label: 'سنوي', usd: '$10', yerOld: '5000 ريال يمني', yer: '3000 ريال يمني', badge: 'الأكثر اختياراً', promo: true },
+    { id: 'lt', label: 'دائم', usd: '$25', yerOld: '13500 ريال يمني', yer: '7000 ريال يمني', badge: 'دفع مرة واحدة', promo: true }
   ];
   var selectedPlanId = null;
   var showPlansOverride = false;   // "تجديد الخطة": يعيد استخدام نفس تدفّق اختيار الخطة والدفع حتى أثناء التفعيل الحالي
@@ -1894,17 +1894,9 @@
   function renderActivationPrompt() {
     var titleEl = document.getElementById('actPromptTitle'), textEl = document.getElementById('actPromptText'), btnsEl = document.getElementById('actPromptButtons');
     if (!titleEl || !btnsEl) return;
-    var expired = accessStateSafe() === 'expired';
-    titleEl.textContent = expired ? 'انتهت الفترة التجريبية' : 'فعّل DentPilot الآن';
-    textEl.textContent = expired ? 'اختر خطة للتفعيل للاستمرار في استخدام DentPilot Student.' : 'اختر الخطة المناسبة واستمر دون انقطاع.';
-    var num = (SUPPORT.wa[0] || {}).num;
-    btnsEl.innerHTML = expired
-      ? ('<button type="button" class="btn btn-primary" data-prompt-act="plans" style="width:100%">اختيار الخطة</button>' +
-         '<button type="button" class="btn btn-ghost" data-prompt-act="code" style="width:100%">لدي كود تفعيل</button>' +
-         (num ? '<a class="btn btn-ghost" href="' + waSupportLink(num) + '" target="_blank" rel="noopener" style="width:100%">مراسلة الدعم</a>' : ''))
-      : ('<button type="button" class="btn btn-primary" data-prompt-act="plans" style="width:100%">عرض خطط التفعيل</button>' +
-         '<button type="button" class="btn btn-ghost" data-prompt-act="code" style="width:100%">لدي كود تفعيل</button>' +
-         '<button type="button" class="btn btn-ghost" data-prompt-act="dismiss" style="width:100%">متابعة الفترة التجريبية</button>');
+    titleEl.textContent = 'انتهت الفترة المجانية';
+    textEl.textContent = 'يرجى تفعيل التطبيق للاستمرار في استخدام جميع الميزات.';
+    btnsEl.innerHTML = '<button type="button" class="btn btn-primary" data-prompt-act="plans" style="width:100%">تفعيل التطبيق الآن</button>';
   }
   function openActivation() {
     var ov = document.getElementById('activationOverlay'); if (!ov) return;
@@ -1970,9 +1962,12 @@
   /* ---------- صفحة الدعم والتفعيل ---------- */
   function planCardHtml(p) {
     return '<button type="button" class="plan-card' + (p.id === selectedPlanId ? ' selected' : '') + '" data-act="plan-select" data-plan="' + p.id + '">' +
+      (p.promo ? '<span class="plan-promo-badge">عروض افتتاحية</span>' : '') +
       (p.badge ? '<span class="plan-badge">' + esc(p.badge) + '</span>' : '') +
+      '<span class="plan-check">✓</span>' +
       '<span class="plan-name">' + esc(p.label) + '</span>' +
       '<span class="plan-price">' + esc(p.usd) + '</span>' +
+      (p.yerOld ? '<span class="plan-price-yer-old">' + esc(p.yerOld) + '</span>' : '') +
       '<span class="plan-price-yer">' + esc(p.yer) + '</span>' +
       '</button>';
   }
@@ -2005,6 +2000,107 @@
     return devCard + agentCard;
   }
 
+  var ACT2_JEEB_JAWALI_NUM = '775101518';   // كما ورد صراحة في نص المهمة لصفحة إكمال التفعيل تحديداً — لا يُغيَّر SUPPORT.jeeb القديم المستخدَم في نافذة الدفع القديمة غير المستخدَمة في التدفّق الجديد
+
+  function act2WaMessage(plan) {
+    return 'مرحبًا، أريد تفعيل تطبيق DentPilot Student.\n\n' +
+      'الخطة المختارة: ' + plan.label + '\n' +
+      'السعر: ' + plan.usd + '\n' +
+      'المبلغ بالريال اليمني: ' + plan.yer + '\n' +
+      'رمز التطبيق: ' + appCode() + '\n\n' +
+      'سأرفق إيصال التحويل في هذه المحادثة.';
+  }
+  function act2WaLink() {
+    var plan = selectedPlan(); if (!plan) return '#';
+    var num = (SUPPORT.wa[0] || {}).num;
+    return num ? ('https://wa.me/' + num + '?text=' + encodeURIComponent(act2WaMessage(plan))) : '#';
+  }
+  function act2CopyBtnClick(btn, text) {
+    if (!text || !btn) return;
+    var original = btn.textContent;
+    function done() { btn.textContent = 'تم النسخ ✓'; setTimeout(function () { if (btn) btn.textContent = original; }, 1600); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); }); return; }
+    } catch (e) {}
+    fallbackCopy(text); done();
+  }
+  function act2PasteSupported() { try { return !!(navigator.clipboard && navigator.clipboard.readText); } catch (e) { return false; } }
+  function act2Paste() {
+    if (!act2PasteSupported()) return;
+    navigator.clipboard.readText().then(function (text) {
+      var inp = document.getElementById('act2Code');
+      if (inp && text) { inp.value = text.trim(); inp.classList.remove('invalid'); var e = document.getElementById('act2Error'); if (e) e.hidden = true; }
+    }).catch(function () {});
+  }
+  /* التحقق يستخدم منطق التفعيل الحقيقي نفسه — عبر العناصر الداخلية التي يربطها activation.js بالفعل
+     (activate() ليست مُصدَّرة على window.DPLicense عمداً). لا خوارزمية جديدة، ولا تجاوز للتحقق الحالي. */
+  function act2Activate() {
+    var codeInput = document.getElementById('act2Code'), errEl = document.getElementById('act2Error');
+    if (!codeInput || !errEl) return;
+    var val = (codeInput.value || '').trim();
+    if (!val) { errEl.textContent = 'الصق رمز التفعيل أولاً.'; errEl.hidden = false; codeInput.classList.add('invalid'); return; }
+    var proxyInput = document.getElementById('actCode'), proxyBtn = document.getElementById('actActivateBtn'), proxyErr = document.getElementById('actError');
+    if (!proxyInput || !proxyBtn || !proxyErr) return;
+    proxyInput.value = val;
+    proxyBtn.click();
+    if (proxyErr.hidden) {
+      errEl.hidden = true; codeInput.classList.remove('invalid');
+      // نجاح التفعيل: window.DPLicense.onActivated (المُعرَّفة في init) تتولى التنظيف والانتقال للصفحة الرئيسية تلقائياً
+    } else {
+      errEl.textContent = 'رمز التفعيل غير صحيح. تأكد من نسخه كاملاً ثم أعد المحاولة.';
+      errEl.hidden = false; codeInput.classList.add('invalid');
+    }
+  }
+  function renderActivationPage() {
+    var body = document.getElementById('activationBody'); if (!body) return;
+    var plan = selectedPlan();
+    if (!plan) { go('support'); return; }   // لا خطة مختارة — لا معنى لهذه الصفحة، إعادة توجيه آمنة
+    var supportNum = (SUPPORT.wa[0] || {}).num;
+    body.innerHTML =
+      '<div class="act2-summary">' +
+        '<div class="act2-summary-row">تم اختيار خطة: <b>' + esc(plan.label) + ' ✓</b></div>' +
+        '<div class="act2-summary-row">المبلغ المطلوب: <b>' + esc(plan.usd) + ' – ' + esc(plan.yer) + '</b></div>' +
+        '<button type="button" class="btn btn-ghost act2-change-btn" data-act="act2-change-plan">تغيير الخطة</button>' +
+      '</div>' +
+
+      '<h3 class="act2-h">حوّل مبلغ الاشتراك</h3>' +
+      '<div class="act2-pay-grid">' +
+        '<div class="act2-pay-card act2-pay-card-kuraimi">' +
+          '<div class="act2-pay-title">🏦 بنك الكريمي</div>' +
+          '<div class="act2-pay-owner">' + esc(SUPPORT.kuraimi.name) + '</div>' +
+          '<div class="act2-pay-num-row"><b class="mono">' + esc(SUPPORT.kuraimi.acct) + '</b>' +
+            '<button type="button" class="act2-copy-btn" data-act="act2-copy-kuraimi">نسخ</button></div>' +
+        '</div>' +
+        '<div class="act2-pay-card">' +
+          '<div class="act2-pay-title">جيب – جوالي</div>' +
+          '<div class="act2-pay-num-row"><b class="mono">' + esc(ACT2_JEEB_JAWALI_NUM) + '</b>' +
+            '<button type="button" class="act2-copy-btn" data-act="act2-copy-jeeb">نسخ</button></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<h3 class="act2-h">رمز التطبيق الخاص بك</h3>' +
+      '<p class="act2-note">هذا رمز آمن وخاص بنسخة تطبيقك، ويُستخدم لإصدار رمز التفعيل فقط. لا يحتوي على بياناتك الشخصية.</p>' +
+      '<div class="act2-appcode-row"><span class="mono act2-appcode">' + esc(appCode()) + '</span>' +
+        '<button type="button" class="act2-copy-btn" data-act="act2-copy-appcode">نسخ</button></div>' +
+      '<a class="btn btn-primary act2-send-btn" href="' + act2WaLink() + '" target="_blank" rel="noopener">إرسال الرمز للدعم</a>' +
+
+      '<h3 class="act2-h">الصق رمز التفعيل الذي حصلت عليه من الدعم</h3>' +
+      '<p class="act2-note">بعد تأكيد التحويل سيصلك رمز التفعيل من الدعم. الصقه في الحقل التالي.</p>' +
+      '<div class="act2-code-row">' +
+        '<input type="text" id="act2Code" class="act2-code-input" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" dir="ltr" />' +
+        '<button type="button" id="act2PasteBtn" class="btn btn-ghost act2-paste-btn" data-act="act2-paste" hidden>لصق</button>' +
+      '</div>' +
+      '<p id="act2Error" class="act-error" hidden></p>' +
+      '<button type="button" class="btn btn-primary" style="width:100%" data-act="act2-submit">تفعيل التطبيق</button>' +
+
+      '<div class="act2-support-row">' + (supportNum ? '<a class="btn btn-ghost" href="' + waSupportLink(supportNum) + '" target="_blank" rel="noopener">التواصل مع الدعم</a>' : '') + '</div>';
+
+    var pasteBtn = document.getElementById('act2PasteBtn');
+    if (pasteBtn) pasteBtn.hidden = !act2PasteSupported();
+    var codeInput = document.getElementById('act2Code');
+    if (codeInput) codeInput.addEventListener('input', function () { codeInput.classList.remove('invalid'); var e = document.getElementById('act2Error'); if (e) e.hidden = true; });
+  }
+
   function renderSupport() {
     if (!els.supportBody) return;
     var st = accessStateSafe(), sub = document.getElementById('supSubtitle');
@@ -2024,7 +2120,7 @@
         planBlock = '<div class="plan-summary-row"><span>نوع التفعيل</span><b>تفعيل دائم</b></div>';
       }
       els.supportBody.innerHTML =
-        '<div class="sup-activated"><div class="sup-ok">✅ التطبيق مفعل بنجاح</div><p>يمكنك الآن استخدام جميع مزايا التطبيق.</p>' + planBlock + '</div>' +
+        '<div class="sup-activated"><div class="sup-ok">التطبيق مفعل ✓</div><p>يمكنك الآن استخدام جميع مزايا التطبيق.</p>' + planBlock + '</div>' +
         contactSectionHtml() +
         '<div class="sup-card sup-fine-card"><p>عند تغيير الهاتف أو مواجهة مشكلة في التفعيل يمكنك التواصل مع الدعم.</p></div>';
       return;
@@ -2036,28 +2132,18 @@
       statusBlock = '<div class="sup-card sup-status-card"><div class="sup-h">تجديد الخطة</div><p>اختر خطة جديدة لمتابعة التفعيل.</p></div>' +
         '<button type="button" class="btn btn-ghost sup-code-btn" data-act="cancel-renew" style="width:100%">إلغاء والعودة</button>';
     } else if (st === 'expired') {
-      statusBlock = '<div class="sup-card sup-status-card warn"><div class="sup-h">انتهت الفترة التجريبية</div><p>اختر إحدى الخطط للاستمرار.</p></div>';
+      statusBlock = '<div class="sup-card sup-status-card warn"><div class="sup-h">انتهت الفترة المجانية</div><p>اختر مدة الاشتراك لتفعيل التطبيق والاستمرار</p></div>';
     } else {
       if (sub) sub.hidden = false;
       var h = (window.DPLicense && window.DPLicense.trialRemainingHours) ? window.DPLicense.trialRemainingHours() : 0;
       statusBlock = '<div class="sup-card sup-status-card"><div class="sup-h">الفترة التجريبية نشطة</div>' +
-        (h ? '<div class="sup-remain">المتبقي: ' + h + ' ساعة</div>' : '') + '<p>يمكنك التفعيل في أي وقت.</p></div>';
+        (h ? '<div class="sup-remain">المتبقي: ' + h + ' ساعة</div>' : '') + '<p>يمكنك تفعيل التطبيق في أي وقت</p></div>';
     }
-
-    var plan = selectedPlan();
-    var summaryBlock = plan ? (
-      '<div class="plan-summary">' +
-        '<div class="plan-summary-row"><span>الخطة</span><b>' + esc(plan.label) + '</b></div>' +
-        '<div class="plan-summary-row"><span>السعر</span><b>' + esc(plan.usd) + ' — ' + esc(plan.yer) + '</b></div>' +
-        '<button type="button" class="btn btn-primary" data-act="pay-continue" style="width:100%">متابعة الدفع والتفعيل</button>' +
-      '</div>'
-    ) : '';
 
     els.supportBody.innerHTML =
       statusBlock +
+      '<h3 class="sup-plans-h">اختر مدة الاشتراك التي تريد تفعيلها</h3>' +
       '<div class="plan-grid">' + PLANS.map(planCardHtml).join('') + '</div>' +
-      summaryBlock +
-      '<button type="button" class="btn btn-ghost sup-code-btn" data-act="have-code" style="width:100%">لدي كود تفعيل</button>' +
       contactSectionHtml();
   }
 
@@ -2224,7 +2310,7 @@
      مصدر الحالة الوحيد هو window.DPLicense.getAccessState() من activation.js.
      كل نقطة تنقّل أو حفظ في هذا الملف تستدعي isAccessLocked()/enforceAccessLock() من هنا فقط،
      لتفادي تكرار منطق التحقق بصورة متعارضة في أكثر من مكان. */
-  var ACCESS_LOCK_ALLOWED_VIEWS = { support: true };
+  var ACCESS_LOCK_ALLOWED_VIEWS = { support: true, activation: true };
   function isAccessLocked() { return accessStateSafe() === 'expired'; }
   function closeOperationalOverlaysForLock() {
     // يغلق النوافذ التشغيلية المفتوحة فقط. لا يغلق أبداً: activationOverlay / actCodeOverlay / paymentOverlay
@@ -2250,7 +2336,7 @@
   /* ---------- Router ---------- */
   function parseHash() { var raw = location.hash.replace(/^#/, ''); var p = raw.split('/'); return { name: VIEWS.indexOf(p[0]) >= 0 ? p[0] : 'dashboard', param: decodeURIComponent(p[1] || '') }; }
   function go(name, param) {
-    if (isAccessLocked() && name !== 'support') { enforceAccessLock(); return; }
+    if (isAccessLocked() && name !== 'support' && name !== 'activation') { enforceAccessLock(); return; }
     if (name === 'add') { openCase(null); return; }
     location.hash = param ? (name + '/' + encodeURIComponent(param)) : name; applyRoute();
   }
@@ -2273,19 +2359,20 @@
     else if (currentView === 'uniEmpty') go('universities');
     else if (currentView === 'subject') go('bysubject');
     else if (currentView === 'patient') go('patients');
+    else if (currentView === 'activation') go('support');
     else go('dashboard');
   }
   function applyRoute() {
     var r = parseHash();
-    if (isAccessLocked() && r.name !== 'support') {
+    if (isAccessLocked() && r.name !== 'support' && r.name !== 'activation') {
       var rawName = location.hash.replace(/^#/, '').split('/')[0];
-      if (rawName !== 'support') { location.hash = 'support'; return; }   // hashchange سيعيد استدعاء applyRoute بـ #support
-      r.name = 'support'; r.param = '';
+      if (rawName !== 'support' && rawName !== 'activation') { location.hash = 'support'; return; }   // hashchange سيعيد استدعاء applyRoute بـ #support
+      r.name = rawName; r.param = '';
     }
     currentView = r.name; currentParam = r.param;
     document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== r.name; });
     document.body.classList.toggle('dp-dashboard-bg', r.name === 'dashboard');
-    els.backBtn.hidden = (r.name === 'dashboard') || isAccessLocked();
+    els.backBtn.hidden = (r.name === 'dashboard') || (isAccessLocked() && r.name !== 'activation');
     if (els.menuBtn) els.menuBtn.hidden = (r.name !== 'dashboard') || isAccessLocked();
     renderActiveView();
     markBottomNavActive();
@@ -2305,6 +2392,7 @@
     else if (currentView === 'subject') renderSubjectCases(currentParam);
     else if (currentView === 'settings') renderSettings();
     else if (currentView === 'support') renderSupport();
+    else if (currentView === 'activation') renderActivationPage();
     else if (currentView === 'file') renderFile(currentParam);
     else if (currentView === 'universities') renderUniversities();
     else if (currentView === 'uniEmpty') renderUniEmpty(currentParam);
@@ -2868,7 +2956,8 @@
       var actBtn = t.closest('[data-act]'); if (actBtn) return { kind: 'act', el: actBtn };
       return null;
     }
-    var ACCESS_LOCK_ALLOWED_ACTIONS = { nav: 1, 'plan-select': 1, 'pay-continue': 1, 'have-code': 1, 'contact-support': 1, 'contact-agent': 1, 'activate-now': 1, copy: 1 };
+    var ACCESS_LOCK_ALLOWED_ACTIONS = { nav: 1, 'plan-select': 1, 'pay-continue': 1, 'have-code': 1, 'contact-support': 1, 'contact-agent': 1, 'activate-now': 1, copy: 1,
+      'act2-change-plan': 1, 'act2-copy-kuraimi': 1, 'act2-copy-jeeb': 1, 'act2-copy-appcode': 1, 'act2-paste': 1, 'act2-submit': 1 };
     function runAction(a, e) {
       if (!a) return;
       var btn = a.el, id = btn.dataset.id, act = btn.dataset.act;
@@ -2889,10 +2978,17 @@
       else if (act === 'subject-open') openSubject(btn.dataset.key);
       else if (act === 'copy') copyNumber(btn.dataset.copy);
       else if (act === 'nav') go(btn.dataset.go);
-      else if (act === 'activate-now') openActivation();
-      else if (act === 'plan-select') { selectedPlanId = (selectedPlanId === btn.dataset.plan) ? selectedPlanId : btn.dataset.plan; renderSupport(); }
-      else if (act === 'pay-continue') openPayment();
-      else if (act === 'have-code') openActCode('code', false);
+      else if (act === 'plan-select') {
+        selectedPlanId = btn.dataset.plan;
+        renderSupport();   // يُظهر التحديد بصرياً (التدرّج + علامة الصح) فوراً قبل الانتقال
+        setTimeout(function () { go('activation'); }, 260);
+      }
+      else if (act === 'act2-change-plan') { go('support'); }
+      else if (act === 'act2-copy-kuraimi') act2CopyBtnClick(btn, SUPPORT.kuraimi.acct);
+      else if (act === 'act2-copy-jeeb') act2CopyBtnClick(btn, ACT2_JEEB_JAWALI_NUM);
+      else if (act === 'act2-copy-appcode') act2CopyBtnClick(btn, appCode());
+      else if (act === 'act2-paste') act2Paste();
+      else if (act === 'act2-submit') act2Activate();
       else if (act === 'contact-support') { var w0 = SUPPORT.wa[0]; if (w0) window.open(waSupportLink(w0.num), '_blank', 'noopener'); }
       else if (act === 'contact-agent') window.open(agentWaLink(), '_blank', 'noopener');
       else if (act === 'renew-plan') { showPlansOverride = true; selectedPlanId = null; renderSupport(); }
@@ -3087,7 +3183,8 @@
       actCodeFromForced = false;
       enforceAccessLock();   // getAccessState() أصبحت الآن activated: يزيل dp-access-locked ويُعيد تفعيل الـRouter وعناصر التنقّل
       updateCounts();
-      if (wasLocked) go('dashboard');                        // كان مقفلاً داخل support: انتقل الآن إلى dashboard
+      toast('تم تفعيل التطبيق بنجاح ✓');
+      if (wasLocked || currentView === 'activation') go('dashboard');   // كان مقفلاً، أو أكمل التفعيل من صفحته: انتقل للصفحة الرئيسية
       else if (currentView === 'settings') renderSettings();
       else if (currentView === 'support') renderSupport();
       setTimeout(maybeShowStudentSetup, 400);

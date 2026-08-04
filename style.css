@@ -971,18 +971,68 @@ body.dp-lang-en .drawer-overlay.drawer-open .side-drawer{ transform:translateX(0
 .sup-status-card .sup-remain{ display:inline-block; margin:6px 0 0; }
 
 /* --- شبكة الخطط --- */
+.sup-plans-h{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.92rem; color:var(--dp-navy); margin:4px 2px 10px; }
 .plan-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+
+/* ---------- صفحة إكمال التفعيل ---------- */
+.act2-summary{ background:var(--dp-elite-gradient); border-radius:16px; padding:16px; margin-bottom:18px; box-shadow:var(--dp-cta-shadow); display:flex; flex-direction:column; gap:8px; }
+.act2-summary-row{ color:#fff; font-size:.85rem; }
+.act2-summary-row b{ font-weight:800; }
+.act2-change-btn{ width:auto; align-self:flex-start; background:rgba(255,255,255,.16); color:#fff; border:1px solid rgba(255,255,255,.35); min-height:34px; padding:6px 14px; font-size:.76rem; margin-top:2px; }
+.act2-h{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.95rem; color:var(--dp-navy); margin:14px 2px 6px; }
+.act2-h:first-of-type{ margin-top:4px; }
+.act2-note{ font-size:.76rem; color:var(--dp-text-muted); margin:0 2px 10px; line-height:1.6; }
+.act2-pay-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-bottom:10px; }
+.act2-pay-card{ background:var(--card-surface); border:1px solid var(--line); border-radius:12px; padding:9px 10px; box-shadow:var(--shadow-sm); min-width:0; }
+.act2-pay-card-kuraimi{ background:#843EDF; border-color:transparent; }
+.act2-pay-card-kuraimi .act2-pay-title,.act2-pay-card-kuraimi .act2-pay-owner{ color:#fff; }
+.act2-pay-card-kuraimi .act2-pay-num-row b.mono{ color:#fff; }
+.act2-pay-card-kuraimi .act2-copy-btn{ background:rgba(255,255,255,.18); color:#fff; border-color:rgba(255,255,255,.4); }
+.act2-pay-title{ font-weight:800; font-size:.74rem; color:var(--dp-navy); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.act2-pay-owner{ font-size:.66rem; font-weight:600; color:var(--dp-text-muted); margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.act2-pay-num-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; min-width:0; }
+.act2-pay-num-row b.mono{ direction:ltr; font-size:.8rem; font-weight:800; color:var(--ink); overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.act2-copy-btn{ flex:none; min-height:26px; padding:4px 9px; font-size:.66rem; font-weight:700; color:var(--dp-teal-deep); background:var(--dp-canvas-wash); border:1px solid var(--dp-border); border-radius:8px; cursor:pointer; font-family:inherit; white-space:nowrap; transition:transform .12s ease; }
+.act2-copy-btn:active{ transform:scale(.95); }
+.act2-appcode-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--card-surface); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:12px; box-shadow:var(--shadow-sm); }
+.act2-appcode{ font-size:.92rem; font-weight:800; color:var(--dp-navy); direction:ltr; word-break:break-all; }
+.act2-send-btn{ width:100%; margin-bottom:6px; }
+.act2-code-row{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.act2-code-input{ flex:1 1 auto; min-width:0; min-height:46px; border:1.5px solid var(--dp-border); border-radius:12px; padding:0 14px; font-family:inherit; font-size:.9rem; background:var(--card-surface); color:var(--ink); }
+.act2-code-input.invalid{ border-color:var(--red); }
+.act2-code-input:focus{ outline:none; border-color:var(--dp-teal); }
+.act2-paste-btn{ flex:none; width:auto; min-height:46px; padding:0 16px; font-size:.82rem; }
+.act2-support-row{ margin-top:18px; }
+.act2-support-row .btn{ width:100%; }
+@media(max-width:360px){
+  .act2-pay-grid{ gap:6px; }
+  .act2-pay-card{ padding:7px 8px; }
+  .act2-pay-title{ font-size:.68rem; }
+  .act2-pay-owner{ font-size:.6rem; }
+  .act2-pay-num-row b.mono{ font-size:.72rem; }
+  .act2-copy-btn{ padding:3px 7px; font-size:.6rem; min-height:23px; }
+}
 .plan-card{ position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center;
   background:var(--dp-surface); border:1.5px solid var(--dp-border); border-radius:16px; padding:18px 10px 14px;
   cursor:pointer; font-family:inherit; transition:transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, background 150ms ease; }
 .plan-card:active{ transform:scale(.98); }
-.plan-card.selected{ border-color:var(--dp-teal); background:var(--dp-canvas-wash); box-shadow:0 0 0 3px rgba(11,146,148,.14); }
+.plan-card.selected{ border-color:transparent; background:var(--dp-elite-gradient); box-shadow:var(--dp-cta-shadow); }
 .plan-badge{ position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:linear-gradient(120deg,var(--dp-navy),var(--dp-teal-deep));
   color:#fff; font-size:.62rem; font-weight:800; padding:4px 10px; border-radius:999px; white-space:nowrap; box-shadow:0 3px 8px rgba(18,55,79,.25); }
+.plan-promo-badge{ position:absolute; top:7px; inset-inline-start:7px; background:rgba(255,255,255,.92); color:var(--dp-teal-deep); border:1px solid var(--dp-teal-100,rgba(11,146,148,.35));
+  font-size:.52rem; font-weight:800; padding:2px 6px; border-radius:7px; line-height:1.3; white-space:nowrap; }
+.plan-card.selected .plan-promo-badge{ background:rgba(255,255,255,.16); color:#fff; border-color:rgba(255,255,255,.4); }
+.plan-check{ position:absolute; top:8px; inset-inline-end:8px; width:18px; height:18px; border-radius:50%; background:#fff; color:var(--dp-teal-deep);
+  font-size:.66rem; font-weight:900; display:none; align-items:center; justify-content:center; line-height:1; box-shadow:0 2px 5px rgba(0,0,0,.18); }
+.plan-card.selected .plan-check{ display:flex; }
 .plan-name{ font-family:'Cairo',sans-serif; font-weight:800; font-size:.9rem; color:var(--dp-text); margin-top:4px; }
-.plan-price{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.15rem; color:var(--dp-teal-deep); }
-.plan-card.selected .plan-price{ color:var(--dp-teal-deep); }
-.plan-price-yer{ font-size:.68rem; color:var(--dp-text-muted); }
+.plan-card.selected .plan-name{ color:#fff; }
+.plan-price{ font-family:'Cairo',sans-serif; font-weight:800; font-size:1.15rem; color:var(--dp-teal-deep); direction:ltr; unicode-bidi:isolate; }
+.plan-card.selected .plan-price{ color:#fff; }
+.plan-price-yer-old{ font-size:.64rem; color:var(--dp-text-muted); text-decoration:line-through; text-decoration-color:currentColor; opacity:.8; }
+.plan-price-yer{ font-size:.7rem; font-weight:700; color:var(--dp-teal-deep); }
+.plan-card.selected .plan-price-yer-old{ color:rgba(255,255,255,.68); }
+.plan-card.selected .plan-price-yer{ color:#fff; }
 
 /* --- ملخص الخطة المختارة --- */
 .plan-summary{ background:var(--dp-surface); border:1px solid var(--dp-border); border-inline-start:4px solid var(--dp-teal);
@@ -1183,6 +1233,11 @@ body.dp-dashboard-bg{
 /* توحيد سطح أيام الأسبوع غير النشطة مع بقية الكروت المُحسَّنة بدل الأبيض المسطّح */
 #view-dashboard .cal-day{ background:#F1F9FA; border-color:rgba(13,115,119,.22); }
 #view-dashboard .cal-day-active:not(.cal-day-today){ background:#EAF6F5; }
+/* اليوم الحالي الفعلي: تدرّج Navy→Teal مطابق للـHero Card (نفس --dp-elite-gradient) بدل السطح الشفاف أعلاه —
+   كانت قاعدة #view-dashboard .cal-day الأعم تتفوّق في التخصيص على .cal-day-today فتُلغي التدرّج المقصود أصلاً. */
+#view-dashboard .cal-day.cal-day-today{ background:var(--dp-elite-gradient); border-color:transparent; box-shadow:0 6px 16px rgba(7,59,85,.20); }
+#view-dashboard .cal-day-today .cal-day-name{ color:#cffafe; }
+#view-dashboard .cal-day-today .cal-day-num{ color:#fff; }
 
 /* ============================================================
    لغة الواجهة: خط إنجليزي أنظف عند appLang='en' + مربع اختيار اللغة

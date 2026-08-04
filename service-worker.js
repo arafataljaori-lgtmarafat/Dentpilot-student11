@@ -1,5 +1,5 @@
 /* DentPilot Student — Service Worker (تحديث آمن مُتحكَّم به) */
-const CACHE = 'dentpilot-student-v1.18.0';
+const CACHE = 'dentpilot-student-v1.19.1';
 const ASSETS = [
   './', 'index.html', 'case-sheet-print.html', 'style.css', 'script.js', 'activation.js', 'manifest.json', 'version.json',
   'firebase-config.js', 'firebase-auth.js', 'firebase-sync.js', 'account-ui.js',
