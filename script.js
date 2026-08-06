@@ -13,7 +13,7 @@
   var ADMIN_KEY = 'dentpilot_student_admin_config_v1';
   var CUSTOM_REQS_KEY = 'dentpilot_student_custom_reqs_v1';   // مواد/متطلبات إضافية يضيفها الطالب بنفسه (منفصلة عن قائمة إضافة الحالة)
   var CASESHEETS_KEY = 'dentpilot_student_casesheets_v1';     // كاسشيتات التسليم (نموذج مستقل تماماً عن نظام الحالات)
-  var APP_VERSION = '1.19.1';
+  var APP_VERSION = '1.19.3';
 
   // كل مادة: value = القيمة المخزّنة (ثابتة)، label = النص المعروض، desc = وصف صغير اختياري
   var DEPT_DEFS = [
@@ -1792,7 +1792,10 @@
     wa: [{ num: '967775101518', label: '775101518' }, { num: '967779449744', label: '779449744' }],
     kuraimi: { name: 'عرفات الجعوري', acct: '3015367236' },
     jeeb: { name: 'عرفات الجعوري', pay: '25910' },
-    agent: { title: 'وكيل طلاب محافظة إب', subtitle: 'خاص بطلاب محافظة إب', name: 'فراس المجمر', num: '967771697735', label: '771697735' }
+    agent: { title: 'وكيل طلاب محافظة إب', subtitle: 'خاص بطلاب محافظة إب', name: 'د. فراس المجمر', num: '967771697735', label: '771697735' },
+    /* وكيل ثانٍ: لم يُزوَّد رقم واتساب فعلي له ضمن نص المهمة — يُعرض الكرت دون زر تواصل فعّال
+       إلى حين توفير رقم حقيقي (انظر التقرير النهائي). لا يُخترَع أي رقم تجنباً لتوجيه الطلاب لجهة غير صحيحة. */
+    agent2: { title: 'وكيل طلاب جامعة السعيدة', name: 'د. حمد الفقيه', num: '', label: '' }
   };
   function defaultAdminPin() { return String((17 * 70) + 44); }
   function defaultAdminConfig() {
@@ -1974,30 +1977,61 @@
   function waIcon() {
     return '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.48 1.34 5L2 22l5.2-1.36a9.94 9.94 0 0 0 4.84 1.23h.01c5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2Zm0 18.2h-.01a8.27 8.27 0 0 1-4.2-1.15l-.3-.18-3.09.81.82-3-.2-.31a8.26 8.26 0 0 1-1.27-4.4c0-4.56 3.71-8.27 8.27-8.27 2.21 0 4.28.86 5.85 2.42a8.2 8.2 0 0 1 2.42 5.85c0 4.56-3.72 8.23-8.29 8.23Zm4.53-6.19c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.24-.64.8-.78.97-.14.16-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.24-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.24-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.42-.14-.01-.31-.01-.47-.01-.17 0-.44.06-.67.31-.23.24-.87.85-.87 2.08 0 1.23.9 2.41 1.02 2.58.12.16 1.76 2.7 4.27 3.78.6.26 1.06.41 1.43.53.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>';
   }
-  /* كرت المطور والدعم الرسمي + كرت الوكيل الطلابي — قسم تواصل ثابت، يظهر قبل التفعيل وبعده بنفس الشكل */
+  function checkBadgeSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+  }
+  function devAvatarSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M12 3.5c-2 0-2.6 1-4.2 1C6 4.5 4.5 6 4.5 8.6c0 3.4 1.6 5.2 2.4 7.6.5 1.6.6 3.8 2 3.8 1.2 0 1.3-1.6 1.7-3.2.3-1.1.6-1.8 1.4-1.8s1.1.7 1.4 1.8c.4 1.6.5 3.2 1.7 3.2 1.4 0 1.5-2.2 2-3.8.8-2.4 2.4-4.2 2.4-7.6C19.5 6 18 4.5 16.2 4.5c-1.6 0-2.2-1-4.2-1Z"/>' +
+      '</svg>';
+  }
+  function agentIconSvg() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20.5a7 7 0 0 1 14 0"/></svg>';
+  }
+  /* كرت المطور والدعم الرسمي (نسخة مختصرة: بلا أرقام ولا أزرار) + قسم الوكلاء (كرتان منفصلان) —
+     يظهر قبل التفعيل وبعده بنفس الشكل. طرق التواصل مع الدعم متاحة من مواضع أخرى بالفعل
+     (نافذة إرسال طلب التفعيل، ونافذة كود التفعيل، ونافذة الدفع) فلا فقدان لأي وظيفة تواصل. */
   function contactSectionHtml() {
-    var waNum1 = (SUPPORT.wa[0] || {}).num, waNum2 = (SUPPORT.wa[1] || {}).num;
     var devCard =
-      '<div class="sup-card dev-official-card">' +
-        '<span class="dev-badge">الدعم الرسمي</span>' +
-        '<div class="dev-official-name">' + esc(SUPPORT.dev) + '</div>' +
-        '<div class="dev-official-fullname">' + esc(SUPPORT.devFull) + '</div>' +
-        '<p class="dev-official-desc">مطور DentPilot Student والمشرف على الدعم والتفعيل.</p>' +
-        '<div class="dev-official-actions">' +
-          (waNum1 ? '<a class="btn btn-primary dev-wa-btn" href="' + waSupportLink(waNum1) + '" target="_blank" rel="noopener">' + waIcon() + '<span>مراسلة الدعم والتفعيل</span></a>' : '') +
-          (waNum2 ? '<a class="btn btn-ghost dev-wa-btn" href="' + waSupportLink(waNum2) + '" target="_blank" rel="noopener">' + waIcon() + '<span>مراسلة الدعم الفني</span></a>' : '') +
+      '<div class="sup-card dev-official-card dev-official-card-v2">' +
+        '<div class="dev-official-row">' +
+          '<div class="dev-official-avatar">' + devAvatarSvg() +
+            '<span class="dev-official-check">' + checkBadgeSvg() + '</span>' +
+          '</div>' +
+          '<div class="dev-official-info">' +
+            '<span class="dev-official-role">المطور</span>' +
+            '<div class="dev-official-name">' + esc(SUPPORT.dev) + '</div>' +
+          '</div>' +
         '</div>' +
       '</div>';
-    var province = String(SUPPORT.agent.title || '').replace('وكيل طلاب ', '');
-    var agentCard =
-      '<div class="sup-card agent-official-card">' +
-        '<div class="sup-h">الوكيل الطلابي</div>' +
-        '<div class="agent-official-name">' + esc(SUPPORT.agent.name) + '</div>' +
-        (province ? '<div class="agent-official-province">' + esc(province) + '</div>' : '') +
-        '<p class="agent-official-desc">يساعد طلاب المحافظة في التواصل مع الدعم والحصول على كود التفعيل.</p>' +
-        '<button type="button" class="btn btn-ghost agent-wa-btn" data-act="contact-agent">' + waIcon() + '<span>مراسلة الوكيل عبر واتساب</span></button>' +
+
+    var agentsHeading = '<div class="sup-agents-heading">الوكلاء</div>';
+    var agent1 =
+      '<div class="sup-card agent-official-card agent-official-card-v2">' +
+        '<div class="agent-official-row">' +
+          '<span class="agent-official-ico">' + agentIconSvg() + '</span>' +
+          '<div class="agent-official-info">' +
+            '<div class="agent-official-name">' + esc(SUPPORT.agent.name) + '</div>' +
+            '<div class="agent-official-province">' + esc(SUPPORT.agent.title) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="btn btn-ghost agent-wa-btn" data-act="contact-agent">' + waIcon() + '<span>مراسلة عبر واتساب</span></button>' +
       '</div>';
-    return devCard + agentCard;
+    var agent2 =
+      '<div class="sup-card agent-official-card agent-official-card-v2">' +
+        '<div class="agent-official-row">' +
+          '<span class="agent-official-ico">' + agentIconSvg() + '</span>' +
+          '<div class="agent-official-info">' +
+            '<div class="agent-official-name">' + esc(SUPPORT.agent2.name) + '</div>' +
+            '<div class="agent-official-province">' + esc(SUPPORT.agent2.title) + '</div>' +
+          '</div>' +
+        '</div>' +
+        (SUPPORT.agent2.num
+          ? '<button type="button" class="btn btn-ghost agent-wa-btn" data-act="contact-agent2">' + waIcon() + '<span>مراسلة عبر واتساب</span></button>'
+          : '<div class="agent-official-soon">التواصل متاح قريباً</div>') +
+      '</div>';
+
+    return devCard + agentsHeading + agent1 + agent2;
   }
 
   var ACT2_JEEB_JAWALI_NUM = '775101518';   // كما ورد صراحة في نص المهمة لصفحة إكمال التفعيل تحديداً — لا يُغيَّر SUPPORT.jeeb القديم المستخدَم في نافذة الدفع القديمة غير المستخدَمة في التدفّق الجديد
@@ -2063,35 +2097,41 @@
         '<button type="button" class="btn btn-ghost act2-change-btn" data-act="act2-change-plan">تغيير الخطة</button>' +
       '</div>' +
 
-      '<h3 class="act2-h">حوّل مبلغ الاشتراك</h3>' +
-      '<div class="act2-pay-grid">' +
-        '<div class="act2-pay-card act2-pay-card-kuraimi">' +
-          '<div class="act2-pay-title">🏦 بنك الكريمي</div>' +
-          '<div class="act2-pay-owner">' + esc(SUPPORT.kuraimi.name) + '</div>' +
-          '<div class="act2-pay-num-row"><b class="mono">' + esc(SUPPORT.kuraimi.acct) + '</b>' +
-            '<button type="button" class="act2-copy-btn" data-act="act2-copy-kuraimi">نسخ</button></div>' +
-        '</div>' +
-        '<div class="act2-pay-card">' +
-          '<div class="act2-pay-title">جيب – جوالي</div>' +
-          '<div class="act2-pay-num-row"><b class="mono">' + esc(ACT2_JEEB_JAWALI_NUM) + '</b>' +
-            '<button type="button" class="act2-copy-btn" data-act="act2-copy-jeeb">نسخ</button></div>' +
+      '<div class="act2-section-card">' +
+        '<h3 class="act2-h">حوّل مبلغ الاشتراك</h3>' +
+        '<div class="act2-pay-grid">' +
+          '<div class="act2-pay-card act2-pay-card-kuraimi">' +
+            '<div class="act2-pay-title">🏦 بنك الكريمي</div>' +
+            '<div class="act2-pay-owner">' + esc(SUPPORT.kuraimi.name) + '</div>' +
+            '<div class="act2-pay-num-row"><b class="mono">' + esc(SUPPORT.kuraimi.acct) + '</b>' +
+              '<button type="button" class="act2-copy-btn" data-act="act2-copy-kuraimi">نسخ</button></div>' +
+          '</div>' +
+          '<div class="act2-pay-card">' +
+            '<div class="act2-pay-title">جيب – جوالي</div>' +
+            '<div class="act2-pay-num-row"><b class="mono">' + esc(ACT2_JEEB_JAWALI_NUM) + '</b>' +
+              '<button type="button" class="act2-copy-btn" data-act="act2-copy-jeeb">نسخ</button></div>' +
+          '</div>' +
         '</div>' +
       '</div>' +
 
-      '<h3 class="act2-h">رمز التطبيق الخاص بك</h3>' +
-      '<p class="act2-note">هذا رمز آمن وخاص بنسخة تطبيقك، ويُستخدم لإصدار رمز التفعيل فقط. لا يحتوي على بياناتك الشخصية.</p>' +
-      '<div class="act2-appcode-row"><span class="mono act2-appcode">' + esc(appCode()) + '</span>' +
-        '<button type="button" class="act2-copy-btn" data-act="act2-copy-appcode">نسخ</button></div>' +
-      '<a class="btn btn-primary act2-send-btn" href="' + act2WaLink() + '" target="_blank" rel="noopener">إرسال الرمز للدعم</a>' +
-
-      '<h3 class="act2-h">الصق رمز التفعيل الذي حصلت عليه من الدعم</h3>' +
-      '<p class="act2-note">بعد تأكيد التحويل سيصلك رمز التفعيل من الدعم. الصقه في الحقل التالي.</p>' +
-      '<div class="act2-code-row">' +
-        '<input type="text" id="act2Code" class="act2-code-input" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" dir="ltr" />' +
-        '<button type="button" id="act2PasteBtn" class="btn btn-ghost act2-paste-btn" data-act="act2-paste" hidden>لصق</button>' +
+      '<div class="act2-section-card">' +
+        '<h3 class="act2-h">رمز التطبيق الخاص بك</h3>' +
+        '<p class="act2-note">هذا رمز آمن وخاص بنسخة تطبيقك، ويُستخدم لإصدار رمز التفعيل فقط. لا يحتوي على بياناتك الشخصية.</p>' +
+        '<div class="act2-appcode-row"><span class="mono act2-appcode">' + esc(appCode()) + '</span>' +
+          '<button type="button" class="act2-copy-btn" data-act="act2-copy-appcode">نسخ</button></div>' +
+        '<button type="button" class="btn btn-primary act2-send-btn" data-act="act2-open-send-modal">إرسال طلب التفعيل إلى واتساب الإدارة</button>' +
       '</div>' +
-      '<p id="act2Error" class="act-error" hidden></p>' +
-      '<button type="button" class="btn btn-primary" style="width:100%" data-act="act2-submit">تفعيل التطبيق</button>' +
+
+      '<div class="act2-section-card">' +
+        '<h3 class="act2-h">الصق رمز التفعيل الذي حصلت عليه من الدعم</h3>' +
+        '<p class="act2-note">بعد تأكيد التحويل سيصلك رمز التفعيل من الدعم. الصقه في الحقل التالي.</p>' +
+        '<div class="act2-code-row">' +
+          '<input type="text" id="act2Code" class="act2-code-input" placeholder="ألصق كود التفعيل هنا" autocomplete="off" spellcheck="false" dir="ltr" />' +
+          '<button type="button" id="act2PasteBtn" class="btn btn-ghost act2-paste-btn" data-act="act2-paste" hidden>لصق</button>' +
+        '</div>' +
+        '<p id="act2Error" class="act-error" hidden></p>' +
+        '<button type="button" class="btn btn-primary" style="width:100%" data-act="act2-submit">تفعيل التطبيق</button>' +
+      '</div>' +
 
       '<div class="act2-support-row">' + (supportNum ? '<a class="btn btn-ghost" href="' + waSupportLink(supportNum) + '" target="_blank" rel="noopener">التواصل مع الدعم</a>' : '') + '</div>';
 
@@ -2924,6 +2964,11 @@
     // نافذة إتمام الدفع: إغلاق + أكورديون طرق الدفع + نسخ (تفويض نقر — المحتوى ديناميكي)
     var payClose = document.getElementById('payClose');
     if (payClose) payClose.addEventListener('click', function () { hideOverlay(document.getElementById('paymentOverlay')); enforceAccessLock(); });
+
+    var act2SendOv = document.getElementById('act2SendOverlay');
+    var act2SendClose = document.getElementById('act2SendClose');
+    if (act2SendClose) act2SendClose.addEventListener('click', function () { hideOverlay(act2SendOv); });
+    if (act2SendOv) act2SendOv.addEventListener('click', function (e) { if (e.target === act2SendOv) hideOverlay(act2SendOv); });
     var payBody = document.getElementById('payBody');
     if (payBody) payBody.addEventListener('click', function (e) {
       var toggleBtn = e.target.closest('[data-acc-toggle]');
@@ -2956,8 +3001,9 @@
       var actBtn = t.closest('[data-act]'); if (actBtn) return { kind: 'act', el: actBtn };
       return null;
     }
-    var ACCESS_LOCK_ALLOWED_ACTIONS = { nav: 1, 'plan-select': 1, 'pay-continue': 1, 'have-code': 1, 'contact-support': 1, 'contact-agent': 1, 'activate-now': 1, copy: 1,
-      'act2-change-plan': 1, 'act2-copy-kuraimi': 1, 'act2-copy-jeeb': 1, 'act2-copy-appcode': 1, 'act2-paste': 1, 'act2-submit': 1 };
+    var ACCESS_LOCK_ALLOWED_ACTIONS = { nav: 1, 'plan-select': 1, 'pay-continue': 1, 'have-code': 1, 'contact-support': 1, 'contact-agent': 1, 'contact-agent2': 1, 'activate-now': 1, copy: 1,
+      'act2-change-plan': 1, 'act2-copy-kuraimi': 1, 'act2-copy-jeeb': 1, 'act2-copy-appcode': 1, 'act2-paste': 1, 'act2-submit': 1,
+      'act2-open-send-modal': 1, 'act2-send-official': 1, 'act2-send-agent': 1 };
     function runAction(a, e) {
       if (!a) return;
       var btn = a.el, id = btn.dataset.id, act = btn.dataset.act;
@@ -2991,6 +3037,10 @@
       else if (act === 'act2-submit') act2Activate();
       else if (act === 'contact-support') { var w0 = SUPPORT.wa[0]; if (w0) window.open(waSupportLink(w0.num), '_blank', 'noopener'); }
       else if (act === 'contact-agent') window.open(agentWaLink(), '_blank', 'noopener');
+      else if (act === 'contact-agent2') { if (SUPPORT.agent2.num) window.open('https://wa.me/' + SUPPORT.agent2.num, '_blank', 'noopener'); }
+      else if (act === 'act2-open-send-modal') { var sOv = document.getElementById('act2SendOverlay'); if (sOv) showOverlay(sOv); }
+      else if (act === 'act2-send-official') { window.open(act2WaLink(), '_blank', 'noopener'); hideOverlay(document.getElementById('act2SendOverlay')); }
+      else if (act === 'act2-send-agent') { window.open(agentWaLink(), '_blank', 'noopener'); hideOverlay(document.getElementById('act2SendOverlay')); }
       else if (act === 'renew-plan') { showPlansOverride = true; selectedPlanId = null; renderSupport(); }
       else if (act === 'cancel-renew') { showPlansOverride = false; selectedPlanId = null; renderSupport(); }
       else if (act === 'all-filter') go('all', btn.dataset.filter === 'all' ? '' : btn.dataset.filter);

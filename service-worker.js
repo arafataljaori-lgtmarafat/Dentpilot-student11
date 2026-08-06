@@ -1,8 +1,8 @@
 /* DentPilot Student — Service Worker (تحديث آمن مُتحكَّم به) */
-const CACHE = 'dentpilot-student-v1.19.1';
+const CACHE = 'dentpilot-student-v1.19.3';
 const ASSETS = [
   './', 'index.html', 'case-sheet-print.html', 'style.css', 'script.js', 'activation.js', 'manifest.json', 'version.json',
-  'firebase-config.js', 'firebase-auth.js', 'firebase-sync.js', 'account-ui.js',
+  'firebase-config.js', 'firebase-auth.js', 'firebase-sync.js', 'account-ui.js', 'welcome-ui.js',
   'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png', 'favicon.ico', 'favicon-32.png',
   'dental-chair.png', 'genius-endo-p1.jpg', 'genius-endo-p2.jpg', 'genius-oralsurg-p1.jpg', 'genius-oralsurg-p2.jpg'
 ];
